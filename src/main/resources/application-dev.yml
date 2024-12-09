@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dtec_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  sql:
+    init:
+      platform: mysql
+
+frontend:
+  origin: "http://localhost:5173"
+header: "Authorization"
+
+application:
+  security:
+    jwt:
+      secret-key: 3C1224C7DC1569381DE63C223113D9A524A1DE63C223113D9A524AF8E2A3113D9A524A1DE63C223113D9A524AF8E2A63C1224C7DC1569381DE63F8E2A63C1224C7DC1569381DE63C63C1224C7DC1569381DE63F8E2A63C1224C7DC1569381DE63CDE1D7C5F65177BF5
+      expiration: 600000 # 10 minutes
+      refresh-token:
+        expiration: 604800000 # 7 days (ms)
+      cookie-expiration: 604800 # 7 days (sec)
+
+admins:
+  admin1:
+    username: "admin_zara"
+    password: "admin1234"
+  admin2:
+    username: "admin_torres"
+    password: "admin1234"
