@@ -28,7 +28,7 @@ public class UserController {
                         "",
                         this.userService.me(),
                         "",
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 }

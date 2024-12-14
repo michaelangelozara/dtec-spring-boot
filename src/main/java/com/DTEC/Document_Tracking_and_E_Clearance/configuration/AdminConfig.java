@@ -36,25 +36,29 @@ public class AdminConfig {
     }
 
     @Bean(name = "admin-initializer")
-    public ApplicationRunner applicationRunner(){
+    public ApplicationRunner applicationRunner() {
         return args -> {
             int count = this.userRepository.countSuperAdmin(Role.SUPER_ADMIN);
-            if(count == 0){
-                User adminZara = new User();
-                adminZara.setFirstName("Michael Angelo");
-                adminZara.setMiddleName("Buccat");
-                adminZara.setLastname("Zara");
-                adminZara.setRole(Role.SUPER_ADMIN);
-                adminZara.setUsername(username1);
-                adminZara.setPassword(this.passwordEncoder.encode(password1));
+            if (count == 0) {
+                User adminZara = User.builder()
+                        .firstName("Michael Angelo")
+                        .middleName("Buccat")
+                        .lastname("Zara")
+                        .email("michaelangelobuccatzara@gmail.com")
+                        .role(Role.SUPER_ADMIN)
+                        .username(username1)
+                        .password(this.passwordEncoder.encode(password1))
+                        .build();
 
-                User adminTorres = new User();
-                adminTorres.setFirstName("Christian James");
-                adminTorres.setMiddleName("");
-                adminTorres.setLastname("Torres");
-                adminTorres.setRole(Role.SUPER_ADMIN);
-                adminTorres.setUsername(username2);
-                adminTorres.setPassword(this.passwordEncoder.encode(password2));
+                User adminTorres = User.builder()
+                        .firstName("Christian James")
+                        .middleName("")
+                        .lastname("Torres")
+                        .email("charistialjamestorres@gmail.com")
+                        .role(Role.STUDENT_OFFICER)
+                        .username(username2)
+                        .password(this.passwordEncoder.encode(password2))
+                        .build();
 
                 this.userRepository.saveAll(Arrays.asList(adminZara, adminTorres));
             }

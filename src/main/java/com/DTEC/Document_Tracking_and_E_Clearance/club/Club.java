@@ -1,8 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.club;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
-import com.DTEC.Document_Tracking_and_E_Clearance.implementation_letter.ImplementationLetter;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposal;
+import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRole;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -33,8 +32,8 @@ public class Club {
     @Column(nullable = false)
     private String name;
 
-    @Lob
-    private String logo;
+    @Column(name = "short_name", nullable = false, length = 15)
+    private String shortName;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -50,17 +49,18 @@ public class Club {
     @Column(name = "deleted_at")
     private LocalDate deletedAt;
 
-    @OneToOne(mappedBy = "socialClub")
-    private User user;
+    @Enumerated(EnumType.STRING)
+    private Type type;
 
-    @OneToOne(mappedBy = "departmentClub", cascade = CascadeType.PERSIST)
-    private Course course;
-
-    @OneToMany(mappedBy = "club")
-    @JsonManagedReference
-    private List<ClubAssignedRole> clubAssignedRoles;
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String logo;
 
     @OneToMany(mappedBy = "club")
     @JsonManagedReference
-    private List<ImplementationLetter> implementationLetters;
+    private List<MemberRole> memberRoles;
+
+    @OneToMany(mappedBy = "club")
+    @JsonManagedReference
+    private List<BudgetProposal> budgetProposals;
 }

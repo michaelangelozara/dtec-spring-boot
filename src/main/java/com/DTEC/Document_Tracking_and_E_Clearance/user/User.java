@@ -1,19 +1,19 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.biometric.Biometric;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposal;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.Clearance;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance_signoff.ClearanceSignoff;
-import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
-import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubAssignedRole;
-import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubRole;
+import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRole;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
-import com.DTEC.Document_Tracking_and_E_Clearance.implementation_letter.ImplementationLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.department.Department;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampus;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampus;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -33,7 +33,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
 @Entity
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
@@ -57,9 +56,11 @@ public class User implements UserDetails {
     @Column(length = 50, nullable = false)
     private String lastname;
 
-    private LocalDate birthDate;
+    @Column(name = "year_level")
+    private Integer yearLevel;
 
-    private String address;
+    @Column(name = "is_first_time_login")
+    private boolean isFirstTimeLogin;
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
@@ -76,13 +77,11 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @Max(3)
-    @Min(0)
-    @Column(name = "registered_fingerprint")
-    private int registeredFingerprint;
 
     @Lob
     private String signature;
@@ -107,10 +106,6 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<ClearanceSignoff> clearanceSignoffs;
 
-    @OneToOne
-    @JoinColumn(name = "social_club_id")
-    private Club socialClub;
-
     @ManyToOne
     @JoinColumn(name = "course_id")
     @JsonBackReference
@@ -120,16 +115,41 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<Token> tokens;
 
-    @OneToMany(mappedBy = "mayor")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<MemberRole> memberRoles;
+
+    @ManyToOne
+    @JsonBackReference
+    private Department department;
+
+    @OneToMany(mappedBy = "studentOfficer")
     @JsonManagedReference
-    private List<ImplementationLetter> implementationLettersAsMayor;
+    private List<ImplementationLetterInCampus> implementationLettersAsStudentOfficerInCampus;
 
     @OneToMany(mappedBy = "moderator")
     @JsonManagedReference
-    private List<ImplementationLetter> implementationLettersAsModerator;
+    private List<ImplementationLetterInCampus> implementationLettersAsModeratorInCampus;
 
-    @OneToOne(mappedBy = "user")
-    private ClubAssignedRole clubAssignedRole;
+    @OneToMany(mappedBy = "studentOfficer")
+    @JsonManagedReference
+    private List<ImplementationLetterOffCampus> implementationLetterOffCampuses;
+
+    @OneToMany(mappedBy = "studentOfficer")
+    @JsonManagedReference
+    private List<CommunicationLetter> communicationLettersAsStudentOfficer;
+
+    @OneToMany(mappedBy = "moderator")
+    @JsonManagedReference
+    private List<CommunicationLetter> communicationLettersAsModerator;
+
+
+    @OneToMany(mappedBy = "moderator")
+    @JsonManagedReference
+    private List<BudgetProposal> budgetProposalsAsModerator;
+
+    @OneToMany(mappedBy = "studentOfficer")
+    @JsonManagedReference
+    private List<BudgetProposal> budgetProposalsAsStudentOfficer;
 
     @Override
     public String getPassword() {

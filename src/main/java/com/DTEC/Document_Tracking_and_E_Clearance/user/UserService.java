@@ -17,4 +17,6 @@ public interface UserService {
     UserInfoResponseDto me();
 
     String deleteUser(int id);
+
+    String resetPassword(int userId);
 }

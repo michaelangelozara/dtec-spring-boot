@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,7 +35,8 @@ public class SecurityConfig {
     @Value("${header}")
     private String HEADER;
 
-    private final String[] ALL_ROLES = {"SUPER_ADMIN", "ADMIN", "OFFICE_IN_CHARGE", "PERSONNEL", "STUDENT", "STUDENT_OFFICER", "MODERATOR"};
+    private final String[] ALL_ROLES = {"SUPER_ADMIN", "ADMIN", "OFFICE_IN_CHARGE", "PERSONNEL", "MODERATOR", "STUDENT", "STUDENT_OFFICER"};
+    private final String[] STAFF_ROLES = {"SUPER_ADMIN", "ADMIN", "OFFICE_IN_CHARGE", "MODERATOR", "STUDENT_OFFICER"};
     private final String[] ADMIN = {"SUPER_ADMIN", "ADMIN"};
 
     public SecurityConfig(
@@ -56,7 +58,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/users/**").hasAnyRole(ALL_ROLES)
+                        .requestMatchers("/api/v1/implementation-letter-in-campuses/**").hasAnyRole(STAFF_ROLES)
+                        .requestMatchers("/api/v1/implementation-letter-out-campuses/**").hasAnyRole(STAFF_ROLES)
+                        .requestMatchers("/api/v1/communication-letters/**").hasAnyRole(STAFF_ROLES)
+                        .requestMatchers("/api/v1/budget-proposals/**").hasAnyRole(STAFF_ROLES)
+                        .requestMatchers("/api/v1/generic-letters/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN)
                         .anyRequest().authenticated()
                 )

@@ -51,7 +51,7 @@ public class AuthenticationController {
                         "User Successfully Logged in",
                         this.userService.authenticate(dto, response),
                         "",
-                        this.dateTimeFormatterUtil.getDateTime()));
+                        this.dateTimeFormatterUtil.formatIntoDateTime()));
     }
 
     @PostMapping("/refresh-token")
@@ -62,7 +62,7 @@ public class AuthenticationController {
             final String refreshToken = extractRefreshToken(request);
 
             if (refreshToken == null)
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Refresh token is missing", null, "", this.dateTimeFormatterUtil.getDateTime()));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Refresh token is missing", null, "", this.dateTimeFormatterUtil.formatIntoDateTime()));
 
             final String username = jwtService.extractUsername(refreshToken);
             if (username != null) {
@@ -79,15 +79,15 @@ public class AuthenticationController {
                     String accessToken = jwtService.generateToken(user);
 
                     // Send the access token back to the client
-                    return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", "Bearer " + accessToken, "", this.dateTimeFormatterUtil.getDateTime()));
+                    return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", "Bearer " + accessToken, "", this.dateTimeFormatterUtil.formatIntoDateTime()));
                 } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Invalid Refresh Token", null, "", this.dateTimeFormatterUtil.getDateTime()));
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Session Expired", null, "", this.dateTimeFormatterUtil.formatIntoDateTime()));
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Invalid Refresh Token", null, "", this.dateTimeFormatterUtil.getDateTime()));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Session Expired", null, "", this.dateTimeFormatterUtil.formatIntoDateTime()));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Invalid Refresh Token", null, "", this.dateTimeFormatterUtil.getDateTime()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Session Expired", null, "", this.dateTimeFormatterUtil.formatIntoDateTime()));
         }
     }
 

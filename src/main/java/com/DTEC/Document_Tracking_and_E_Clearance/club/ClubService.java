@@ -6,9 +6,8 @@ public interface ClubService {
 
     ClubResponseDto getClubById(int id);
 
-    String addClubForStudent(int clubId, int studentId);
+    List<ClubResponseDto> getAllClubs(int s, int e);
 
-    List<ClubResponseDto> getAllClubs();
+    String assignClubOfficer(int clubId, int studentId);
 
-    String addClub(AddClubRequestDto dto);
 }

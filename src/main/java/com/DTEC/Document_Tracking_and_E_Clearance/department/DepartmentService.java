@@ -1,12 +1,22 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.department;
 
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
-public interface DepartmentService {
+@Service
+public class DepartmentService {
 
-    DepartmentResponseDto getDepartmentById(int id);
+    private final DepartmentRepository departmentRepository;
+    private final DepartmentMapper departmentMapper;
 
-    List<DepartmentResponseDto> getAllDepartments();
+    public DepartmentService(DepartmentRepository departmentRepository, DepartmentMapper departmentMapper) {
+        this.departmentRepository = departmentRepository;
+        this.departmentMapper = departmentMapper;
+    }
 
-    String addDepartment(AddDepartmentRequestDto dto);
+    public List<DepartmentResponseDto> getAllDepartment(){
+        var departments = this.departmentRepository.findAll();
+        return this.departmentMapper.toDepartmentResponseDtoList(departments);
+    }
 }

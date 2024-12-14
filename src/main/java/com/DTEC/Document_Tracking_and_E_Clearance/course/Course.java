@@ -31,15 +31,13 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Course Code cannot be Blank")
-    @Size(max = 50, message = "Course Code must not exceed 50 Characters")
-    @Column(name = "course_code", length = 50)
-    private String courseCode;
-
     @NotBlank(message = "Course Title cannot be Blank")
     @Size(max = 255, message = "Course Title must not exceed 255 Characters")
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "short_name", nullable = false)
+    private String shortName;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -63,8 +61,4 @@ public class Course {
     @JoinColumn(name = "department_id")
     @JsonBackReference
     private Department department;
-
-    @OneToOne
-    @JoinColumn(name = "department_club_id")
-    private Club departmentClub;
 }

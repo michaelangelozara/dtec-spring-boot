@@ -100,6 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Set 401 status for expired token
             response.getWriter().write("JWT token has been expired");
         } catch (Exception e){
+            e.printStackTrace();
             this.handlerExceptionResolver.resolveException(request, response, null, e);
         }
 

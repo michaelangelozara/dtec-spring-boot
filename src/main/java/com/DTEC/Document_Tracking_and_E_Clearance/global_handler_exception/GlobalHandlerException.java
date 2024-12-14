@@ -34,7 +34,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 
@@ -50,7 +50,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 
@@ -66,7 +66,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 
@@ -82,7 +82,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 
@@ -98,7 +98,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 
@@ -114,23 +114,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
-                ));
-    }
-
-    @ExceptionHandler(NoContentException.class)
-    public ResponseEntity<ApiResponse<Void>> noContentException(
-            NoContentException exception,
-            WebRequest request
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(new ApiResponse<>(
-                        false,
-                        exception.getMessage(),
-                        null,
-                        request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 
@@ -149,7 +133,7 @@ public class GlobalHandlerException extends RuntimeException {
                         exception.getMessage(),
                         null,
                         request.getDescription(false),
-                        this.dateTimeFormatterUtil.getDateTime()
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
                 ));
     }
 }

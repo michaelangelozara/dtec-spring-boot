@@ -1,5 +1,9 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubMapper;
+import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
+import com.DTEC.Document_Tracking_and_E_Clearance.course.CourseMapper;
+import com.DTEC.Document_Tracking_and_E_Clearance.department.DepartmentMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -9,9 +13,18 @@ import java.util.List;
 public class UserMapper {
 
     private final PasswordEncoder passwordEncoder;
+    private final ClubMapper clubMapper;
+    private final DepartmentMapper departmentMapper;
+    private final CourseMapper courseMapper;
+    private final MemberRoleUtil memberRoleUtil;
 
-    public UserMapper(PasswordEncoder passwordEncoder) {
+
+    public UserMapper(PasswordEncoder passwordEncoder, ClubMapper clubMapper, DepartmentMapper departmentMapper, CourseMapper courseMapper, MemberRoleUtil memberRoleUtil) {
         this.passwordEncoder = passwordEncoder;
+        this.clubMapper = clubMapper;
+        this.departmentMapper = departmentMapper;
+        this.courseMapper = courseMapper;
+        this.memberRoleUtil = memberRoleUtil;
     }
 
     public User toUser(UserRegisterRequestDto dto) {
@@ -20,23 +33,28 @@ public class UserMapper {
                 .middleName(dto.middleName())
                 .lastname(dto.lastname())
                 .username(dto.username())
-                .password(this.passwordEncoder.encode(dto.password()))
+                .email(dto.email())
+                .isFirstTimeLogin(true)
+                .password(this.passwordEncoder.encode("1234"))
                 .role(dto.role())
                 .build();
     }
 
     public UserInfoResponseDto toUserInfoResponseDto(User user) {
+        var club = this.memberRoleUtil.getClubByStudentOfficer(user.getMemberRoles());
         return new UserInfoResponseDto(
                 user.getId(),
                 user.getFirstName(),
                 user.getMiddleName(),
                 user.getLastname(),
-                user.getBirthDate(),
-                user.getAddress(),
                 user.getUsername(),
                 user.getRole(),
+                user.getYearLevel() != null ? user.getYearLevel() : 0,
                 user.getCreatedAt(),
-                user.getLastModified()
+                user.getLastModified(),
+                user.getCourse() != null ? this.courseMapper.toCourseResponseDto(user.getCourse()) : null,
+                user.getDepartment() != null ? this.departmentMapper.toDepartmentResponseDto(user.getDepartment()) : null,
+                club != null ? this.clubMapper.toClubInformationResponseDto(club) : null
         );
     }
 

@@ -1,8 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.club;
 
 public enum ClubRole {
-    MAYOR,
-    OFFICER,
+    STUDENT_OFFICER,
     MEMBER,
     MODERATOR
 }

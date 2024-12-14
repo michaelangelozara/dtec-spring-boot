@@ -1,7 +1,5 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.department;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
-import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -9,7 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
@@ -35,29 +32,19 @@ public class Department {
     @Column(nullable = false)
     private String name;
 
-    @Lob
-    private String logo;
-
     @NotBlank(message = "Department Code cannot be Blank")
     @Size(max = 50, message = "Department Code must not exceed 50 Characters")
     @Column(name = "department_code", length = 50)
     private String departmentCode;
 
+    @Column(name = "short_name", length = 15, nullable = false)
+    private String shortName;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDate createdAt;
 
-    @LastModifiedDate
-    @Column(name = "last_modified", insertable = false)
-    private LocalDate lastModified;
-
-    @Column(name = "is_deleted")
-    private boolean isDeleted;
-
-    @Column(name = "deleted_at")
-    private LocalDate deletedAt;
-
     @OneToMany(mappedBy = "department")
     @JsonManagedReference
-    private List<Course> courses;
+    private List<User> users;
 }

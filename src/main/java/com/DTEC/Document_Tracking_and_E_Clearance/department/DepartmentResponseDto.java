@@ -7,8 +7,6 @@ import java.time.LocalDate;
 public record DepartmentResponseDto(
         int id,
         String name,
-        String logo,
-        @JsonProperty("created_at") LocalDate createdAt,
-        @JsonProperty("last_modified") LocalDate lastModified
+        @JsonProperty("created_at") LocalDate createdAt
 ) {
 }
