@@ -6,13 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/implementation-letter-out-campus")
+@RequestMapping("/api/v1/implementation-letter-off-campuses")
 @EnableMethodSecurity
 public class ImplementationLetterOffCampusController {
 
@@ -28,10 +25,25 @@ public class ImplementationLetterOffCampusController {
     @PostMapping("/request-letter")
     public ResponseEntity<ApiResponse<Void>> addImplementationLetter(
             @RequestBody ImplementationLetterOffCampusRequestDto dto
-    ){
+    ) {
         this.implementationLetterOffCampusService.requestImplementationLetter(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(true, "Implementation Letter Submitted", null, "", this.dateTimeFormatterUtil.formatIntoDateTime())
+        );
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
+    public ResponseEntity<ApiResponse<ImplementationLetterOffCampusResponseDto>> getImplementationLetter(
+            @PathVariable("id") int id
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        "Implementation Letter Successfully Fetched",
+                        this.implementationLetterOffCampusService.getImplementationLetter(id),
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime())
         );
     }
 

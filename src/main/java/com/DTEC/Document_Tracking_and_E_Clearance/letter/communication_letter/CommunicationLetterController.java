@@ -56,4 +56,20 @@ public class CommunicationLetterController {
                         this.dateTimeFormatterUtil.formatIntoDateTime())
         );
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
+    public ResponseEntity<ApiResponse<CommunicationLetterResponseDto>> getCommunicationLetter(
+            @PathVariable("id") int id
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        "Communication Letter Successfully Fetch",
+                        this.communicationLetterService.getCommunicationLetter(id),
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
+                )
+        );
+    }
 }

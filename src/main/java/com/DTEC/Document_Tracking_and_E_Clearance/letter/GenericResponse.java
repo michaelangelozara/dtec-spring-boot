@@ -16,5 +16,5 @@ public class GenericResponse {
 
     private Map<String, Object> fields;
 
-    private Object object;
+    private String cml;
 }

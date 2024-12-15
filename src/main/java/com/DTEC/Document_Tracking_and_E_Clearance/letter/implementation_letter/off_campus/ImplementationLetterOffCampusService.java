@@ -6,6 +6,8 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOO;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOORepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -22,13 +24,15 @@ public class ImplementationLetterOffCampusService {
     private final ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper;
     private final CAOORepository caooRepository;
     private final MemberRoleUtil memberRoleUtil;
+    private final SignedPeopleRepository signedPeopleRepository;
 
-    public ImplementationLetterOffCampusService(UserUtil userUtil, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, CAOORepository caooRepository, MemberRoleUtil memberRoleUtil) {
+    public ImplementationLetterOffCampusService(UserUtil userUtil, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, CAOORepository caooRepository, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository) {
         this.userUtil = userUtil;
         this.implementationLetterOffCampusRepository = implementationLetterOffCampusRepository;
         this.implementationLetterOffCampusMapper = implementationLetterOffCampusMapper;
         this.caooRepository = caooRepository;
         this.memberRoleUtil = memberRoleUtil;
+        this.signedPeopleRepository = signedPeopleRepository;
     }
 
     @Transactional
@@ -48,9 +52,15 @@ public class ImplementationLetterOffCampusService {
         if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
         var implementationLetter = this.implementationLetterOffCampusMapper.toImplementationLetterOutCampus(dto);
-        implementationLetter.setStudentOfficer(user);
         implementationLetter.setClub(userClub);
         var savedImplementationLetter = this.implementationLetterOffCampusRepository.save(implementationLetter);
+
+        var signedPeople = SignedPeople.builder()
+                .user(user)
+                .role(user.getRole())
+                .signature(dto.signature())
+                .implementationLetterOffCampus(savedImplementationLetter)
+                .build();
 
         List<CAOO> caoos = new ArrayList<>();
         for (var caoo : dto.caoos()) {
@@ -63,6 +73,8 @@ public class ImplementationLetterOffCampusService {
                     .build();
             caoos.add(tempCaoo);
         }
+
+        this.signedPeopleRepository.save(signedPeople);
         this.caooRepository.saveAll(caoos);
     }
 
@@ -76,5 +88,12 @@ public class ImplementationLetterOffCampusService {
         if (dto.signature().isEmpty()) return false;
 
         return true;
+    }
+
+    public ImplementationLetterOffCampusResponseDto getImplementationLetter(int id){
+        var implementationLetter = this.implementationLetterOffCampusRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Implementation Letter Off Campus not Found"));
+
+        return this.implementationLetterOffCampusMapper.toImplementationLetterOffCampusResponseDto(implementationLetter);
     }
 }

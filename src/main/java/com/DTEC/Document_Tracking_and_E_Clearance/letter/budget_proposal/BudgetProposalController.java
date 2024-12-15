@@ -46,7 +46,7 @@ public class BudgetProposalController {
     public ResponseEntity<ApiResponse<List<BudgetProposalResponseDto>>> getAllBudgetProposals(
             @RequestParam(name = "s", defaultValue = "0") int s,
             @RequestParam(name = "e", defaultValue = "10") int e
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
@@ -55,6 +55,21 @@ public class BudgetProposalController {
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()
                 )
+        );
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
+    public ResponseEntity<ApiResponse<BudgetProposalResponseDto>> getBudgetProposal(
+            @PathVariable("id") int id
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        "",
+                        this.budgetProposalService.getBudgetProposal(id),
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime())
         );
     }
 }

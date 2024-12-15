@@ -4,6 +4,8 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
@@ -20,14 +22,16 @@ public class ImplementationLetterInCampusService {
     private final UserUtil userUtil;
     private final SchoolYearGenerator schoolYearGenerator;
     private final MemberRoleUtil memberRoleUtil;
+    private final SignedPeopleRepository signedPeopleRepository;
 
-    public ImplementationLetterInCampusService(ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, UserRepository userRepository, UserUtil userUtil, SchoolYearGenerator schoolYearGenerator, MemberRoleUtil memberRoleUtil) {
+    public ImplementationLetterInCampusService(ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, UserRepository userRepository, UserUtil userUtil, SchoolYearGenerator schoolYearGenerator, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository) {
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterInCampusMapper = implementationLetterInCampusMapper;
         this.userRepository = userRepository;
         this.userUtil = userUtil;
         this.schoolYearGenerator = schoolYearGenerator;
         this.memberRoleUtil = memberRoleUtil;
+        this.signedPeopleRepository = signedPeopleRepository;
     }
 
     @Transactional
@@ -47,10 +51,17 @@ public class ImplementationLetterInCampusService {
         if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
         var implementationLetter = this.implementationLetterInCampusMapper.toImplementationLetter(dto);
-        implementationLetter.setStudentOfficer(user);
         implementationLetter.setClub(userClub);
 
-        this.implementationLetterInCampusRepository.save(implementationLetter);
+        var savedImplementation = this.implementationLetterInCampusRepository.save(implementationLetter);
+
+        var signedPeople = SignedPeople.builder()
+                .user(user)
+                .role(user.getRole())
+                .signature(dto.signature())
+                .implementationLetterInCampus(savedImplementation)
+                .build();
+        this.signedPeopleRepository.save(signedPeople);
     }
 
     private boolean areFieldsComplete(ImplementationLetterInCampusRequestDto dto) {
@@ -68,5 +79,12 @@ public class ImplementationLetterInCampusService {
         if (dto.expectedOutputs().isEmpty()) return false;
 
         return true;
+    }
+
+    public ImplementationLetterInCampusResponseDto getImplementationLetter(int id){
+        var implementationLetter = this.implementationLetterInCampusRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Implementation Letter In Campus not Found"));
+
+        return this.implementationLetterInCampusMapper.toImplementationLetterInCampusResponseDto(implementationLetter);
     }
 }

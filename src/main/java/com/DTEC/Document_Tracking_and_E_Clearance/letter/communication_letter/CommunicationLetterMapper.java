@@ -1,6 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,8 +18,8 @@ public class CommunicationLetterMapper {
     public CommunicationLetterResponseDto toCommunicationLetterResponseDto(
             CommunicationLetter communicationLetter
     ) {
-        var studentOfficer = communicationLetter.getStudentOfficer();
-        var moderator = communicationLetter.getModerator();
+        var studentOfficer = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
+        var moderator = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
         return new CommunicationLetterResponseDto(
                 communicationLetter.getId(),
                 communicationLetter.getDate(),
@@ -27,10 +28,10 @@ public class CommunicationLetterMapper {
                 communicationLetter.getStatus(),
                 communicationLetter.getCreatedAt() != null ? this.dateTimeFormatterUtil.formatIntoDateTime(communicationLetter.getCreatedAt()) : "N/A",
                 communicationLetter.getLastModified() != null ? this.dateTimeFormatterUtil.formatIntoDateTime(communicationLetter.getLastModified()) : "N/A",
-                communicationLetter.getStudentOfficerSignature(),
-                communicationLetter.getModeratorSignature(),
-                moderator != null ? moderator.getFirstName() + " " + moderator.getMiddleName() + " " + moderator.getLastname() : "N/A",
-                studentOfficer != null ? studentOfficer.getFirstName() + " " + studentOfficer.getMiddleName() + " " + studentOfficer.getLastname() : "N/A"
+                studentOfficer.isPresent() ? studentOfficer.get().getSignature() : "N/A",
+                moderator.isPresent() ? moderator.get().getSignature() : "N/A",
+                moderator.isPresent() ? moderator.get().getUser().getFirstName() + " " + moderator.get().getUser().getMiddleName() + " " + moderator.get().getUser().getLastname() : "N/A",
+                studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A"
         );
     }
 

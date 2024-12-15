@@ -3,9 +3,9 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.SharedFields;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpense;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -54,14 +54,6 @@ public class BudgetProposal implements SharedFields {
     @Enumerated(EnumType.STRING)
     private TypeOfLetter type;
 
-    @Lob
-    @Column(name = "student_officer_signature", nullable = false, columnDefinition = "LONGTEXT")
-    private String studentOfficerSignature;
-
-    @Lob
-    @Column(name = "moderator_signature", columnDefinition = "LONGTEXT")
-    private String moderatorSignature;
-
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
@@ -79,15 +71,9 @@ public class BudgetProposal implements SharedFields {
     @JsonManagedReference
     private List<ExpectedExpense> expectedExpenses;
 
-    @ManyToOne
-    @JoinColumn(name = "student_officer_id")
-    @JsonBackReference
-    private User studentOfficer;
-
-    @ManyToOne
-    @JoinColumn(name = "moderator_id")
-    @JsonBackReference
-    private User moderator;
+    @OneToMany(mappedBy = "budgetProposal")
+    @JsonManagedReference
+    private List<SignedPeople> signedPeople;
 
     @Override
     public String getNameOfTransaction() {

@@ -7,5 +7,9 @@ public enum Role {
     MODERATOR,
     OFFICE_IN_CHARGE,
     STUDENT,
-    STUDENT_OFFICER
+    STUDENT_OFFICER,
+    DSA,
+    PRESIDENT,
+    COMMUNITY,
+    FINANCE
 }

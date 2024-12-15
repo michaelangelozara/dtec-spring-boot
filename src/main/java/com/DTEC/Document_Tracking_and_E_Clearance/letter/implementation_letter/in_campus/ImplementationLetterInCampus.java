@@ -3,8 +3,9 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.
 import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.SharedFields;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -13,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -74,24 +76,12 @@ public class ImplementationLetterInCampus implements SharedFields {
     @Enumerated(EnumType.STRING)
     private LetterStatus status;
 
-    @Lob
-    @Column(nullable = false, name = "student_officer_signature", columnDefinition = "LONGTEXT")
-    private String studentOfficerSignature;
-
-    @Lob
-    @Column(name = "moderator_signature", columnDefinition = "LONGTEXT")
-    private String moderatorSignature;
-
     @Enumerated(EnumType.STRING)
     private TypeOfLetter type;
 
-    @ManyToOne
-    @JoinColumn(name = "student_officer_id")
-    private User studentOfficer;
-
-    @ManyToOne
-    @JoinColumn(name = "moderator_id")
-    private User moderator;
+    @OneToMany(mappedBy = "implementationLetterInCampus")
+    @JsonManagedReference
+    private List<SignedPeople> signedPeople;
 
     @ManyToOne
     @JoinColumn(name = "club_id")

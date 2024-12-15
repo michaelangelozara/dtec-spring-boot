@@ -61,7 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/users/**").hasAnyRole(ALL_ROLES)
                         .requestMatchers("/api/v1/implementation-letter-in-campuses/**").hasAnyRole(STAFF_ROLES)
-                        .requestMatchers("/api/v1/implementation-letter-out-campuses/**").hasAnyRole(STAFF_ROLES)
+                        .requestMatchers("/api/v1/implementation-letter-off-campuses/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/communication-letters/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/budget-proposals/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/generic-letters/**").hasAnyRole(STAFF_ROLES)

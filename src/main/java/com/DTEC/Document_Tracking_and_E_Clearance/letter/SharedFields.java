@@ -1,8 +1,10 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface SharedFields {
 
@@ -19,4 +21,6 @@ public interface SharedFields {
     LetterStatus getStatus();
 
     LocalDateTime getLastModified();
+
+    List<SignedPeople> getSignedPeople();
 }

@@ -8,6 +8,8 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -26,14 +28,16 @@ public class BudgetProposalService {
     private final BudgetProposalMapper budgetProposalMapper;
     private final MemberRoleUtil memberRoleUtil;
     private final UserUtil userUtil;
+    private final SignedPeopleRepository signedPeopleRepository;
 
 
-    public BudgetProposalService(BudgetProposalRepository budgetProposalRepository, ExpectedExpenseRepository expectedExpenseRepository, BudgetProposalMapper budgetProposalMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil) {
+    public BudgetProposalService(BudgetProposalRepository budgetProposalRepository, ExpectedExpenseRepository expectedExpenseRepository, BudgetProposalMapper budgetProposalMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.expectedExpenseRepository = expectedExpenseRepository;
         this.budgetProposalMapper = budgetProposalMapper;
         this.memberRoleUtil = memberRoleUtil;
         this.userUtil = userUtil;
+        this.signedPeopleRepository = signedPeopleRepository;
     }
 
     @Transactional
@@ -54,15 +58,20 @@ public class BudgetProposalService {
                 .date(dto.date())
                 .venue(dto.venue())
                 .club(userClub)
-                .studentOfficer(user)
                 .status(LetterStatus.FOR_EVALUATION)
                 .type(TypeOfLetter.BUDGET_PROPOSAL)
                 .sourceOfFund(dto.sourceOfFund())
                 .amountAllotted(dto.allottedAmount())
-                .studentOfficerSignature(dto.studentOfficerSignature())
                 .build();
 
         var savedBudgetProposal = this.budgetProposalRepository.save(budgetProposal);
+
+        var signedPeople = SignedPeople.builder()
+                .user(user)
+                .role(user.getRole())
+                .signature(dto.studentOfficerSignature())
+                .budgetProposal(savedBudgetProposal)
+                .build();
 
         List<ExpectedExpense> expectedExpenses = new ArrayList<>();
         for (var expectedExpense : dto.expectedExpenses()) {
@@ -73,6 +82,8 @@ public class BudgetProposalService {
                     .build();
             expectedExpenses.add(tempExpectedExpense);
         }
+
+        this.signedPeopleRepository.save(signedPeople);
         this.expectedExpenseRepository.saveAll(expectedExpenses);
     }
 
@@ -92,5 +103,12 @@ public class BudgetProposalService {
         Pageable pageable = PageRequest.of(s, e);
         Page<BudgetProposal> budgetProposals = this.budgetProposalRepository.findAll(pageable);
         return this.budgetProposalMapper.toBudgetProposalInformationResponseDtoList(budgetProposals.getContent());
+    }
+
+    public BudgetProposalResponseDto getBudgetProposal(int id){
+        var budgetProposal = this.budgetProposalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Budget Proposal not Found"));
+
+        return this.budgetProposalMapper.toBudgetProposalInformationResponseDto(budgetProposal);
     }
 }

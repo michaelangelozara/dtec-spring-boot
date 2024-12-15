@@ -55,7 +55,7 @@ public class AdminConfig {
                         .middleName("")
                         .lastname("Torres")
                         .email("charistialjamestorres@gmail.com")
-                        .role(Role.STUDENT_OFFICER)
+                        .role(Role.MODERATOR)
                         .username(username2)
                         .password(this.passwordEncoder.encode(password2))
                         .build();

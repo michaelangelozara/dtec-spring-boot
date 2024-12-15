@@ -6,8 +6,11 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,14 +25,17 @@ public class CommunicationLetterService {
     private final CommunicationLetterMapper communicationLetterMapper;
     private final MemberRoleUtil memberRoleUtil;
     private final UserUtil userUtil;
+    private final SignedPeopleRepository signedPeopleRepository;
 
-    public CommunicationLetterService(CommunicationLetterRepository communicationLetterRepository, CommunicationLetterMapper communicationLetterMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil) {
+    public CommunicationLetterService(CommunicationLetterRepository communicationLetterRepository, CommunicationLetterMapper communicationLetterMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository) {
         this.communicationLetterRepository = communicationLetterRepository;
         this.communicationLetterMapper = communicationLetterMapper;
         this.memberRoleUtil = memberRoleUtil;
         this.userUtil = userUtil;
+        this.signedPeopleRepository = signedPeopleRepository;
     }
 
+    @Transactional
     public void requestLetter(CommunicationLetterRequestDto dto, CommunicationLetterType type) {
         // check if the fields are completely filled out
         if (!areFieldsComplete(dto)) throw new BadRequestException("Please make sure fill all the Blanks out");
@@ -51,20 +57,27 @@ public class CommunicationLetterService {
         var communicationLetter = CommunicationLetter.builder()
                 .date(dto.date())
                 .letterOfContent(dto.letterOfContent())
-                .studentOfficerSignature(dto.signature())
-                .studentOfficer(user)
                 .club(userClub)
                 .type(TypeOfLetter.COMMUNICATION_LETTER)
-                .status(LetterStatus.PENDING)
+                .status(LetterStatus.FOR_EVALUATION)
                 .typeOfCampus(type)
                 .build();
 
-        this.communicationLetterRepository.save(communicationLetter);
+        var savedCommunicationLetter = this.communicationLetterRepository.save(communicationLetter);
+
+        var signedPeople = SignedPeople.builder()
+                .user(user)
+                .role(user.getRole())
+                .signature(dto.signature())
+                .communicationLetter(savedCommunicationLetter)
+                .build();
+        this.signedPeopleRepository.save(signedPeople);
     }
 
     private boolean areFieldsComplete(CommunicationLetterRequestDto dto) {
         if (dto.letterOfContent().isEmpty()) return false;
         if (dto.signature().isEmpty()) return false;
+        if(dto.date() == null) return false;
 
         return true;
     }
@@ -74,5 +87,12 @@ public class CommunicationLetterService {
         Page<CommunicationLetter> communicationLetterPage = this.communicationLetterRepository.findAll(type, pageable);
 
         return this.communicationLetterMapper.toCommunicationLetterResponseDtoList(communicationLetterPage.getContent());
+    }
+
+    public CommunicationLetterResponseDto getCommunicationLetter(int id){
+        var communicationLetter = this.communicationLetterRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Communication Letter not Found"));
+
+        return this.communicationLetterMapper.toCommunicationLetterResponseDto(communicationLetter);
     }
 }

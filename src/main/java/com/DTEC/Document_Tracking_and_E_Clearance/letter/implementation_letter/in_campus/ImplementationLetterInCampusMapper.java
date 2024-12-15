@@ -4,6 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,8 +21,8 @@ public class ImplementationLetterInCampusMapper {
     public ImplementationLetterInCampusResponseDto toImplementationLetterInCampusResponseDto(
             ImplementationLetterInCampus implementationLetterInCampus
     ) {
-        var studentOfficer = implementationLetterInCampus.getStudentOfficer();
-        var moderator = implementationLetterInCampus.getModerator();
+        var studentOfficer = implementationLetterInCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
+        var moderator = implementationLetterInCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
 
         return new ImplementationLetterInCampusResponseDto(
                 implementationLetterInCampus.getId(),
@@ -39,12 +40,12 @@ public class ImplementationLetterInCampusMapper {
                 implementationLetterInCampus.getParticipants(),
                 implementationLetterInCampus.getRationale(),
                 implementationLetterInCampus.getStatus(),
-                implementationLetterInCampus.getStudentOfficerSignature(),
-                implementationLetterInCampus.getModeratorSignature(),
+                studentOfficer.isPresent() ? studentOfficer.get().getSignature() : "N/A",
+                moderator.isPresent() ? moderator.get().getSignature() : "N/A",
                 implementationLetterInCampus.getType(),
                 implementationLetterInCampus.getClub() != null ? implementationLetterInCampus.getClub().getName() : "N/A",
-                studentOfficer != null ? studentOfficer.getFirstName() + " " + studentOfficer.getMiddleName() + " " + studentOfficer.getLastname() : "N/A",
-                moderator != null ? moderator.getFirstName() + " " + moderator.getMiddleName() + " " + moderator.getLastname() : "N/A"
+                studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A",
+                moderator.isPresent() ? moderator.get().getUser().getFirstName() + " " + moderator.get().getUser().getMiddleName() + " " + moderator.get().getUser().getLastname() : "N/A"
         );
     }
 
@@ -59,7 +60,6 @@ public class ImplementationLetterInCampusMapper {
                 .projectedExpense(dto.projectedExpenses())
                 .expectedOutput(dto.expectedOutputs())
                 .status(LetterStatus.FOR_EVALUATION)
-                .studentOfficerSignature(dto.signature())
                 .participants(dto.participants())
                 .rationale(dto.rationale())
                 .type(TypeOfLetter.IMPLEMENTATION_LETTER_IN_CAMPUS)

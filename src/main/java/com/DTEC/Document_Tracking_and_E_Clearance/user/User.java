@@ -1,15 +1,12 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.biometric.Biometric;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposal;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.Clearance;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance_signoff.ClearanceSignoff;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRole;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.Department;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampus;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampus;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -106,6 +103,10 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<ClearanceSignoff> clearanceSignoffs;
 
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<SignedPeople> signedPeople;
+
     @ManyToOne
     @JoinColumn(name = "course_id")
     @JsonBackReference
@@ -121,35 +122,6 @@ public class User implements UserDetails {
     @ManyToOne
     @JsonBackReference
     private Department department;
-
-    @OneToMany(mappedBy = "studentOfficer")
-    @JsonManagedReference
-    private List<ImplementationLetterInCampus> implementationLettersAsStudentOfficerInCampus;
-
-    @OneToMany(mappedBy = "moderator")
-    @JsonManagedReference
-    private List<ImplementationLetterInCampus> implementationLettersAsModeratorInCampus;
-
-    @OneToMany(mappedBy = "studentOfficer")
-    @JsonManagedReference
-    private List<ImplementationLetterOffCampus> implementationLetterOffCampuses;
-
-    @OneToMany(mappedBy = "studentOfficer")
-    @JsonManagedReference
-    private List<CommunicationLetter> communicationLettersAsStudentOfficer;
-
-    @OneToMany(mappedBy = "moderator")
-    @JsonManagedReference
-    private List<CommunicationLetter> communicationLettersAsModerator;
-
-
-    @OneToMany(mappedBy = "moderator")
-    @JsonManagedReference
-    private List<BudgetProposal> budgetProposalsAsModerator;
-
-    @OneToMany(mappedBy = "studentOfficer")
-    @JsonManagedReference
-    private List<BudgetProposal> budgetProposalsAsStudentOfficer;
 
     @Override
     public String getPassword() {
