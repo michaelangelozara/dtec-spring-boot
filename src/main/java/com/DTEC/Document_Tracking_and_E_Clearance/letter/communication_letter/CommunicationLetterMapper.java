@@ -20,6 +20,9 @@ public class CommunicationLetterMapper {
     ) {
         var studentOfficer = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
         var moderator = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
+        var dsa = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.DSA)).findFirst();
+        var officeHead = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.OFFICE_HEAD)).findFirst();
+        var president = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.PRESIDENT)).findFirst();
         return new CommunicationLetterResponseDto(
                 communicationLetter.getId(),
                 communicationLetter.getDate(),
@@ -31,7 +34,11 @@ public class CommunicationLetterMapper {
                 studentOfficer.isPresent() ? studentOfficer.get().getSignature() : "N/A",
                 moderator.isPresent() ? moderator.get().getSignature() : "N/A",
                 moderator.isPresent() ? moderator.get().getUser().getFirstName() + " " + moderator.get().getUser().getMiddleName() + " " + moderator.get().getUser().getLastname() : "N/A",
-                studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A"
+                studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A",
+                communicationLetter.getCurrentLocation(),
+                dsa.isPresent() ? dsa.get().getSignature() : "N/A",
+                officeHead.isPresent() ? officeHead.get().getSignature() : "N/A",
+                president.isPresent() ? president.get().getSignature() : "N/A"
         );
     }
 

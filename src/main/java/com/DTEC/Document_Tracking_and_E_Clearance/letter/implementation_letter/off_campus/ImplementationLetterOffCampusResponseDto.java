@@ -1,5 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOO;
@@ -23,6 +24,9 @@ public record ImplementationLetterOffCampusResponseDto(
         String club,
         String moderator,
         @JsonProperty("student_officer") String studentOfficer,
-        @JsonProperty("moderator_signature") String moderatorSignature
+        @JsonProperty("moderator_signature") String moderatorSignature,
+        @JsonProperty("current_location") CurrentLocation currentLocation,
+        @JsonProperty("community_signature") String communitySignature,
+        @JsonProperty("president_signature") String presidentSignature
 ) {
 }

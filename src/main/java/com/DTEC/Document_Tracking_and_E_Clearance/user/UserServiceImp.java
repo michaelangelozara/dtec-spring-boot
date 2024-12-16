@@ -31,7 +31,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserServiceImp implements UserService {
@@ -114,9 +116,9 @@ public class UserServiceImp implements UserService {
 
         var user = this.userMapper.toUser(dto);
 
-        if(dto.role().equals(Role.ADMIN) || dto.role().equals(Role.OFFICE_IN_CHARGE) || dto.role().equals(Role.PERSONNEL)) return;
-
         var savedUser = this.userRepository.save(user);
+
+        if(isRoleIncluded(dto.role())) return;
 
         if (dto.role().equals(Role.MODERATOR)) {
             var club = this.clubRepository.findById(dto.moderatorClubId())
@@ -133,7 +135,7 @@ public class UserServiceImp implements UserService {
             if (dto.yearLevel() == 0) throw new ForbiddenException("Please Select Student Year Level");
 
             if(dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER) && dto.socialClubRole().equals(ClubRole.STUDENT_OFFICER))
-                throw new ForbiddenException("Multiple \"Student officer\" role in multiple club is Prohibited");
+                throw new ForbiddenException("Multiple \"Student officer\" role in multiple departmentClub is Prohibited");
 
             if((dto.departmentClubRole().equals(ClubRole.MEMBER) && dto.socialClubRole().equals(ClubRole.MEMBER)))
                 throw new ForbiddenException("The Student Officer must be Officer to either Department or Social Club");
@@ -182,6 +184,20 @@ public class UserServiceImp implements UserService {
         } else {
             throw new ForbiddenException("Please Select a Valid Role");
         }
+    }
+
+    // these roles don't need department, course, departmentClub and etc
+    private boolean isRoleIncluded(Role role){
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.SUPER_ADMIN);
+        roles.add(Role.ADMIN);
+        roles.add(Role.OFFICE_IN_CHARGE);
+        roles.add(Role.DSA);
+        roles.add(Role.PRESIDENT);
+        roles.add(Role.COMMUNITY);
+        roles.add(Role.FINANCE);
+
+        return roles.contains(role);
     }
 
     public Club getClub(int id, Type type){

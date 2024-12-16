@@ -33,7 +33,7 @@ public class ImplementationLetterOffCampusController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'STUDENT_OFFICER', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE')")
     public ResponseEntity<ApiResponse<ImplementationLetterOffCampusResponseDto>> getImplementationLetter(
             @PathVariable("id") int id
     ) {

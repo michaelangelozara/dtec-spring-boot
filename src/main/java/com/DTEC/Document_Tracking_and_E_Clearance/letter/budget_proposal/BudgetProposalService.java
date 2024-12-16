@@ -1,5 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpense;
@@ -49,7 +50,7 @@ public class BudgetProposalService {
         if (user == null)
             throw new ResourceNotFoundException("Student Officer not found");
 
-        var userClub = this.memberRoleUtil.getClubByStudentOfficer(user.getMemberRoles());
+        var userClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
 
         if(userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
@@ -58,6 +59,7 @@ public class BudgetProposalService {
                 .date(dto.date())
                 .venue(dto.venue())
                 .club(userClub)
+                .currentLocation(CurrentLocation.MODERATOR)
                 .status(LetterStatus.FOR_EVALUATION)
                 .type(TypeOfLetter.BUDGET_PROPOSAL)
                 .sourceOfFund(dto.sourceOfFund())

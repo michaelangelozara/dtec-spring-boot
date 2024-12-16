@@ -57,14 +57,14 @@ public class ClubServiceImp implements ClubService {
 
         // TODO this will be implemented
 //        // check if there's no student officer yet
-//        for(var memberRole : club.getMemberRoles()){
+//        for(var memberRole : departmentClub.getMemberRoles()){
 //            if(memberRole.getRole().equals(Role.STUDENT_OFFICER)){
 //                memberRole.setRole(Role.STUDENT);
 //                this.memberRoleRepository.save(memberRole);
 //            }
 //        }
 //
-//        for(var memberRole : club.getMemberRoles()){
+//        for(var memberRole : departmentClub.getMemberRoles()){
 //            if(memberRole.getUser().getId().equals(student.getId())){
 //                memberRole.setRole(Role.STUDENT_OFFICER);
 //                this.memberRoleRepository.save(memberRole);

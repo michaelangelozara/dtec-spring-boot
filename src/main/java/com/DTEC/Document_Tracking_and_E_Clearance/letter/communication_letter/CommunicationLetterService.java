@@ -4,6 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
@@ -50,7 +51,7 @@ public class CommunicationLetterService {
         if (!user.getRole().equals(Role.STUDENT_OFFICER))
             throw new ForbiddenException("Only Student Officer can Perform this Action");
 
-        var userClub = this.memberRoleUtil.getClubByStudentOfficer(user.getMemberRoles());
+        var userClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
 
         if(userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
@@ -58,6 +59,7 @@ public class CommunicationLetterService {
                 .date(dto.date())
                 .letterOfContent(dto.letterOfContent())
                 .club(userClub)
+                .currentLocation(CurrentLocation.MODERATOR)
                 .type(TypeOfLetter.COMMUNICATION_LETTER)
                 .status(LetterStatus.FOR_EVALUATION)
                 .typeOfCampus(type)

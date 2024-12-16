@@ -18,6 +18,9 @@ public class BudgetProposalMapper {
     public BudgetProposalResponseDto toBudgetProposalInformationResponseDto(BudgetProposal budgetProposal) {
         var studentOfficer = budgetProposal.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
         var moderator = budgetProposal.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
+        var dsa = budgetProposal.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.DSA)).findFirst();
+        var finance = budgetProposal.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.FINANCE)).findFirst();
+        var president = budgetProposal.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.PRESIDENT)).findFirst();
 
         return new BudgetProposalResponseDto(
                 budgetProposal.getId(),
@@ -33,7 +36,11 @@ public class BudgetProposalMapper {
                 moderator.isPresent() ? moderator.get().getSignature() : "N/A",
                 studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A",
                 moderator.isPresent() ? moderator.get().getUser().getFirstName() + " " + moderator.get().getUser().getMiddleName() + " " + moderator.get().getUser().getLastname(): "N/A",
-                budgetProposal.getExpectedExpenses()
+                budgetProposal.getExpectedExpenses(),
+                budgetProposal.getCurrentLocation(),
+                dsa.isPresent() ? dsa.get().getSignature() : "N/A",
+                finance.isPresent() ? finance.get().getSignature() :"N/A",
+                president.isPresent() ? president.get().getSignature() : "N/A"
         );
     }
 

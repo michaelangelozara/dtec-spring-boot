@@ -1,6 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.SharedFields;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
@@ -50,9 +51,16 @@ public class ImplementationLetterOffCampus implements SharedFields {
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "reason_of_rejection", columnDefinition = "VARCHAR(2000)")
+    private String reasonOfRejection;
+
     @LastModifiedDate
     @Column(name = "last_modified", insertable = false)
     private LocalDateTime lastModified;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_location", nullable = false)
+    private CurrentLocation currentLocation;
 
     @Enumerated(EnumType.STRING)
     private LetterStatus status;

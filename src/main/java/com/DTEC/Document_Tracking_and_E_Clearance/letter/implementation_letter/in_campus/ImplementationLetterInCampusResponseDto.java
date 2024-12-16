@@ -1,5 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,6 +28,8 @@ public record ImplementationLetterInCampusResponseDto(
         TypeOfLetter type,
         String club,
         @JsonProperty("student_officer") String studentOfficer,
-        String moderator
+        String moderator,
+        @JsonProperty("current_location") CurrentLocation currentLocation,
+        @JsonProperty("dsa_signature") String dsaSignature
 ) {
 }

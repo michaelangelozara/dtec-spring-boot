@@ -41,7 +41,8 @@ public class UserMapper {
     }
 
     public UserInfoResponseDto toUserInfoResponseDto(User user) {
-        var club = this.memberRoleUtil.getClubByStudentOfficer(user.getMemberRoles());
+        var officerClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
+        var memberClub = this.memberRoleUtil.getClubOfMember(user.getMemberRoles());
         return new UserInfoResponseDto(
                 user.getId(),
                 user.getFirstName(),
@@ -54,7 +55,9 @@ public class UserMapper {
                 user.getLastModified(),
                 user.getCourse() != null ? this.courseMapper.toCourseResponseDto(user.getCourse()) : null,
                 user.getDepartment() != null ? this.departmentMapper.toDepartmentResponseDto(user.getDepartment()) : null,
-                club != null ? this.clubMapper.toClubInformationResponseDto(club) : null
+                officerClub != null ? this.clubMapper.toClubInformationResponseDto(officerClub) : null,
+                memberClub != null ? this.clubMapper.toClubInformationResponseDto(memberClub) : null,
+                officerClub != null ? officerClub.getName() : "N/A"
         );
     }
 

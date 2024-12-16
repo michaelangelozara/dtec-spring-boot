@@ -4,6 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOO;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOORepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
@@ -47,11 +48,11 @@ public class ImplementationLetterOffCampusService {
         if (!user.getRole().equals(Role.STUDENT_OFFICER))
             throw new ForbiddenException("Only Student Officer can Perform this Action");
 
-        var userClub = this.memberRoleUtil.getClubByStudentOfficer(user.getMemberRoles());
+        var userClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
 
         if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
-        var implementationLetter = this.implementationLetterOffCampusMapper.toImplementationLetterOutCampus(dto);
+        var implementationLetter = this.implementationLetterOffCampusMapper.toImplementationLetterOffCampus(dto);
         implementationLetter.setClub(userClub);
         var savedImplementationLetter = this.implementationLetterOffCampusRepository.save(implementationLetter);
 

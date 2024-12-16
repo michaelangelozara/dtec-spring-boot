@@ -25,15 +25,15 @@ public class GenericLetterController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
-    public ResponseEntity<ApiResponse<List<GenericResponse>>> getLetters(
-            @RequestParam(name = "type", defaultValue = "FOR_EVALUATION") LetterStatus status
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN','MODERATOR', 'STUDENT_OFFICER', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE')")
+    public ResponseEntity<ApiResponse<List<GenericResponse>>> getLettersForModerator(
+            @RequestParam(name = "s", defaultValue = "10") int s
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
                         "",
-                        this.genericLetterService.getAllLetters(status),
+                        this.genericLetterService.getAllLetters(s),
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()
                 )
@@ -41,7 +41,7 @@ public class GenericLetterController {
     }
 
     @PostMapping("/on-click/{letter-id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE')")
     public ResponseEntity<ApiResponse<Void>> onClick(
             @PathVariable("letter-id") int id,
             @RequestParam(name = "type") TypeOfLetter type
@@ -58,7 +58,7 @@ public class GenericLetterController {
     }
 
     @PostMapping("/sign-letter/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE')")
     public ResponseEntity<ApiResponse<Void>> signLetter(
             @PathVariable("id") int id,
             @RequestParam(name = "type") TypeOfLetter type,
@@ -76,4 +76,25 @@ public class GenericLetterController {
                 )
         );
     }
+
+    @PostMapping("/reject/{letter-id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE')")
+    public ResponseEntity<ApiResponse<Void>> rejectLetter(
+            @RequestParam("type") TypeOfLetter type,
+            @PathVariable("letter-id") int id,
+            @RequestBody Map<String, String> reasonOfRejection
+    ) {
+        String reason = reasonOfRejection.get("reason_of_rejection");
+        this.genericLetterService.rejectLetter(type, id, reason);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        "The Letter has been Declined",
+                        null,
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
+                )
+        );
+    }
+
 }

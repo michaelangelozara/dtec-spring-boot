@@ -2,6 +2,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter;
 
 
 import com.DTEC.Document_Tracking_and_E_Clearance.club.Club;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.SharedFields;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
@@ -51,6 +52,13 @@ public class CommunicationLetter implements SharedFields {
 
     @Enumerated(EnumType.STRING)
     private CommunicationLetterType typeOfCampus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_location", nullable = false)
+    private CurrentLocation currentLocation;
+
+    @Column(name = "reason_of_rejection", columnDefinition = "VARCHAR(2000)")
+    private String reasonOfRejection;
 
     @Enumerated(EnumType.STRING)
     private TypeOfLetter type;

@@ -35,8 +35,30 @@ public class SecurityConfig {
     @Value("${header}")
     private String HEADER;
 
-    private final String[] ALL_ROLES = {"SUPER_ADMIN", "ADMIN", "OFFICE_IN_CHARGE", "PERSONNEL", "MODERATOR", "STUDENT", "STUDENT_OFFICER"};
-    private final String[] STAFF_ROLES = {"SUPER_ADMIN", "ADMIN", "OFFICE_IN_CHARGE", "MODERATOR", "STUDENT_OFFICER"};
+    private final String[] ALL_ROLES = {
+            "SUPER_ADMIN",
+            "ADMIN",
+            "OFFICE_IN_CHARGE",
+            "PERSONNEL",
+            "MODERATOR",
+            "STUDENT",
+            "STUDENT_OFFICER",
+            "DSA",
+            "PRESIDENT",
+            "COMMUNITY",
+            "FINANCE"
+    };
+    private final String[] STAFF_ROLES = {
+            "SUPER_ADMIN",
+            "ADMIN",
+            "OFFICE_IN_CHARGE",
+            "MODERATOR",
+            "STUDENT_OFFICER",
+            "DSA",
+            "PRESIDENT",
+            "COMMUNITY",
+            "FINANCE"
+    };
     private final String[] ADMIN = {"SUPER_ADMIN", "ADMIN"};
 
     public SecurityConfig(

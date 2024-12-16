@@ -19,6 +19,8 @@ public record UserInfoResponseDto(
         @JsonProperty("last_modified") LocalDate lastModified,
         CourseResponseDto course,
         DepartmentResponseDto department,
-        ClubResponseDto club
+        ClubResponseDto departmentClub,
+        ClubResponseDto socialClub,
+        @JsonProperty("officer_at") String officerAt
 ) {
 }

@@ -23,4 +23,8 @@ public interface SharedFields {
     LocalDateTime getLastModified();
 
     List<SignedPeople> getSignedPeople();
+
+    CurrentLocation getCurrentLocation();
+
+    String getReasonOfRejection();
 }

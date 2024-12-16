@@ -11,5 +11,6 @@ public enum Role {
     DSA,
     PRESIDENT,
     COMMUNITY,
-    FINANCE
+    FINANCE,
+    OFFICE_HEAD
 }

@@ -46,7 +46,7 @@ public class ImplementationLetterInCampusService {
         if (!user.getRole().equals(Role.STUDENT_OFFICER))
             throw new ForbiddenException("Only Student Officer can Perform this Action");
 
-        var userClub = this.memberRoleUtil.getClubByStudentOfficer(user.getMemberRoles());
+        var userClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
 
         if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
