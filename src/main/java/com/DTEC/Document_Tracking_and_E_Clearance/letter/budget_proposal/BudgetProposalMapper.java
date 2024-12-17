@@ -1,5 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import org.springframework.stereotype.Service;
@@ -10,9 +11,11 @@ import java.util.List;
 public class BudgetProposalMapper {
 
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
+    private final SignedPeopleMapper signedPeopleMapper;
 
-    public BudgetProposalMapper(DateTimeFormatterUtil dateTimeFormatterUtil) {
+    public BudgetProposalMapper(DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleMapper signedPeopleMapper) {
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
+        this.signedPeopleMapper = signedPeopleMapper;
     }
 
     public BudgetProposalResponseDto toBudgetProposalInformationResponseDto(BudgetProposal budgetProposal) {
@@ -38,9 +41,7 @@ public class BudgetProposalMapper {
                 moderator.isPresent() ? moderator.get().getUser().getFirstName() + " " + moderator.get().getUser().getMiddleName() + " " + moderator.get().getUser().getLastname(): "N/A",
                 budgetProposal.getExpectedExpenses(),
                 budgetProposal.getCurrentLocation(),
-                dsa.isPresent() ? dsa.get().getSignature() : "N/A",
-                finance.isPresent() ? finance.get().getSignature() :"N/A",
-                president.isPresent() ? president.get().getSignature() : "N/A"
+                this.signedPeopleMapper.toSignedPeopleResponseDtoList(budgetProposal.getSignedPeople())
         );
     }
 

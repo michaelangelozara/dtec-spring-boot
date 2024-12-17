@@ -3,6 +3,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,11 @@ import java.time.ZonedDateTime;
 public class ImplementationLetterOffCampusMapper {
 
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
+    private final SignedPeopleMapper signedPeopleMapper;
 
-    public ImplementationLetterOffCampusMapper(DateTimeFormatterUtil dateTimeFormatterUtil) {
+    public ImplementationLetterOffCampusMapper(DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleMapper signedPeopleMapper) {
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
+        this.signedPeopleMapper = signedPeopleMapper;
     }
 
     public ImplementationLetterOffCampusResponseDto toImplementationLetterOffCampusResponseDto(
@@ -44,9 +47,7 @@ public class ImplementationLetterOffCampusMapper {
                 studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A",
                 moderator.isPresent() ? moderator.get().getSignature() : "N/A",
                 implementationLetterOffCampus.getCurrentLocation(),
-                community.isPresent() ? community.get().getSignature() : "N/A",
-                president.isPresent() ? president.get().getSignature() : "N/A"
-
+                this.signedPeopleMapper.toSignedPeopleResponseDtoList(implementationLetterOffCampus.getSignedPeople())
         );
     }
 

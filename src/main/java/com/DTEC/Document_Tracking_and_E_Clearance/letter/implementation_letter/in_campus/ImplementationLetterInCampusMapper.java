@@ -3,6 +3,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
@@ -13,10 +14,12 @@ public class ImplementationLetterInCampusMapper {
 
     private final SchoolYearGenerator schoolYearGenerator;
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
+    private final SignedPeopleMapper signedPeopleMapper;
 
-    public ImplementationLetterInCampusMapper(SchoolYearGenerator schoolYearGenerator, DateTimeFormatterUtil dateTimeFormatterUtil) {
+    public ImplementationLetterInCampusMapper(SchoolYearGenerator schoolYearGenerator, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleMapper signedPeopleMapper) {
         this.schoolYearGenerator = schoolYearGenerator;
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
+        this.signedPeopleMapper = signedPeopleMapper;
     }
 
     public ImplementationLetterInCampusResponseDto toImplementationLetterInCampusResponseDto(
@@ -49,7 +52,7 @@ public class ImplementationLetterInCampusMapper {
                 studentOfficer.isPresent() ? studentOfficer.get().getUser().getFirstName() + " " + studentOfficer.get().getUser().getMiddleName() + " " + studentOfficer.get().getUser().getLastname() : "N/A",
                 moderator.isPresent() ? moderator.get().getUser().getFirstName() + " " + moderator.get().getUser().getMiddleName() + " " + moderator.get().getUser().getLastname() : "N/A",
                 implementationLetterInCampus.getCurrentLocation(),
-                dsa.isPresent() ? dsa.get().getSignature() : "N/A"
+                this.signedPeopleMapper.toSignedPeopleResponseDtoList(implementationLetterInCampus.getSignedPeople())
         );
     }
 

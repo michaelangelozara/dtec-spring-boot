@@ -2,9 +2,11 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleResponseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record CommunicationLetterResponseDto(
         int id,
@@ -19,8 +21,6 @@ public record CommunicationLetterResponseDto(
         String moderator,
         @JsonProperty("student_officer") String studentOfficer,
         @JsonProperty("current_location") CurrentLocation currentLocation,
-        @JsonProperty("dsa_signature") String dsaSignature,
-        @JsonProperty("office_head_signature") String officeHeadSignature,
-        @JsonProperty("president_signature") String presidentSignature
+        @JsonProperty("signed_people") List<SignedPeopleResponseDto> signedPeople
 ) {
 }
