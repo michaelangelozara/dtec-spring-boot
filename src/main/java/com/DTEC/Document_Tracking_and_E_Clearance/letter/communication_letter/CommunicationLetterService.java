@@ -63,7 +63,7 @@ public class CommunicationLetterService {
                 .club(userClub)
                 .currentLocation(CurrentLocation.MODERATOR)
                 .type(TypeOfLetter.COMMUNICATION_LETTER)
-                .status(LetterStatus.IN_PROGRESS)
+                .status(LetterStatus.FOR_EVALUATION)
                 .typeOfCampus(type)
                 .build();
 

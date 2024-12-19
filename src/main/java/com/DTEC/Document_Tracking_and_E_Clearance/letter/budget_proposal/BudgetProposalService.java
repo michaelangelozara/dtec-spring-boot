@@ -62,7 +62,7 @@ public class BudgetProposalService {
                 .venue(dto.venue())
                 .club(userClub)
                 .currentLocation(CurrentLocation.MODERATOR)
-                .status(LetterStatus.IN_PROGRESS)
+                .status(LetterStatus.FOR_EVALUATION)
                 .type(TypeOfLetter.BUDGET_PROPOSAL)
                 .sourceOfFund(dto.sourceOfFund())
                 .amountAllotted(dto.allottedAmount())

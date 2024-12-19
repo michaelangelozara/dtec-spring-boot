@@ -71,7 +71,7 @@ public class ImplementationLetterInCampusMapper {
                 .sourceOfFund(dto.sourceOfFunds())
                 .projectedExpense(dto.projectedExpenses())
                 .expectedOutput(dto.expectedOutputs())
-                .status(LetterStatus.IN_PROGRESS)
+                .status(LetterStatus.FOR_EVALUATION)
                 .currentLocation(CurrentLocation.MODERATOR)
                 .participants(dto.participants())
                 .rationale(dto.rationale())

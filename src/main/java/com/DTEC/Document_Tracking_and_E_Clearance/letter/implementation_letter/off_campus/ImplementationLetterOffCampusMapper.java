@@ -68,7 +68,7 @@ public class ImplementationLetterOffCampusMapper {
                 .programOrFlow(dto.programOrFlowOfActivity())
                 .type(TypeOfLetter.IMPLEMENTATION_LETTER_OFF_CAMPUS)
                 .currentLocation(CurrentLocation.COMMUNITY)
-                .status(LetterStatus.IN_PROGRESS)
+                .status(LetterStatus.FOR_EVALUATION)
                 .build();
     }
 }

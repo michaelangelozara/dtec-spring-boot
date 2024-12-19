@@ -136,7 +136,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var budgetProposal = this.budgetProposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Budget Proposal"));
 
-        if(budgetProposal.getStatus().equals(LetterStatus.COMPLETED)
+        if (budgetProposal.getStatus().equals(LetterStatus.COMPLETED)
                 || budgetProposal.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
@@ -155,12 +155,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .filter(sp -> sp.getRole().equals(user.getRole()))
                 .findFirst();
 
-        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+        if (signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
 
         var tempSignedPerson = signedPeople.get();
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
+        budgetProposal.setStatus(LetterStatus.IN_PROGRESS);
+        this.budgetProposalRepository.save(budgetProposal);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
@@ -168,7 +170,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Invalid Communication Letter"));
 
-        if(communicationLetter.getStatus().equals(LetterStatus.COMPLETED) ||
+        if (communicationLetter.getStatus().equals(LetterStatus.COMPLETED) ||
                 communicationLetter.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
@@ -187,12 +189,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .filter(sp -> sp.getRole().equals(user.getRole()))
                 .findFirst();
 
-        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+        if (signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
 
         var tempSignedPerson = signedPeople.get();
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
+        communicationLetter.setStatus(LetterStatus.IN_PROGRESS);
+        this.communicationLetterRepository.save(communicationLetter);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
@@ -200,7 +204,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var implementationLetterInCampus = this.implementationLetterInCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter In Campus"));
 
-        if(implementationLetterInCampus.getStatus().equals(LetterStatus.COMPLETED) ||
+        if (implementationLetterInCampus.getStatus().equals(LetterStatus.COMPLETED) ||
                 implementationLetterInCampus.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
@@ -219,12 +223,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .filter(sp -> sp.getRole().equals(user.getRole()))
                 .findFirst();
 
-        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+        if (signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
 
         var tempSignedPerson = signedPeople.get();
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
+        implementationLetterInCampus.setStatus(LetterStatus.FOR_EVALUATION);
+        this.implementationLetterInCampusRepository.save(implementationLetterInCampus);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
@@ -232,7 +238,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var implementationLetterOffCampus = this.implementationLetterOffCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter Off Campus"));
 
-        if(implementationLetterOffCampus.getStatus().equals(LetterStatus.COMPLETED) ||
+        if (implementationLetterOffCampus.getStatus().equals(LetterStatus.COMPLETED) ||
                 implementationLetterOffCampus.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
@@ -251,12 +257,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .filter(sp -> sp.getRole().equals(user.getRole()))
                 .findFirst();
 
-        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+        if (signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
 
         var tempSignedPerson = signedPeople.get();
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
+        implementationLetterOffCampus.setStatus(LetterStatus.FOR_EVALUATION);
+        this.implementationLetterOffCampusRepository.save(implementationLetterOffCampus);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
@@ -333,13 +341,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+        if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
         var signedPerson = optionalSignedPerson.get();
         signedPerson.setSignature(signature);
         signedPerson.setUser(user);
 
-        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
+        if (signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED))
+            throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
             budgetProposal.setCurrentLocation(CurrentLocation.DSA);
@@ -407,13 +416,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+        if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
         var signedPerson = optionalSignedPerson.get();
         signedPerson.setSignature(signature);
         signedPerson.setUser(user);
 
-        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
+        if (signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED))
+            throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
             // check if the student has already been signed
@@ -462,13 +472,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+        if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
         var signedPerson = optionalSignedPerson.get();
         signedPerson.setSignature(signature);
         signedPerson.setUser(user);
 
-        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
+        if (signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED))
+            throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
             // check if the student has already been signed
@@ -501,13 +512,14 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+        if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
         var signedPerson = optionalSignedPerson.get();
         signedPerson.setSignature(signature);
         signedPerson.setUser(user);
 
-        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
+        if (signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED))
+            throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.COMMUNITY)) {
             if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
@@ -557,6 +569,18 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private void rejectBP(int id, String reasonOfRejection) {
         var budgetProposal = this.budgetProposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Budget Proposal not Found"));
+
+        var user = this.userUtil.getCurrentUser();
+        if (user == null) throw new UnauthorizedException("Session Expired");
+
+        var signedPerson = SignedPeople.builder()
+                .budgetProposal(budgetProposal)
+                .user(user)
+                .status(SignedPeopleStatus.EVALUATED)
+                .role(user.getRole())
+                .build();
+        this.signedPeopleRepository.save(signedPerson);
+
         budgetProposal.setStatus(LetterStatus.DECLINED);
         budgetProposal.setReasonOfRejection(reasonOfRejection);
         this.budgetProposalRepository.save(budgetProposal);
@@ -565,6 +589,18 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private void rejectCL(int id, String reasonOfRejection) {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Communication Letter not Found"));
+
+        var user = this.userUtil.getCurrentUser();
+        if (user == null) throw new UnauthorizedException("Session Expired");
+
+        var signedPerson = SignedPeople.builder()
+                .communicationLetter(communicationLetter)
+                .user(user)
+                .status(SignedPeopleStatus.EVALUATED)
+                .role(user.getRole())
+                .build();
+        this.signedPeopleRepository.save(signedPerson);
+
         communicationLetter.setStatus(LetterStatus.DECLINED);
         communicationLetter.setReasonOfRejection(reasonOfRejection);
         this.communicationLetterRepository.save(communicationLetter);
@@ -573,6 +609,18 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private void rejectILIC(int id, String reasonOfRejection) {
         var implementationLetterInCampus = this.implementationLetterInCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Implementation Letter not Found"));
+
+        var user = this.userUtil.getCurrentUser();
+        if (user == null) throw new UnauthorizedException("Session Expired");
+
+        var signedPerson = SignedPeople.builder()
+                .implementationLetterInCampus(implementationLetterInCampus)
+                .user(user)
+                .status(SignedPeopleStatus.EVALUATED)
+                .role(user.getRole())
+                .build();
+        this.signedPeopleRepository.save(signedPerson);
+
         implementationLetterInCampus.setStatus(LetterStatus.DECLINED);
         implementationLetterInCampus.setReasonOfRejection(reasonOfRejection);
         this.implementationLetterInCampusRepository.save(implementationLetterInCampus);
@@ -581,6 +629,18 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private void rejectILOC(int id, String reasonOfRejection) {
         var implementationLetterOffCampus = this.implementationLetterOffCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Implementation Letter not Found"));
+
+        var user = this.userUtil.getCurrentUser();
+        if (user == null) throw new UnauthorizedException("Session Expired");
+
+        var signedPerson = SignedPeople.builder()
+                .implementationLetterOffCampus(implementationLetterOffCampus)
+                .user(user)
+                .status(SignedPeopleStatus.EVALUATED)
+                .role(user.getRole())
+                .build();
+        this.signedPeopleRepository.save(signedPerson);
+
         implementationLetterOffCampus.setStatus(LetterStatus.DECLINED);
         implementationLetterOffCampus.setReasonOfRejection(reasonOfRejection);
         this.implementationLetterOffCampusRepository.save(implementationLetterOffCampus);
