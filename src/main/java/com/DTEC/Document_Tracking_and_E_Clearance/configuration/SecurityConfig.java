@@ -46,7 +46,8 @@ public class SecurityConfig {
             "DSA",
             "PRESIDENT",
             "COMMUNITY",
-            "FINANCE"
+            "FINANCE",
+            "OFFICE_HEAD"
     };
     private final String[] STAFF_ROLES = {
             "SUPER_ADMIN",
@@ -57,7 +58,8 @@ public class SecurityConfig {
             "DSA",
             "PRESIDENT",
             "COMMUNITY",
-            "FINANCE"
+            "FINANCE",
+            "OFFICE_HEAD"
     };
     private final String[] ADMIN = {"SUPER_ADMIN", "ADMIN"};
 

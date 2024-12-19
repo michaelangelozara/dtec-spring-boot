@@ -8,11 +8,15 @@ import org.springframework.data.repository.query.Param;
 
 public interface ImplementationLetterOffCampusRepository extends JpaRepository<ImplementationLetterOffCampus, Integer> {
 
-    @Query("SELECT i FROM ImplementationLetterOffCampus i WHERE STR(i.currentLocation) =:currentLocation")
-    Page<ImplementationLetterOffCampus> findAll(@Param("currentLocation") String currentLocation, Pageable pageable);
+    @Query("SELECT i FROM ImplementationLetterOffCampus i JOIN i.signedPeople sp WHERE STR(i.currentLocation) =:currentLocation OR sp.user.id =:userId")
+    Page<ImplementationLetterOffCampus> findAll(@Param("currentLocation") String currentLocation, Pageable pageable, @Param("userId") int userI);
 
     @Query("SELECT i FROM ImplementationLetterOffCampus i " +
             "JOIN i.club c JOIN c.memberRoles mr" +
-            " WHERE mr.user.id =:id")
-    Page<ImplementationLetterOffCampus> findAll(Pageable pageable, @Param("id") int id);
+            " WHERE mr.user.id =:id AND STR(mr.role) =:role")
+    Page<ImplementationLetterOffCampus> findAll(
+            Pageable pageable,
+            @Param("id") int id,
+            @Param("role") String role
+    );
 }

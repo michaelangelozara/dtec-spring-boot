@@ -24,11 +24,15 @@ public class ImplementationLetterOffCampusMapper {
     public ImplementationLetterOffCampusResponseDto toImplementationLetterOffCampusResponseDto(
             ImplementationLetterOffCampus implementationLetterOffCampus
     ) {
-        var studentOfficer = implementationLetterOffCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
-        var moderator = implementationLetterOffCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
-        var community = implementationLetterOffCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.COMMUNITY)).findFirst();
-        var president = implementationLetterOffCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.PRESIDENT)).findFirst();
+        var studentOfficer = implementationLetterOffCampus.getSignedPeople()
+                .stream()
+                .filter(s -> s.getRole().equals(Role.STUDENT_OFFICER) && s.getUser() != null)
+                .findFirst();
 
+        var moderator = implementationLetterOffCampus.getSignedPeople()
+                .stream()
+                .filter(s -> s.getRole().equals(Role.MODERATOR) && s.getUser() != null)
+                .findFirst();
         return new ImplementationLetterOffCampusResponseDto(
                 implementationLetterOffCampus.getId(),
                 implementationLetterOffCampus.getTitleOfActivity(),
@@ -63,8 +67,8 @@ public class ImplementationLetterOffCampusMapper {
                 .dateAndTimeOfImplementation(utcDateTime.toLocalDateTime())
                 .programOrFlow(dto.programOrFlowOfActivity())
                 .type(TypeOfLetter.IMPLEMENTATION_LETTER_OFF_CAMPUS)
-                .currentLocation(CurrentLocation.MODERATOR)
-                .status(LetterStatus.FOR_EVALUATION)
+                .currentLocation(CurrentLocation.COMMUNITY)
+                .status(LetterStatus.IN_PROGRESS)
                 .build();
     }
 }

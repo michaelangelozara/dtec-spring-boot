@@ -97,12 +97,15 @@ public class UserServiceImp implements UserService {
         user.setFirstTimeLogin(true);
         this.userRepository.save(user);
 
-        return user.getLastname() + ", " + user.getFirstName()+"\'s Password Successfully Reset";
+        return user.getLastname() + ", " + user.getFirstName() + "\'s Password Successfully Reset";
     }
 
     @Transactional
     @Override
     public void createUser(UserRegisterRequestDto dto) {
+        if (dto.role().equals(Role.SUPER_ADMIN))
+            throw new ForbiddenException("Invalid Role");
+
         if (!UserRegex.validateStudentUsername(dto.username()))
             throw new ForbiddenException("User ID is Invalid Format");
 
@@ -118,11 +121,15 @@ public class UserServiceImp implements UserService {
 
         var savedUser = this.userRepository.save(user);
 
-        if(isRoleIncluded(dto.role())) return;
+        if (isRoleIncluded(dto.role())) return;
 
         if (dto.role().equals(Role.MODERATOR)) {
             var club = this.clubRepository.findById(dto.moderatorClubId())
                     .orElseThrow(() -> new ResourceNotFoundException("Club not Found"));
+
+            // remove the old moderator from the club
+            var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(dto.moderatorClubId(), Role.MODERATOR);
+            unregisterPersonnelForBeingModerator(memberRoles);
 
             var memberRole = MemberRole.builder()
                     .role(ClubRole.MODERATOR)
@@ -134,18 +141,27 @@ public class UserServiceImp implements UserService {
         } else if (dto.role().equals(Role.STUDENT_OFFICER)) {
             if (dto.yearLevel() == 0) throw new ForbiddenException("Please Select Student Year Level");
 
-            if(dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER) && dto.socialClubRole().equals(ClubRole.STUDENT_OFFICER))
+            if (dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER) && dto.socialClubRole().equals(ClubRole.STUDENT_OFFICER))
                 throw new ForbiddenException("Multiple \"Student officer\" role in multiple departmentClub is Prohibited");
 
-            if((dto.departmentClubRole().equals(ClubRole.MEMBER) && dto.socialClubRole().equals(ClubRole.MEMBER)))
+            if ((dto.departmentClubRole().equals(ClubRole.MEMBER) && dto.socialClubRole().equals(ClubRole.MEMBER)))
                 throw new ForbiddenException("The Student Officer must be Officer to either Department or Social Club");
+
+            var departmentClub = getClub(dto.departmentClubId(), Type.DEPARTMENT);
+            var socialClub = getClub(dto.socialClubId(), Type.SOCIAL);
+
+            // get the member role that equal to student officer of the club and set to member
+            if (dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER)) {
+                var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(departmentClub.getId(), Role.STUDENT_OFFICER);
+                unregisterTheStudentFromBeingOfficer(memberRoles);
+            } else {
+                var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(socialClub.getId(), Role.STUDENT_OFFICER);
+                unregisterTheStudentFromBeingOfficer(memberRoles);
+            }
 
             user.setYearLevel(dto.yearLevel());
             user.setDepartment(getDepartment(dto.departmentId()));
             user.setCourse(getCourse(dto.courseId()));
-
-            var departmentClub = getClub(dto.departmentClubId(), Type.DEPARTMENT);
-            var socialClub = getClub(dto.socialClubId(), Type.SOCIAL);
 
             var departmentMemberRole = MemberRole.builder()
                     .role(dto.departmentClubRole())
@@ -159,7 +175,7 @@ public class UserServiceImp implements UserService {
                     .club(socialClub)
                     .build();
             this.memberRoleRepository.saveAll(List.of(departmentMemberRole, socialMemberRole));
-        }else if(dto.role().equals(Role.STUDENT) ){
+        } else if (dto.role().equals(Role.STUDENT)) {
             if (dto.yearLevel() == 0) throw new ForbiddenException("Please Select Student Year Level");
 
             user.setYearLevel(dto.yearLevel());
@@ -186,8 +202,49 @@ public class UserServiceImp implements UserService {
         }
     }
 
+    private void unregisterTheStudentFromBeingOfficer(List<MemberRole> memberRoles){
+        var filteredMemberRoles = memberRoles.stream().filter(m -> m.getRole().equals(ClubRole.STUDENT_OFFICER)).toList();
+        if (!filteredMemberRoles.isEmpty()) {
+            var updatedUserRoles = filteredMemberRoles.stream().peek(uu -> uu.setRole(ClubRole.MEMBER)).toList();
+            this.memberRoleRepository.saveAll(updatedUserRoles);
+
+            // check the user's member roles of each user
+            for(var tempUser : filteredMemberRoles){
+                var userForValidation = tempUser.getUser();
+                boolean thisUserShouldStillBeOfficer = false;
+                for(var tempUserMemberRole : userForValidation.getMemberRoles()){
+                    if(tempUserMemberRole.getRole().equals(ClubRole.STUDENT_OFFICER)){
+                        thisUserShouldStillBeOfficer = true;
+                        break;
+                    }
+                }
+
+                // set the user's role into Student because this user is no longer officer in any club
+                if(!thisUserShouldStillBeOfficer){
+                    userForValidation.setRole(Role.STUDENT);
+                    this.userRepository.save(userForValidation);
+                }
+            }
+        }
+    }
+
+    private void unregisterPersonnelForBeingModerator(List<MemberRole> memberRoles){
+        var filteredMemberRoles = memberRoles.stream().filter(m -> m.getRole().equals(ClubRole.MODERATOR)).toList();
+        if (!filteredMemberRoles.isEmpty()) {
+            for(var filteredRole : filteredMemberRoles){
+                var user = filteredRole.getUser();
+                user.setRole(Role.PERSONNEL);
+
+                filteredRole.setUser(null);
+                filteredRole.setClub(null);
+                this.memberRoleRepository.delete(filteredRole);
+                this.userRepository.save(user);
+            }
+        }
+    }
+
     // these roles don't need department, course, departmentClub and etc
-    private boolean isRoleIncluded(Role role){
+    private boolean isRoleIncluded(Role role) {
         Set<Role> roles = new HashSet<>();
         roles.add(Role.SUPER_ADMIN);
         roles.add(Role.ADMIN);
@@ -196,11 +253,12 @@ public class UserServiceImp implements UserService {
         roles.add(Role.PRESIDENT);
         roles.add(Role.COMMUNITY);
         roles.add(Role.FINANCE);
+        roles.add(Role.OFFICE_HEAD);
 
         return roles.contains(role);
     }
 
-    public Club getClub(int id, Type type){
+    public Club getClub(int id, Type type) {
         return this.clubRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(type.equals(Type.DEPARTMENT) ? "Department Club not Found" : "Social Club not Found"));
     }

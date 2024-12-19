@@ -11,6 +11,8 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -60,7 +62,7 @@ public class BudgetProposalService {
                 .venue(dto.venue())
                 .club(userClub)
                 .currentLocation(CurrentLocation.MODERATOR)
-                .status(LetterStatus.FOR_EVALUATION)
+                .status(LetterStatus.IN_PROGRESS)
                 .type(TypeOfLetter.BUDGET_PROPOSAL)
                 .sourceOfFund(dto.sourceOfFund())
                 .amountAllotted(dto.allottedAmount())
@@ -71,9 +73,16 @@ public class BudgetProposalService {
         var signedPeople = SignedPeople.builder()
                 .user(user)
                 .role(user.getRole())
+                .status(SignedPeopleStatus.EVALUATED)
                 .signature(dto.studentOfficerSignature())
                 .budgetProposal(savedBudgetProposal)
                 .build();
+
+        // create empty instances for moderator, dsa, finance, president
+        var moderator = getSignedPeople(savedBudgetProposal, Role.MODERATOR);
+        var dsa = getSignedPeople(savedBudgetProposal, Role.DSA);
+        var finance = getSignedPeople(savedBudgetProposal, Role.FINANCE);
+        var president = getSignedPeople(savedBudgetProposal, Role.PRESIDENT);
 
         List<ExpectedExpense> expectedExpenses = new ArrayList<>();
         for (var expectedExpense : dto.expectedExpenses()) {
@@ -85,8 +94,16 @@ public class BudgetProposalService {
             expectedExpenses.add(tempExpectedExpense);
         }
 
-        this.signedPeopleRepository.save(signedPeople);
+        this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa, finance, president));
         this.expectedExpenseRepository.saveAll(expectedExpenses);
+    }
+
+    private SignedPeople getSignedPeople(BudgetProposal budgetProposal, Role role){
+        return SignedPeople.builder()
+                .role(role)
+                .status(SignedPeopleStatus.FOR_EVALUATION)
+                .budgetProposal(budgetProposal)
+                .build();
     }
 
     private boolean areFieldsComplete(BudgetProposalRequestDto dto) {

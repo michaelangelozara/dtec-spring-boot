@@ -5,5 +5,6 @@ public enum CurrentLocation {
     DSA,
     PRESIDENT,
     COMMUNITY,
-    FINANCE
+    FINANCE,
+    OFFICE_HEAD
 }

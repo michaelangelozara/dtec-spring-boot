@@ -41,8 +41,11 @@ public class SignedPeople {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    private SignedPeopleStatus status;
+
     @Lob
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String signature;
 
     @Enumerated(EnumType.STRING)

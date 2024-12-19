@@ -10,14 +10,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ImplementationLetterInCampusRepository extends JpaRepository<ImplementationLetterInCampus, Integer> {
 
-    @Query("SELECT i FROM ImplementationLetterInCampus i WHERE STR(i.currentLocation) =:currentLocation")
-    Page<ImplementationLetterInCampus> findAll(@Param("currentLocation") String currentLocation, Pageable pageable);
+    @Query("SELECT i FROM ImplementationLetterInCampus i JOIN i.signedPeople sp WHERE STR(i.currentLocation) =:currentLocation OR sp.user.id =:userId")
+    Page<ImplementationLetterInCampus> findAll(@Param("currentLocation") String currentLocation, Pageable pageable, @Param("userId") int userId);
 
     @Query("SELECT i FROM ImplementationLetterInCampus i " +
             "JOIN i.club c JOIN c.memberRoles mr " +
-            "WHERE mr.user.id =:id")
+            "WHERE mr.user.id =:id AND STR(mr.role) =:role")
     Page<ImplementationLetterInCampus> findAll(
             Pageable pageable,
-            @Param("id") int id
+            @Param("id") int id,
+            @Param("role") String role
     );
 }

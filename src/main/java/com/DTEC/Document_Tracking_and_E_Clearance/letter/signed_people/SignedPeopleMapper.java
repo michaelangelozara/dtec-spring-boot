@@ -9,8 +9,10 @@ public class SignedPeopleMapper {
 
     public SignedPeopleResponseDto toSignedPeopleResponseDto(SignedPeople signedPeople){
         return new SignedPeopleResponseDto(
+                signedPeople.getUser() != null ? signedPeople.getUser().getId() : null,
                 signedPeople.getRole(),
-                signedPeople.getSignature()
+                signedPeople.getSignature(),
+                signedPeople.getStatus()
         );
     }
 

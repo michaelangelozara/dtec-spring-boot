@@ -25,10 +25,15 @@ public class ImplementationLetterInCampusMapper {
     public ImplementationLetterInCampusResponseDto toImplementationLetterInCampusResponseDto(
             ImplementationLetterInCampus implementationLetterInCampus
     ) {
-        var studentOfficer = implementationLetterInCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
-        var moderator = implementationLetterInCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
-        var dsa = implementationLetterInCampus.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.DSA)).findFirst();
+        var studentOfficer = implementationLetterInCampus.getSignedPeople()
+                .stream()
+                .filter(s -> s.getRole().equals(Role.STUDENT_OFFICER) && s.getUser() != null)
+                .findFirst();
 
+        var moderator = implementationLetterInCampus.getSignedPeople()
+                .stream()
+                .filter(s -> s.getRole().equals(Role.MODERATOR) && s.getUser() != null)
+                .findFirst();
         return new ImplementationLetterInCampusResponseDto(
                 implementationLetterInCampus.getId(),
                 implementationLetterInCampus.getNameOfActivity(),
@@ -66,7 +71,7 @@ public class ImplementationLetterInCampusMapper {
                 .sourceOfFund(dto.sourceOfFunds())
                 .projectedExpense(dto.projectedExpenses())
                 .expectedOutput(dto.expectedOutputs())
-                .status(LetterStatus.FOR_EVALUATION)
+                .status(LetterStatus.IN_PROGRESS)
                 .currentLocation(CurrentLocation.MODERATOR)
                 .participants(dto.participants())
                 .rationale(dto.rationale())

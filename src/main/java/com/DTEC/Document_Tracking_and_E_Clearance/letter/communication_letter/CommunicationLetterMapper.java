@@ -21,11 +21,16 @@ public class CommunicationLetterMapper {
     public CommunicationLetterResponseDto toCommunicationLetterResponseDto(
             CommunicationLetter communicationLetter
     ) {
-        var studentOfficer = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.STUDENT_OFFICER)).findFirst();
-        var moderator = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.MODERATOR)).findFirst();
-        var dsa = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.DSA)).findFirst();
-        var officeHead = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.OFFICE_HEAD)).findFirst();
-        var president = communicationLetter.getSignedPeople().stream().filter(s -> s.getRole().equals(Role.PRESIDENT)).findFirst();
+        var studentOfficer = communicationLetter.getSignedPeople()
+                .stream()
+                .filter(s -> s.getRole().equals(Role.STUDENT_OFFICER) && s.getUser() != null)
+                .findFirst();
+
+        var moderator = communicationLetter.getSignedPeople()
+                .stream()
+                .filter(s -> s.getRole().equals(Role.MODERATOR) && s.getUser() != null)
+                .findFirst();
+
         return new CommunicationLetterResponseDto(
                 communicationLetter.getId(),
                 communicationLetter.getDate(),

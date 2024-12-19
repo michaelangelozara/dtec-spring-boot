@@ -6,12 +6,15 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ImplementationLetterInCampusService {
@@ -59,9 +62,22 @@ public class ImplementationLetterInCampusService {
                 .user(user)
                 .role(user.getRole())
                 .signature(dto.signature())
+                .status(SignedPeopleStatus.EVALUATED)
                 .implementationLetterInCampus(savedImplementation)
                 .build();
-        this.signedPeopleRepository.save(signedPeople);
+
+        var moderator = getSignedPeople(savedImplementation, Role.MODERATOR);
+        var dsa = getSignedPeople(savedImplementation, Role.DSA);
+
+        this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa));
+    }
+
+    private SignedPeople getSignedPeople(ImplementationLetterInCampus implementationLetterInCampus, Role role){
+        return SignedPeople.builder()
+                .role(role)
+                .status(SignedPeopleStatus.FOR_EVALUATION)
+                .implementationLetterInCampus(implementationLetterInCampus)
+                .build();
     }
 
     private boolean areFieldsComplete(ImplementationLetterInCampusRequestDto dto) {

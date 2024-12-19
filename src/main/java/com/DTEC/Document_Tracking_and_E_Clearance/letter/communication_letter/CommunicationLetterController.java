@@ -32,7 +32,7 @@ public class CommunicationLetterController {
         this.communicationLetterService.requestLetter(dto, type);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
-                        false,
+                        true,
                         "Communication Letter Submitted",
                         null, "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()
@@ -58,7 +58,7 @@ public class CommunicationLetterController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR','STUDENT_OFFICER', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR','STUDENT_OFFICER', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
     public ResponseEntity<ApiResponse<CommunicationLetterResponseDto>> getCommunicationLetter(
             @PathVariable("id") int id
     ) {

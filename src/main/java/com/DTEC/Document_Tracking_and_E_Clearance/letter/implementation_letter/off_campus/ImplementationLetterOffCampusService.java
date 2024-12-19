@@ -9,6 +9,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.o
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOORepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -60,8 +61,12 @@ public class ImplementationLetterOffCampusService {
                 .user(user)
                 .role(user.getRole())
                 .signature(dto.signature())
+                .status(SignedPeopleStatus.EVALUATED)
                 .implementationLetterOffCampus(savedImplementationLetter)
                 .build();
+
+        var community = getSignedPeople(savedImplementationLetter, Role.COMMUNITY);
+        var president = getSignedPeople(savedImplementationLetter, Role.PRESIDENT);
 
         List<CAOO> caoos = new ArrayList<>();
         for (var caoo : dto.caoos()) {
@@ -75,8 +80,16 @@ public class ImplementationLetterOffCampusService {
             caoos.add(tempCaoo);
         }
 
-        this.signedPeopleRepository.save(signedPeople);
+        this.signedPeopleRepository.saveAll(List.of(signedPeople, community, president));
         this.caooRepository.saveAll(caoos);
+    }
+
+    private SignedPeople getSignedPeople(ImplementationLetterOffCampus implementationLetterOffCampus, Role role){
+        return SignedPeople.builder()
+                .role(role)
+                .status(SignedPeopleStatus.FOR_EVALUATION)
+                .implementationLetterOffCampus(implementationLetterOffCampus)
+                .build();
     }
 
     private boolean areFieldsComplete(ImplementationLetterOffCampusRequestDto dto) {

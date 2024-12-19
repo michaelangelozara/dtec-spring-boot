@@ -7,8 +7,10 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundExce
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposal;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -41,7 +43,7 @@ public class CommunicationLetterService {
         // check if the fields are completely filled out
         if (!areFieldsComplete(dto)) throw new BadRequestException("Please make sure fill all the Blanks out");
 
-        if(!type.equals(CommunicationLetterType.IN_CAMPUS) && !type.equals(CommunicationLetterType.OFF_CAMPUS))
+        if (!type.equals(CommunicationLetterType.IN_CAMPUS) && !type.equals(CommunicationLetterType.OFF_CAMPUS))
             throw new ForbiddenException("Unexpected Request, Please Contact the Developer");
 
         var user = userUtil.getCurrentUser();
@@ -53,7 +55,7 @@ public class CommunicationLetterService {
 
         var userClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
 
-        if(userClub == null) throw new ForbiddenException("You're not Officer in any Club");
+        if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
         var communicationLetter = CommunicationLetter.builder()
                 .date(dto.date())
@@ -61,7 +63,7 @@ public class CommunicationLetterService {
                 .club(userClub)
                 .currentLocation(CurrentLocation.MODERATOR)
                 .type(TypeOfLetter.COMMUNICATION_LETTER)
-                .status(LetterStatus.FOR_EVALUATION)
+                .status(LetterStatus.IN_PROGRESS)
                 .typeOfCampus(type)
                 .build();
 
@@ -71,27 +73,47 @@ public class CommunicationLetterService {
                 .user(user)
                 .role(user.getRole())
                 .signature(dto.signature())
+                .status(SignedPeopleStatus.EVALUATED)
                 .communicationLetter(savedCommunicationLetter)
                 .build();
-        this.signedPeopleRepository.save(signedPeople);
+
+        var moderator = getSignedPeople(savedCommunicationLetter, Role.MODERATOR);
+        var dsa = getSignedPeople(savedCommunicationLetter, Role.DSA);
+
+        SignedPeople presidentOfOfficeHead;
+        if (type.equals(CommunicationLetterType.IN_CAMPUS)) {
+            presidentOfOfficeHead = getSignedPeople(savedCommunicationLetter, Role.PRESIDENT);
+        } else {
+            presidentOfOfficeHead = getSignedPeople(savedCommunicationLetter, Role.OFFICE_HEAD);
+        }
+
+        this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa, presidentOfOfficeHead));
+    }
+
+    private SignedPeople getSignedPeople(CommunicationLetter communicationLetter, Role role) {
+        return SignedPeople.builder()
+                .role(role)
+                .status(SignedPeopleStatus.FOR_EVALUATION)
+                .communicationLetter(communicationLetter)
+                .build();
     }
 
     private boolean areFieldsComplete(CommunicationLetterRequestDto dto) {
         if (dto.letterOfContent().isEmpty()) return false;
         if (dto.signature().isEmpty()) return false;
-        if(dto.date() == null) return false;
+        if (dto.date() == null) return false;
 
         return true;
     }
 
-    public List<CommunicationLetterResponseDto> getAllCommunicationLetter(int s, int e, CommunicationLetterType type){
+    public List<CommunicationLetterResponseDto> getAllCommunicationLetter(int s, int e, CommunicationLetterType type) {
         Pageable pageable = PageRequest.of(s, e);
         Page<CommunicationLetter> communicationLetterPage = this.communicationLetterRepository.findAll(type, pageable);
 
         return this.communicationLetterMapper.toCommunicationLetterResponseDtoList(communicationLetterPage.getContent());
     }
 
-    public CommunicationLetterResponseDto getCommunicationLetter(int id){
+    public CommunicationLetterResponseDto getCommunicationLetter(int id) {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Communication Letter not Found"));
 

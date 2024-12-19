@@ -17,7 +17,9 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.o
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampusMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampusRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
@@ -42,11 +44,13 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private final ImplementationLetterInCampusMapper implementationLetterInCampusMapper;
     private final ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper;
 
+    private final SignedPeopleMapper signedPeopleMapper;
+
     private final UserUtil userUtil;
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
     private final SignedPeopleRepository signedPeopleRepository;
 
-    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, BudgetProposalMapper budgetProposalMapper, CommunicationLetterMapper communicationLetterMapper, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository) {
+    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, BudgetProposalMapper budgetProposalMapper, CommunicationLetterMapper communicationLetterMapper, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterOffCampusRepository = implementationLetterOffCampusRepository;
@@ -55,6 +59,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         this.communicationLetterMapper = communicationLetterMapper;
         this.implementationLetterInCampusMapper = implementationLetterInCampusMapper;
         this.implementationLetterOffCampusMapper = implementationLetterOffCampusMapper;
+        this.signedPeopleMapper = signedPeopleMapper;
         this.userUtil = userUtil;
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
         this.signedPeopleRepository = signedPeopleRepository;
@@ -68,45 +73,43 @@ public class GenericLetterServiceImp implements GenericLetterService {
         Pageable pageable = PageRequest.of(0, 50);
 
         var user = this.userUtil.getCurrentUser();
-        if (user == null) throw new ResourceNotFoundException("User not Found");
+        if (user == null) throw new UnauthorizedException("Invalid User");
 
         if (user.getRole().equals(Role.MODERATOR) || user.getRole().equals(Role.STUDENT_OFFICER)) {
-            Page<BudgetProposal> budgetProposalPage = this.budgetProposalRepository.findAll(pageable, user.getId());
+            Page<BudgetProposal> budgetProposalPage = this.budgetProposalRepository.findAll(pageable, user.getId(), user.getRole().name());
             budgetProposalPage.getContent().forEach(b -> genericResponses.add(transformToGeneric(b)));
 
-            Page<CommunicationLetter> communicationLetterPage = this.communicationLetterRepository.findAll(pageable, user.getId());
+            Page<CommunicationLetter> communicationLetterPage = this.communicationLetterRepository.findAll(pageable, user.getId(), user.getRole().name());
             communicationLetterPage.getContent().forEach(c -> genericResponses.add(transformToGeneric(c, c)));
 
-            Page<ImplementationLetterInCampus> implementationLetterInCampusPage = this.implementationLetterInCampusRepository.findAll(pageable, user.getId());
+            Page<ImplementationLetterInCampus> implementationLetterInCampusPage = this.implementationLetterInCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
             implementationLetterInCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
 
-            Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(pageable, user.getId());
+            Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
             implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
-
-            genericResponses.sort(Comparator.comparing(GenericResponse::getCreatedDate).reversed());
-
-            // Return a sublist for the specified range
-            return genericResponses.subList(0, Math.min(s, genericResponses.size()));
         } else {
             String stringRole = user.getRole().name();
 
-            Page<BudgetProposal> budgetProposalPage = this.budgetProposalRepository.findAll(stringRole, pageable);
+            Page<BudgetProposal> budgetProposalPage = this.budgetProposalRepository.findAll(stringRole, pageable, user.getId());
             budgetProposalPage.getContent().forEach(b -> genericResponses.add(transformToGeneric(b)));
 
-            Page<CommunicationLetter> communicationLetterPage = this.communicationLetterRepository.findAll(stringRole, pageable);
+            Page<CommunicationLetter> communicationLetterPage = this.communicationLetterRepository.findAll(stringRole, pageable, user.getId());
             communicationLetterPage.getContent().forEach(c -> genericResponses.add(transformToGeneric(c, c)));
 
-            Page<ImplementationLetterInCampus> implementationLetterInCampusPage = this.implementationLetterInCampusRepository.findAll(stringRole, pageable);
+            Page<ImplementationLetterInCampus> implementationLetterInCampusPage = this.implementationLetterInCampusRepository.findAll(stringRole, pageable, user.getId());
             implementationLetterInCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
 
-            Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(stringRole, pageable);
+            Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(stringRole, pageable, user.getId());
             implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
             // Sort the responses by a common property, e.g., "createdDate"
             genericResponses.sort(Comparator.comparing(GenericResponse::getCreatedDate).reversed());
-
-            // Return a sublist for the specified range
-            return genericResponses.subList(0, Math.min(s, genericResponses.size()));
         }
+
+        // sort the gathered data
+        genericResponses.sort(Comparator.comparing(GenericResponse::getCreatedDate).reversed());
+
+        // Return a sublist for the specified range
+        return genericResponses.subList(0, Math.min(s, genericResponses.size()));
     }
 
     @Override
@@ -133,81 +136,131 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var budgetProposal = this.budgetProposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Budget Proposal"));
 
+        if(budgetProposal.getStatus().equals(LetterStatus.COMPLETED)
+                || budgetProposal.getStatus().equals(LetterStatus.DECLINED)) return;
+
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
 
         var signedPerson = budgetProposal.getSignedPeople()
                 .stream()
-                .filter(s -> s.getUser().getId().equals(user.getId())).findFirst();
+                .filter(s -> s.getUser() != null && s.getUser().getId().equals(user.getId())).findFirst();
 
         if (signedPerson.isPresent()) return;
 
         if (!budgetProposal.getCurrentLocation().name().equals(user.getRole().name())) return;
 
-        budgetProposal.setStatus(LetterStatus.IN_PROGRESS);
-        this.budgetProposalRepository.save(budgetProposal);
+        var signedPeople = budgetProposal.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole()))
+                .findFirst();
+
+        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+
+        var tempSignedPerson = signedPeople.get();
+        tempSignedPerson.setUser(user);
+        tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
+
+        this.signedPeopleRepository.save(tempSignedPerson);
     }
 
     private void communicationLetterOnClick(int id) {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Invalid Communication Letter"));
 
+        if(communicationLetter.getStatus().equals(LetterStatus.COMPLETED) ||
+                communicationLetter.getStatus().equals(LetterStatus.DECLINED)) return;
+
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
 
         var signedPerson = communicationLetter.getSignedPeople()
                 .stream()
-                .filter(s -> s.getUser().getId().equals(user.getId())).findFirst();
+                .filter(s -> s.getUser() != null && s.getUser().getId().equals(user.getId())).findFirst();
 
         if (signedPerson.isPresent()) return;
 
         if (!communicationLetter.getCurrentLocation().name().equals(user.getRole().name())) return;
 
+        var signedPeople = communicationLetter.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole()))
+                .findFirst();
 
-        communicationLetter.setStatus(LetterStatus.IN_PROGRESS);
-        this.communicationLetterRepository.save(communicationLetter);
+        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+
+        var tempSignedPerson = signedPeople.get();
+        tempSignedPerson.setUser(user);
+        tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
+
+        this.signedPeopleRepository.save(tempSignedPerson);
     }
 
     private void implementationLetterInCampusOnClick(int id) {
         var implementationLetterInCampus = this.implementationLetterInCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter In Campus"));
 
+        if(implementationLetterInCampus.getStatus().equals(LetterStatus.COMPLETED) ||
+                implementationLetterInCampus.getStatus().equals(LetterStatus.DECLINED)) return;
+
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
 
         var signedPerson = implementationLetterInCampus.getSignedPeople()
                 .stream()
-                .filter(s -> s.getUser().getId().equals(user.getId())).findFirst();
+                .filter(s -> s.getUser() != null && s.getUser().getId().equals(user.getId())).findFirst();
 
         if (signedPerson.isPresent()) return;
 
         if (!implementationLetterInCampus.getCurrentLocation().name().equals(user.getRole().name())) return;
 
-        implementationLetterInCampus.setStatus(LetterStatus.IN_PROGRESS);
-        this.implementationLetterInCampusRepository.save(implementationLetterInCampus);
+        var signedPeople = implementationLetterInCampus.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole()))
+                .findFirst();
+
+        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+
+        var tempSignedPerson = signedPeople.get();
+        tempSignedPerson.setUser(user);
+        tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
+
+        this.signedPeopleRepository.save(tempSignedPerson);
     }
 
     private void implementationLetterOffCampusOnClick(int id) {
         var implementationLetterOffCampus = this.implementationLetterOffCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter Off Campus"));
 
+        if(implementationLetterOffCampus.getStatus().equals(LetterStatus.COMPLETED) ||
+                implementationLetterOffCampus.getStatus().equals(LetterStatus.DECLINED)) return;
+
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
 
         var signedPerson = implementationLetterOffCampus.getSignedPeople()
                 .stream()
-                .filter(s -> s.getUser().getId().equals(user.getId())).findFirst();
+                .filter(s -> s.getUser() != null && s.getUser().getId().equals(user.getId())).findFirst();
 
         if (signedPerson.isPresent()) return;
 
         if (!implementationLetterOffCampus.getCurrentLocation().name().equals(user.getRole().name())) return;
 
-        implementationLetterOffCampus.setStatus(LetterStatus.IN_PROGRESS);
-        this.implementationLetterOffCampusRepository.save(implementationLetterOffCampus);
+        var signedPeople = implementationLetterOffCampus.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole()))
+                .findFirst();
+
+        if(signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+
+        var tempSignedPerson = signedPeople.get();
+        tempSignedPerson.setUser(user);
+        tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
+
+        this.signedPeopleRepository.save(tempSignedPerson);
     }
 
     private GenericResponse transformToGeneric(SharedFields object) {
-
         Map<String, Object> fields = new HashMap<>();
         fields.put("date_requested", this.dateTimeFormatterUtil.formatIntoDateTime(object.getCreatedAt()));
         fields.put("letter_type", object.getType());
@@ -218,17 +271,16 @@ public class GenericLetterServiceImp implements GenericLetterService {
         fields.put("current_location", object.getCurrentLocation());
         fields.put("reason_of_rejection", object.getReasonOfRejection());
 
-
         return GenericResponse.builder()
                 .id(object.getId())
                 .type(object.getType())
                 .fields(fields)
+                .signedPeople(this.signedPeopleMapper.toSignedPeopleResponseDtoList(object.getSignedPeople()))
                 .createdDate(object.getCreatedAt())
                 .build();
     }
 
     private GenericResponse transformToGeneric(SharedFields object, Object cml) {
-
         Map<String, Object> fields = new HashMap<>();
         fields.put("date_requested", this.dateTimeFormatterUtil.formatIntoDateTime(object.getCreatedAt()));
         fields.put("letter_type", object.getType());
@@ -244,6 +296,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .type(object.getType())
                 .fields(fields)
                 .createdDate(object.getCreatedAt())
+                .signedPeople(this.signedPeopleMapper.toSignedPeopleResponseDtoList(object.getSignedPeople()))
                 .cml(cml instanceof CommunicationLetter ? ((CommunicationLetter) cml).getTypeOfCampus().name() : "")
                 .build();
     }
@@ -276,16 +329,21 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var budgetProposal = this.budgetProposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Budget Proposal not Found"));
 
-        var signedPerson = SignedPeople.builder()
-                .user(user)
-                .role(user.getRole())
-                .signature(signature)
-                .budgetProposal(budgetProposal)
-                .build();
+        Optional<SignedPeople> optionalSignedPerson = budgetProposal.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
+
+        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+
+        var signedPerson = optionalSignedPerson.get();
+        signedPerson.setSignature(signature);
+        signedPerson.setUser(user);
+
+        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
             budgetProposal.setCurrentLocation(CurrentLocation.DSA);
-            budgetProposal.setStatus(LetterStatus.FOR_EVALUATION);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             // check if the student has already been signed
             if (getSignedPerson(budgetProposal, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
@@ -298,7 +356,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 throw new ForbiddenException("The Moderator doesn't signed yet");
 
             budgetProposal.setCurrentLocation(CurrentLocation.FINANCE);
-            budgetProposal.setStatus(LetterStatus.FOR_EVALUATION);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
 
         } else if (user.getRole().equals(Role.FINANCE)) {
             if (getSignedPerson(budgetProposal, Role.STUDENT_OFFICER).isEmpty())
@@ -311,7 +369,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 throw new ForbiddenException("The DSA doesn't signed yet");
 
             budgetProposal.setCurrentLocation(CurrentLocation.PRESIDENT);
-            budgetProposal.setStatus(LetterStatus.FOR_EVALUATION);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
 
         } else if (user.getRole().equals(Role.PRESIDENT)) {
             if (getSignedPerson(budgetProposal, Role.STUDENT_OFFICER).isEmpty())
@@ -326,6 +384,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
             if (getSignedPerson(budgetProposal, Role.FINANCE).isEmpty())
                 throw new ForbiddenException("The Finance doesn't signed yet");
 
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             budgetProposal.setStatus(LetterStatus.COMPLETED);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
@@ -344,20 +403,24 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Communication Letter not Found"));
 
-        var signedPerson = SignedPeople.builder()
-                .user(user)
-                .role(user.getRole())
-                .signature(signature)
-                .communicationLetter(communicationLetter)
-                .build();
+        Optional<SignedPeople> optionalSignedPerson = communicationLetter.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
+
+        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+
+        var signedPerson = optionalSignedPerson.get();
+        signedPerson.setSignature(signature);
+        signedPerson.setUser(user);
+
+        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
             // check if the student has already been signed
             if (getSignedPerson(communicationLetter, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
             communicationLetter.setCurrentLocation(CurrentLocation.DSA);
-            communicationLetter.setStatus(LetterStatus.FOR_EVALUATION);
-
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
         } else if (user.getRole().equals(Role.DSA)) {
             if (getSignedPerson(communicationLetter, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
@@ -365,22 +428,25 @@ public class GenericLetterServiceImp implements GenericLetterService {
             if (getSignedPerson(communicationLetter, Role.MODERATOR).isEmpty())
                 throw new ForbiddenException("The Moderator doesn't signed yet");
 
-            communicationLetter.setCurrentLocation(CurrentLocation.PRESIDENT);
-            communicationLetter.setStatus(LetterStatus.FOR_EVALUATION);
-        } else if (user.getRole().equals(Role.PRESIDENT)) {
-            // this only applicable to communication letter in campus
             if (communicationLetter.getTypeOfCampus().equals(CommunicationLetterType.IN_CAMPUS)) {
-                if (getSignedPerson(communicationLetter, Role.STUDENT_OFFICER).isEmpty())
-                    throw new ForbiddenException("The Student Officer doesn't signed yet");
-                // check if the moderator has already been signed
-                if (getSignedPerson(communicationLetter, Role.MODERATOR).isEmpty())
-                    throw new ForbiddenException("The Moderator doesn't signed yet");
-
-                if (getSignedPerson(communicationLetter, Role.DSA).isEmpty())
-                    throw new ForbiddenException("The DSA doesn't signed yet");
-
-                communicationLetter.setStatus(LetterStatus.COMPLETED);
+                communicationLetter.setCurrentLocation(CurrentLocation.PRESIDENT);
+            } else {
+                communicationLetter.setCurrentLocation(CurrentLocation.OFFICE_HEAD);
             }
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else if (user.getRole().equals(Role.PRESIDENT) || user.getRole().equals(Role.OFFICE_HEAD)) {
+            // this only applicable to communication letter in campus
+            if (getSignedPerson(communicationLetter, Role.STUDENT_OFFICER).isEmpty())
+                throw new ForbiddenException("The Student Officer doesn't signed yet");
+            // check if the moderator has already been signed
+            if (getSignedPerson(communicationLetter, Role.MODERATOR).isEmpty())
+                throw new ForbiddenException("The Moderator doesn't signed yet");
+
+            if (getSignedPerson(communicationLetter, Role.DSA).isEmpty())
+                throw new ForbiddenException("The DSA doesn't signed yet");
+
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+            communicationLetter.setStatus(LetterStatus.COMPLETED);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
         }
@@ -392,20 +458,25 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var implementationLetterInCampus = this.implementationLetterInCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Communication Letter not Found"));
 
-        var signedPerson = SignedPeople.builder()
-                .user(user)
-                .role(user.getRole())
-                .signature(signature)
-                .implementationLetterInCampus(implementationLetterInCampus)
-                .build();
+        Optional<SignedPeople> optionalSignedPerson = implementationLetterInCampus.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
+
+        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+
+        var signedPerson = optionalSignedPerson.get();
+        signedPerson.setSignature(signature);
+        signedPerson.setUser(user);
+
+        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
             // check if the student has already been signed
             if (getSignedPerson(implementationLetterInCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
 
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             implementationLetterInCampus.setCurrentLocation(CurrentLocation.DSA);
-            implementationLetterInCampus.setStatus(LetterStatus.FOR_EVALUATION);
         } else if (user.getRole().equals(Role.DSA)) {
             if (getSignedPerson(implementationLetterInCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
@@ -413,6 +484,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
             if (getSignedPerson(implementationLetterInCampus, Role.MODERATOR).isEmpty())
                 throw new ForbiddenException("The Moderator doesn't signed yet");
 
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             implementationLetterInCampus.setStatus(LetterStatus.COMPLETED);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
@@ -425,21 +497,19 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var implementationLetterOffCampus = this.implementationLetterOffCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Communication Letter not Found"));
 
-        var signedPerson = SignedPeople.builder()
-                .user(user)
-                .role(user.getRole())
-                .signature(signature)
-                .implementationLetterOffCampus(implementationLetterOffCampus)
-                .build();
+        Optional<SignedPeople> optionalSignedPerson = implementationLetterOffCampus.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if (user.getRole().equals(Role.MODERATOR)) {
-            // check if the student has already been signed
-            if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
-                throw new ForbiddenException("The Student Officer doesn't signed yet");
+        if(optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
-            implementationLetterOffCampus.setCurrentLocation(CurrentLocation.COMMUNITY);
-            implementationLetterOffCampus.setStatus(LetterStatus.FOR_EVALUATION);
-        } else if (user.getRole().equals(Role.COMMUNITY)) {
+        var signedPerson = optionalSignedPerson.get();
+        signedPerson.setSignature(signature);
+        signedPerson.setUser(user);
+
+        if(signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED)) throw new ForbiddenException("You already Signed this Letter");
+
+        if (user.getRole().equals(Role.COMMUNITY)) {
             if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
             // check if the moderator has already been signed
@@ -447,16 +517,15 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 throw new ForbiddenException("The Moderator doesn't signed yet");
 
             implementationLetterOffCampus.setCurrentLocation(CurrentLocation.PRESIDENT);
-            implementationLetterOffCampus.setStatus(LetterStatus.FOR_EVALUATION);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
         } else if (user.getRole().equals(Role.PRESIDENT)) {
             if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
-            // check if the moderator has already been signed
-            if (getSignedPerson(implementationLetterOffCampus, Role.MODERATOR).isEmpty())
-                throw new ForbiddenException("The Moderator doesn't signed yet");
+
             if (getSignedPerson(implementationLetterOffCampus, Role.COMMUNITY).isEmpty())
                 throw new ForbiddenException("The Moderator doesn't signed yet");
 
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             implementationLetterOffCampus.setStatus(LetterStatus.COMPLETED);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
