@@ -19,7 +19,8 @@ public class CourseMapper {
                 course.getName(),
                 course.getCreatedAt(),
                 course.getLastModified(),
-                course.getDepartment().getId()
+                course.getDepartment().getId(),
+                course.getShortName()
         );
     }
 

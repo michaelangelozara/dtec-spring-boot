@@ -1,6 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.clearance;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.clearance_signoff.ClearanceSignoff;
+import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoff;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -19,7 +19,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Builder
-@ToString
 @Entity
 @Table(name = "clearances")
 @AllArgsConstructor
@@ -35,11 +34,6 @@ public class Clearance {
     @Column(name = "school_year", nullable = false)
     private String schoolYear;
 
-    @NotBlank(message = "Clearance Code cannot be Blank")
-    @Size(max = 50, message = "Clearance Code must not exceed 50 Characters")
-    @Column(name = "clearance_code", length = 50)
-    private String clearanceCode;
-
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDate createdAt;
@@ -52,6 +46,9 @@ public class Clearance {
     @JoinColumn(name = "student_id")
     @JsonBackReference
     private User student;
+
+    @Enumerated(EnumType.STRING)
+    private ClearanceStatus status;
 
     @OneToMany(mappedBy = "clearance", cascade = CascadeType.MERGE)
     @JsonManagedReference

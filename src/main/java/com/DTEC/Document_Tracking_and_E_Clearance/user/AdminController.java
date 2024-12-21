@@ -1,6 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
+import com.DTEC.Document_Tracking_and_E_Clearance.clearance.ClearanceService;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubResponseDto;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubService;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.CourseResponseDto;
@@ -25,13 +26,15 @@ public class AdminController {
     private final DepartmentService departmentService;
     private final ClubService clubService;
     private final CourseService courseService;
+    private final ClearanceService clearanceService;
 
-    public AdminController(UserService userService, DateTimeFormatterUtil dateTimeFormatterUtil, DepartmentService departmentService, ClubService clubService, CourseService courseService) {
+    public AdminController(UserService userService, DateTimeFormatterUtil dateTimeFormatterUtil, DepartmentService departmentService, ClubService clubService, CourseService courseService, ClearanceService clearanceService) {
         this.userService = userService;
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
         this.departmentService = departmentService;
         this.clubService = clubService;
         this.courseService = courseService;
+        this.clearanceService = clearanceService;
     }
 
     @GetMapping("/users")
@@ -86,7 +89,7 @@ public class AdminController {
     @PostMapping("/users/reset-password")
     public ResponseEntity<ApiResponse<String>> resetPassword(
             @RequestParam(name = "id") int id
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
@@ -133,6 +136,20 @@ public class AdminController {
                         this.courseService.getAllCourse(),
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime())
+        );
+    }
+
+    @PostMapping("/release-clearances")
+    public ResponseEntity<ApiResponse<Void>> releaseAllClearances() {
+        String response = this.clearanceService.releaseClearances();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        response,
+                        null,
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
+                )
         );
     }
 }

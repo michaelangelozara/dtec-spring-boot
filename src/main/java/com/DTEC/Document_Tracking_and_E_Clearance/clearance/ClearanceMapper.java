@@ -1,5 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.clearance;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoffMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserMapper;
 import org.springframework.stereotype.Service;
 
@@ -9,25 +10,22 @@ import java.util.List;
 public class ClearanceMapper {
 
     private final UserMapper userMapper;
+    private final ClearanceSignoffMapper clearanceSignoffMapper;
 
-    public ClearanceMapper(UserMapper userMapper) {
+    public ClearanceMapper(UserMapper userMapper, ClearanceSignoffMapper clearanceSignoffMapper) {
         this.userMapper = userMapper;
-    }
-
-    public Clearance toClearance(String schoolYear){
-        return Clearance.builder()
-                .schoolYear(schoolYear)
-                .build();
+        this.clearanceSignoffMapper = clearanceSignoffMapper;
     }
 
     public ClearanceResponseDto toClearanceResponseDto(Clearance clearance){
         return new ClearanceResponseDto(
                 clearance.getId(),
                 clearance.getSchoolYear(),
-                clearance.getClearanceSignoffs(),
                 clearance.getCreatedAt(),
                 clearance.getLastModified(),
-                clearance.getStudent() != null ? this.userMapper.toUserInfoResponseDto(clearance.getStudent()) : null
+                this.userMapper.toUserInfoResponseDto(clearance.getStudent()),
+                this.clearanceSignoffMapper.toClearanceSignoffResponseDtoList(clearance.getClearanceSignoffs()),
+                clearance.getStatus()
         );
     }
 

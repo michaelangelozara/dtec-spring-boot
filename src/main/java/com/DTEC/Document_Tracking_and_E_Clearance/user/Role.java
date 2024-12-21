@@ -5,12 +5,19 @@ public enum Role {
     ADMIN,
     PERSONNEL,
     MODERATOR,
-    OFFICE_IN_CHARGE,
     STUDENT,
     STUDENT_OFFICER,
     DSA,
     PRESIDENT,
     COMMUNITY,
     FINANCE,
-    OFFICE_HEAD
+    OFFICE_HEAD,
+
+    GUIDANCE,
+    DEAN,
+    CASHIER,
+    LIBRARIAN,
+    SCHOOL_NURSE,
+    PROGRAM_HEAD,
+    REGISTRAR
 }

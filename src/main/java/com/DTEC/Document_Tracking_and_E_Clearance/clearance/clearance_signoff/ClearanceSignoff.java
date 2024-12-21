@@ -1,6 +1,7 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.clearance_signoff;
+package com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.Clearance;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -35,14 +36,21 @@ public class ClearanceSignoff {
     private LocalDate lastModified;
 
     @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String signature;
 
     @Enumerated(EnumType.STRING)
-    private TypeOfSign type;
+    private Role role;
+
+    @Column(columnDefinition = "VARCHAR(2000)")
+    private String note;
+
+    @Enumerated(EnumType.STRING)
+    private ClearanceSignOffStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "personnel_id")
-    private User personnel;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "clearance_id")

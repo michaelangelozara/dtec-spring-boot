@@ -9,6 +9,7 @@ public record CourseResponseDto(
         String name,
         @JsonProperty("created_at") LocalDate createdAt,
         @JsonProperty("last_modified") LocalDate lastModified,
-        @JsonProperty("department_id") int departmentId
+        @JsonProperty("department_id") int departmentId,
+        @JsonProperty("short_name") String shortName
 ) {
 }

@@ -26,4 +26,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role")
     Integer countSuperAdmin(@Param("role") Role role);
+
+    @Query("SELECT u FROM User u " +
+            "WHERE u.role = 'GUIDANCE' " +
+            "OR u.role = 'CASHIER' " +
+            "OR u.role = 'LIBRARIAN' " +
+            "OR u.role = 'SCHOOL_NURSE' " +
+            "OR u.role = 'REGISTRAR' " +
+            "OR u.role = 'DSA'")
+    List<User> findAllOfficeInCharge();
 }

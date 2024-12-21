@@ -6,11 +6,13 @@ public interface ClearanceService {
 
     String releaseClearances();
 
-    String generateClearanceByUserId(int id);
-
     List<ClearanceResponseDto> getAllClearances(int n);
 
-    ClearanceResponseDto getClearanceByStudentId(int id);
+    List<ClearanceResponseDto> getAllStudentClearances();
 
-    String signClearance(SignClearanceRequestDto dto);
+    String signClearance(int clearanceId, String signature);
+
+    ClearanceResponseDto getNewClearance();
+
+    void onClick(int clearanceId);
 }

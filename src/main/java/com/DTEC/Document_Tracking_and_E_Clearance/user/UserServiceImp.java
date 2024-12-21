@@ -30,7 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -123,7 +122,36 @@ public class UserServiceImp implements UserService {
 
         if (isRoleIncluded(dto.role())) return;
 
-        if (dto.role().equals(Role.MODERATOR)) {
+        if (dto.role().equals(Role.PROGRAM_HEAD)) {
+            var course = getCourse(dto.courseId());
+
+            var oldProgramHeadOptional = course.getUsers().stream().filter(u -> u.getRole().equals(Role.PROGRAM_HEAD)).findFirst();
+
+            // change the role of the old program head
+            if (oldProgramHeadOptional.isPresent()) {
+                var oldProgramHead = oldProgramHeadOptional.get();
+                oldProgramHead.setRole(Role.PERSONNEL);
+                this.userRepository.save(oldProgramHead);
+            }
+
+            savedUser.setCourse(course);
+            this.userRepository.save(savedUser);
+        } else if (dto.role().equals(Role.DEAN)) {
+            var department = getDepartment(dto.departmentId());
+
+            var oldDean = department.getUsers().stream().filter(u -> u.getRole().equals(Role.DEAN)).findFirst();
+
+            // change the role of the old program head
+            if (oldDean.isPresent()) {
+                var oldProgramHead = oldDean.get();
+                oldProgramHead.setRole(Role.PERSONNEL);
+                this.userRepository.save(oldProgramHead);
+            }
+
+            savedUser.setDepartment(department);
+            this.userRepository.save(savedUser);
+
+        } else if (dto.role().equals(Role.MODERATOR)) {
             var club = this.clubRepository.findById(dto.moderatorClubId())
                     .orElseThrow(() -> new ResourceNotFoundException("Club not Found"));
 
@@ -202,25 +230,25 @@ public class UserServiceImp implements UserService {
         }
     }
 
-    private void unregisterTheStudentFromBeingOfficer(List<MemberRole> memberRoles){
+    private void unregisterTheStudentFromBeingOfficer(List<MemberRole> memberRoles) {
         var filteredMemberRoles = memberRoles.stream().filter(m -> m.getRole().equals(ClubRole.STUDENT_OFFICER)).toList();
         if (!filteredMemberRoles.isEmpty()) {
             var updatedUserRoles = filteredMemberRoles.stream().peek(uu -> uu.setRole(ClubRole.MEMBER)).toList();
             this.memberRoleRepository.saveAll(updatedUserRoles);
 
             // check the user's member roles of each user
-            for(var tempUser : filteredMemberRoles){
+            for (var tempUser : filteredMemberRoles) {
                 var userForValidation = tempUser.getUser();
                 boolean thisUserShouldStillBeOfficer = false;
-                for(var tempUserMemberRole : userForValidation.getMemberRoles()){
-                    if(tempUserMemberRole.getRole().equals(ClubRole.STUDENT_OFFICER)){
+                for (var tempUserMemberRole : userForValidation.getMemberRoles()) {
+                    if (tempUserMemberRole.getRole().equals(ClubRole.STUDENT_OFFICER)) {
                         thisUserShouldStillBeOfficer = true;
                         break;
                     }
                 }
 
                 // set the user's role into Student because this user is no longer officer in any club
-                if(!thisUserShouldStillBeOfficer){
+                if (!thisUserShouldStillBeOfficer) {
                     userForValidation.setRole(Role.STUDENT);
                     this.userRepository.save(userForValidation);
                 }
@@ -228,10 +256,10 @@ public class UserServiceImp implements UserService {
         }
     }
 
-    private void unregisterPersonnelForBeingModerator(List<MemberRole> memberRoles){
+    private void unregisterPersonnelForBeingModerator(List<MemberRole> memberRoles) {
         var filteredMemberRoles = memberRoles.stream().filter(m -> m.getRole().equals(ClubRole.MODERATOR)).toList();
         if (!filteredMemberRoles.isEmpty()) {
-            for(var filteredRole : filteredMemberRoles){
+            for (var filteredRole : filteredMemberRoles) {
                 var user = filteredRole.getUser();
                 user.setRole(Role.PERSONNEL);
 
@@ -246,14 +274,18 @@ public class UserServiceImp implements UserService {
     // these roles don't need department, course, departmentClub and etc
     private boolean isRoleIncluded(Role role) {
         Set<Role> roles = new HashSet<>();
-        roles.add(Role.SUPER_ADMIN);
         roles.add(Role.ADMIN);
-        roles.add(Role.OFFICE_IN_CHARGE);
         roles.add(Role.DSA);
         roles.add(Role.PRESIDENT);
         roles.add(Role.COMMUNITY);
         roles.add(Role.FINANCE);
         roles.add(Role.OFFICE_HEAD);
+        roles.add(Role.PERSONNEL);
+        roles.add(Role.GUIDANCE);
+        roles.add(Role.CASHIER);
+        roles.add(Role.LIBRARIAN);
+        roles.add(Role.SCHOOL_NURSE);
+        roles.add(Role.REGISTRAR);
 
         return roles.contains(role);
     }

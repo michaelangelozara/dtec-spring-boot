@@ -2,7 +2,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.biometric.Biometric;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.Clearance;
-import com.DTEC.Document_Tracking_and_E_Clearance.clearance_signoff.ClearanceSignoff;
+import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoff;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRole;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.Department;
@@ -99,7 +99,7 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<Clearance> clearances;
 
-    @OneToMany(mappedBy = "personnel")
+    @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<ClearanceSignoff> clearanceSignoffs;
 
