@@ -4,9 +4,11 @@ import java.util.List;
 
 public interface ClearanceService {
 
-    String releaseClearances();
+    String releaseStudentClearances();
 
-    List<ClearanceResponseDto> getAllClearances(int n);
+    String releasePersonnelClearances();
+
+    List<ClearanceResponseDto> getAllClearances();
 
     List<ClearanceResponseDto> getAllStudentClearances();
 
@@ -15,4 +17,7 @@ public interface ClearanceService {
     ClearanceResponseDto getNewClearance();
 
     void onClick(int clearanceId);
+
+    String studentSignClearance(int clearanceId, String signature);
+
 }

@@ -22,15 +22,30 @@ public class clearanceController {
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
     }
 
+    @PostMapping("/students/sign-clearance/{clearance-id}")
+    public ResponseEntity<ApiResponse<String>> studentSignClearance(
+            @PathVariable("clearance-id") int id,
+            @RequestBody Map<String ,String > signatureMap
+    ){
+        String signature = signatureMap.get("signature");
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        "",
+                        this.clearanceService.studentSignClearance(id, signature),
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
+                )
+        );
+    }
+
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ClearanceResponseDto>>> getAllClearance(
-            @RequestParam(value = "n", defaultValue = "50") int n
-    ) {
+    public ResponseEntity<ApiResponse<List<ClearanceResponseDto>>> getAllClearance() {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
                         "Successfully Fetched All Clearances",
-                        this.clearanceService.getAllClearances(n),
+                        this.clearanceService.getAllClearances(),
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()
                 )
@@ -50,7 +65,7 @@ public class clearanceController {
         );
     }
 
-    @GetMapping("/students/new-clearance")
+    @GetMapping("/new-clearance")
     public ResponseEntity<ApiResponse<ClearanceResponseDto>> getStudentClearance() {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
@@ -79,7 +94,7 @@ public class clearanceController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('GUIDANCE', 'DEAN', 'CASHIER', 'LIBRARIAN', 'SCHOOL_NURSE','PROGRAM_HEAD','REGISTRAR', 'DSA', 'MODERATOR', 'PERSONNEL')")
+    @PreAuthorize("hasAnyRole('GUIDANCE', 'DEAN', 'CASHIER', 'LIBRARIAN', 'SCHOOL_NURSE','PROGRAM_HEAD','REGISTRAR', 'DSA')")
     @PostMapping("/sign-clearance/{clearance-id}")
     public ResponseEntity<ApiResponse<Void>> signClearance(
             @PathVariable("clearance-id") int id,

@@ -56,7 +56,7 @@ public class ClubServiceImp implements ClubService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
         // TODO this will be implemented
-//        // check if there's no student officer yet
+//        // check if there's no user officer yet
 //        for(var memberRole : departmentClub.getMemberRoles()){
 //            if(memberRole.getRole().equals(Role.STUDENT_OFFICER)){
 //                memberRole.setRole(Role.STUDENT);
@@ -65,7 +65,7 @@ public class ClubServiceImp implements ClubService {
 //        }
 //
 //        for(var memberRole : departmentClub.getMemberRoles()){
-//            if(memberRole.getUser().getId().equals(student.getId())){
+//            if(memberRole.getUser().getId().equals(user.getId())){
 //                memberRole.setRole(Role.STUDENT_OFFICER);
 //                this.memberRoleRepository.save(memberRole);
 //                break;

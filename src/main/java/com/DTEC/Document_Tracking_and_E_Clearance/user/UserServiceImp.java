@@ -178,7 +178,7 @@ public class UserServiceImp implements UserService {
             var departmentClub = getClub(dto.departmentClubId(), Type.DEPARTMENT);
             var socialClub = getClub(dto.socialClubId(), Type.SOCIAL);
 
-            // get the member role that equal to student officer of the club and set to member
+            // get the member role that equal to user officer of the club and set to member
             if (dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER)) {
                 var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(departmentClub.getId(), Role.STUDENT_OFFICER);
                 unregisterTheStudentFromBeingOfficer(memberRoles);
@@ -286,7 +286,17 @@ public class UserServiceImp implements UserService {
         roles.add(Role.LIBRARIAN);
         roles.add(Role.SCHOOL_NURSE);
         roles.add(Role.REGISTRAR);
-
+        roles.add(Role.SCIENCE_LAB);
+        roles.add(Role.COMPUTER_SCIENCE_LAB);
+        roles.add(Role.ELECTRONICS_LAB);
+        roles.add(Role.CRIM_LAB);
+        roles.add(Role.HRM_LAB);
+        roles.add(Role.NURSING_LAB);
+        roles.add(Role.ACCOUNTING_CLERK);
+        roles.add(Role.CUSTODIAN);
+        roles.add(Role.VPAF);
+        roles.add(Role.VPA);
+        roles.add(Role.MULTIMEDIA);
         return roles.contains(role);
     }
 

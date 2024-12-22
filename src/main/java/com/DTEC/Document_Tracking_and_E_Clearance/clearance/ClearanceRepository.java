@@ -1,6 +1,5 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.clearance;
 
-import org.hibernate.annotations.HQLSelect;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,15 +13,28 @@ import java.util.Optional;
 @Repository
 public interface ClearanceRepository extends JpaRepository<Clearance, Integer> {
 
-    @Query("SELECT c FROM Clearance c WHERE c.student.id = :id")
-    Optional<Clearance> findClearanceByUserId(@Param("id") int id);
-
-    @Query("SELECT COUNT(c) FROM Clearance c")
-    Integer countRow();
-
-    @Query("SELECT c FROM Clearance c JOIN c.student s WHERE s.id =:id")
+    @Query("SELECT c FROM Clearance c JOIN c.user s WHERE s.id =:id")
     Page<Clearance> findAllByStudentId(Pageable pageable, @Param("id") int id);
 
-    @Query("SELECT c FROM Clearance c ORDER BY c.id DESC")
-    List<Clearance> findNewClearance(Pageable pageable);
+    // this is for dean role only
+    @Query("SELECT c FROM Clearance c " +
+            "LEFT JOIN c.user s " +
+            "LEFT JOIN s.department d " +
+            "LEFT JOIN d.users u " +
+            "WHERE u.id =:deanId AND u.role = 'DEAN' AND c.status != 'COMPLETED' AND c.isSubmitted = true")
+    List<Clearance> findAllForDean(@Param("deanId") int deanId);
+
+    // this is for program head role only
+    @Query("SELECT c FROM Clearance c " +
+            "LEFT JOIN c.user s " +
+            "LEFT JOIN s.course co " +
+            "LEFT JOIN co.users u " +
+            "WHERE u.id =:programHeadId AND u.role = 'PROGRAM_HEAD' AND c.status != 'COMPLETED' AND c.isSubmitted = true")
+    List<Clearance> findAllForProgramHead(@Param("programHeadId") int programHeadId);
+
+    @Query("SELECT c FROM Clearance c WHERE c.user.id =:userId ORDER BY c.id DESC")
+    List<Clearance> findClearanceByUserId(@Param("userId") int userId);
+
+    @Query("SELECT c FROM Clearance c WHERE c.status != 'COMPLETED' AND c.isSubmitted = true")
+    List<Clearance> findAll();
 }

@@ -95,7 +95,7 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<Biometric> biometrics;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
     @JsonManagedReference
     private List<Clearance> clearances;
 

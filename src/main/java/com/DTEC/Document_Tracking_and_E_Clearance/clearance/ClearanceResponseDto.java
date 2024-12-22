@@ -12,8 +12,12 @@ public record ClearanceResponseDto(
         @JsonProperty("school_year") String schoolYear,
         @JsonProperty("created_at") LocalDate createdAt,
         @JsonProperty("last_modified") LocalDate lastModified,
-        UserInfoResponseDto student,
+        UserInfoResponseDto user,
         @JsonProperty("clearance_signoffs") List<ClearanceSignoffResponseDto> clearanceSignoff,
-        ClearanceStatus status
+        ClearanceStatus status,
+        @JsonProperty("date_of_student_signature") LocalDate dateOfStudentSignature,
+        @JsonProperty("student_signature") String studentSignature,
+        ClearanceType type,
+        @JsonProperty("is_submitted") boolean isSubmitted
 ) {
 }

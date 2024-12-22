@@ -23,9 +23,13 @@ public class ClearanceMapper {
                 clearance.getSchoolYear(),
                 clearance.getCreatedAt(),
                 clearance.getLastModified(),
-                this.userMapper.toUserInfoResponseDto(clearance.getStudent()),
+                this.userMapper.toUserInfoResponseDto(clearance.getUser()),
                 this.clearanceSignoffMapper.toClearanceSignoffResponseDtoList(clearance.getClearanceSignoffs()),
-                clearance.getStatus()
+                clearance.getStatus(),
+                clearance.getDateOfStudentSignature(),
+                clearance.getStudentSignature(),
+                clearance.getType(),
+                clearance.isSubmitted()
         );
     }
 

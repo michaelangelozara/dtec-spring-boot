@@ -353,7 +353,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         if (user.getRole().equals(Role.MODERATOR)) {
             budgetProposal.setCurrentLocation(CurrentLocation.DSA);
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
-            // check if the student has already been signed
+            // check if the user has already been signed
             if (getSignedPerson(budgetProposal, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
 
@@ -426,7 +426,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
             throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
-            // check if the student has already been signed
+            // check if the user has already been signed
             if (getSignedPerson(communicationLetter, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
             communicationLetter.setCurrentLocation(CurrentLocation.DSA);
@@ -482,7 +482,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
             throw new ForbiddenException("You already Signed this Letter");
 
         if (user.getRole().equals(Role.MODERATOR)) {
-            // check if the student has already been signed
+            // check if the user has already been signed
             if (getSignedPerson(implementationLetterInCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
 

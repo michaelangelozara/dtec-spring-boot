@@ -42,10 +42,24 @@ public class Clearance {
     @Column(name = "last_modified", insertable = false)
     private LocalDate lastModified;
 
+    @Lob
+    @Column(name = "student_signature", columnDefinition = "LONGTEXT")
+    private String studentSignature;
+
+    @Column(name = "is_submitted")
+    private boolean isSubmitted;
+
+    @Enumerated(EnumType.STRING)
+    private ClearanceType type;
+
+    @Lob
+    @Column(name = "date_of_student_signature")
+    private LocalDate dateOfStudentSignature;
+
     @ManyToOne
     @JoinColumn(name = "student_id")
     @JsonBackReference
-    private User student;
+    private User user;
 
     @Enumerated(EnumType.STRING)
     private ClearanceStatus status;

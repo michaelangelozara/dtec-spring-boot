@@ -53,7 +53,14 @@ public class SecurityConfig {
             "LIBRARIAN",
             "SCHOOL_NURSE",
             "PROGRAM_HEAD",
-            "REGISTRAR"
+            "REGISTRAR",
+            "HRM_LAB",
+            "NURSING_LAB",
+            "ACCOUNTING_CLERK",
+            "CUSTODIAN",
+            "VPAF",
+            "VPA",
+            "MULTIMEDIA"
     };
     private final String[] STAFF_ROLES = {
             "SUPER_ADMIN",
@@ -73,9 +80,8 @@ public class SecurityConfig {
             "SUPER_ADMIN",
             "ADMIN",
             "STUDENT",
-            "STUDENT_OFFICER",
             "PERSONNEL",
-            "MODERATOR",
+            "STUDENT_OFFICER",
             "GUIDANCE",
             "DEAN",
             "CASHIER",
@@ -83,7 +89,18 @@ public class SecurityConfig {
             "SCHOOL_NURSE",
             "PROGRAM_HEAD",
             "REGISTRAR",
-            "DSA"
+            "DSA",
+            "SCIENCE_LAB",
+            "COMPUTER_SCIENCE_LAB",
+            "ELECTRONICS_LAB",
+            "CRIM_LAB",
+            "HRM_LAB",
+            "NURSING_LAB",
+            "ACCOUNTING_CLERK",
+            "CUSTODIAN",
+            "VPAF",
+            "VPA",
+            "MULTIMEDIA"
     };
 
     public SecurityConfig(

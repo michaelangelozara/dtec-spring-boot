@@ -139,9 +139,23 @@ public class AdminController {
         );
     }
 
-    @PostMapping("/release-clearances")
-    public ResponseEntity<ApiResponse<Void>> releaseAllClearances() {
-        String response = this.clearanceService.releaseClearances();
+    @PostMapping("/students/release-clearances")
+    public ResponseEntity<ApiResponse<Void>> releaseAllStudentsClearances() {
+        String response = this.clearanceService.releaseStudentClearances();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        true,
+                        response,
+                        null,
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime()
+                )
+        );
+    }
+
+    @PostMapping("/personnel/release-clearances")
+    public ResponseEntity<ApiResponse<Void>> releaseAllPersonnelClearances() {
+        String response = this.clearanceService.releasePersonnelClearances();
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
