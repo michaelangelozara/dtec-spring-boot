@@ -19,4 +19,6 @@ public interface UserService {
     String deleteUser(int id);
 
     String resetPassword(int userId);
+
+    String update(UserRegisterRequestDto dto);
 }

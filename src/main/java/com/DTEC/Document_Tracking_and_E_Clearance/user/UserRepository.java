@@ -36,6 +36,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "OR u.role = 'COMPUTER_SCIENCE_LAB' " +
             "OR u.role = 'ELECTRONICS_LAB' " +
             "OR u.role = 'CRIM_LAB' " +
+            "OR u.role = 'HRM_LAB' " +
+            "OR u.role = 'NURSING_LAB' " +
             "OR u.role = 'DSA'")
     List<User> findAllOfficeInChargeForStudentClearance();
 

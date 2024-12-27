@@ -25,8 +25,8 @@ public class clearanceController {
     @PostMapping("/students/sign-clearance/{clearance-id}")
     public ResponseEntity<ApiResponse<String>> studentSignClearance(
             @PathVariable("clearance-id") int id,
-            @RequestBody Map<String ,String > signatureMap
-    ){
+            @RequestBody Map<String, String> signatureMap
+    ) {
         String signature = signatureMap.get("signature");
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
@@ -81,7 +81,7 @@ public class clearanceController {
     @PostMapping("/{clearance-id}/on-click")
     public ResponseEntity<ApiResponse<Void>> clearanceOnClick(
             @PathVariable("clearance-id") int id
-    ){
+    ) {
         this.clearanceService.onClick(id);
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
@@ -94,7 +94,28 @@ public class clearanceController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('GUIDANCE', 'DEAN', 'CASHIER', 'LIBRARIAN', 'SCHOOL_NURSE','PROGRAM_HEAD','REGISTRAR', 'DSA')")
+    @PreAuthorize("hasAnyRole(" +
+            "'GUIDANCE', " +
+            "'DEAN', " +
+            "'CASHIER', " +
+            "'LIBRARIAN', " +
+            "'SCHOOL_NURSE'," +
+            "'PROGRAM_HEAD'," +
+            "'REGISTRAR', " +
+            "'DSA'," +
+            "'ACCOUNTING_CLERK', " +
+            "'CUSTODIAN', " +
+            "'VPAF', " +
+            "'VPA', " +
+            "'MULTIMEDIA', " +
+            "'SCIENCE_LAB', " +
+            "'COMPUTER_SCIENCE_LAB', " +
+            "'ELECTRONICS_LAB', " +
+            "'CRIM_LAB', " +
+            "'HRM_LAB', " +
+            "'NURSING_LAB', " +
+            "'FINANCE'," +
+            "'PRESIDENT')")
     @PostMapping("/sign-clearance/{clearance-id}")
     public ResponseEntity<ApiResponse<Void>> signClearance(
             @PathVariable("clearance-id") int id,

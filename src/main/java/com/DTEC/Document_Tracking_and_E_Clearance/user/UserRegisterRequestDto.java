@@ -17,6 +17,8 @@ public record UserRegisterRequestDto(
         @JsonProperty("social_club_role") ClubRole socialClubRole,
         @JsonProperty("department_club_id") int departmentClubId,
         @JsonProperty("department_club_role") ClubRole departmentClubRole,
-        @JsonProperty("moderator_club_id") int moderatorClubId
+        @JsonProperty("moderator_club_id") int moderatorClubId,
+        @JsonProperty("type_of_personnel") PersonnelType type,
+        Office office
 ) {
 }

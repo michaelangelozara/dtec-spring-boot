@@ -87,6 +87,12 @@ public class User implements UserDetails {
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDate createdAt;
 
+    @Enumerated(EnumType.STRING)
+    private PersonnelType type;
+
+    @Enumerated(EnumType.STRING)
+    private Office office;
+
     @LastModifiedDate
     @Column(name = "last_modified", insertable = false)
     private LocalDate lastModified;

@@ -22,27 +22,27 @@ public class ClubConfiguration {
             int count = this.clubRepository.countRow();
             if (count == 0) {
                 List<String[]> clubNames = new ArrayList<>();
-                clubNames.add(new String[]{"Computer Science Club", "CSC", "DEPARTMENT"});
-                clubNames.add(new String[]{"Mechanical Engineering Society", "MES", "DEPARTMENT"});
-                clubNames.add(new String[]{"Art and Design Collective", "ADC", "SOCIAL"});
-                clubNames.add(new String[]{"Literature Enthusiasts", "LE", "SOCIAL"});
-                clubNames.add(new String[]{"Electrical Engineering Club", "EEC", "DEPARTMENT"});
-                clubNames.add(new String[]{"Biology Research Group", "BRG", "DEPARTMENT"});
-                clubNames.add(new String[]{"Photography Club", "PC", "SOCIAL"});
-                clubNames.add(new String[]{"Physics Society", "PS", "DEPARTMENT"});
-                clubNames.add(new String[]{"Chemistry Club", "CC", "DEPARTMENT"});
-                clubNames.add(new String[]{"Drama Club", "DC", "SOCIAL"});
-                clubNames.add(new String[]{"Business Club", "BC", "SOCIAL"});
-                clubNames.add(new String[]{"Mathematics Club", "MC", "DEPARTMENT"});
-                clubNames.add(new String[]{"Cultural Exchange Society", "CES", "SOCIAL"});
-                clubNames.add(new String[]{"Music Club", "MC", "SOCIAL"});
-                clubNames.add(new String[]{"Engineering Society", "ES", "DEPARTMENT"});
-                clubNames.add(new String[]{"Environmental Awareness Group", "EAG", "SOCIAL"});
-                clubNames.add(new String[]{"Law and Debate Society", "LDS", "SOCIAL"});
-                clubNames.add(new String[]{"Human Resources Club", "HRC", "DEPARTMENT"});
-                clubNames.add(new String[]{"Finance Society", "FS", "SOCIAL"});
-                clubNames.add(new String[]{"History and Politics Forum", "HPF", "SOCIAL"});
+                clubNames.add(new String[]{"PSITS", "PSITS", "DEPARTMENT"});
+                clubNames.add(new String[]{"Finance", "Finance", "DEPARTMENT"});
+                clubNames.add(new String[]{"JSWAP", "JSWAP", "DEPARTMENT"});
+                clubNames.add(new String[]{"ICPEP.SE", "ICPEP.SE", "DEPARTMENT"});
+                clubNames.add(new String[]{"PNSA", "PNSA", "DEPARTMENT"});
+                clubNames.add(new String[]{"JHARA", "JHARA", "DEPARTMENT"});
+                clubNames.add(new String[]{"JPMA", "JPMA", "DEPARTMENT"});
+                clubNames.add(new String[]{"JPIA", "JPIA", "DEPARTMENT"});
+                clubNames.add(new String[]{"UPSCISTS", "UPSCISTS", "DEPARTMENT"});
+                clubNames.add(new String[]{"JMC", "JMC", "DEPARTMENT"});
+                clubNames.add(new String[]{"PMC", "PMC", "DEPARTMENT"});
 
+                clubNames.add(new String[]{"JEM", "JEM", "SOCIAL"});
+                clubNames.add(new String[]{"CES", "CES", "SOCIAL"});
+                clubNames.add(new String[]{"ASPA", "ASPA", "SOCIAL"});
+                clubNames.add(new String[]{"PCC", "PCC", "SOCIAL"});
+                clubNames.add(new String[]{"MSO", "MSO", "SOCIAL"});
+                clubNames.add(new String[]{"YSLC", "YSLC", "SOCIAL"});
+                clubNames.add(new String[]{"BLC", "BLC", "SOCIAL"});
+                clubNames.add(new String[]{"KKB", "KKB", "SOCIAL"});
+                clubNames.add(new String[]{"KARATE-DO", "KARATE-DO", "SOCIAL"});
 
                 List<Club> clubs = new ArrayList<>();
                 for(var name : clubNames){

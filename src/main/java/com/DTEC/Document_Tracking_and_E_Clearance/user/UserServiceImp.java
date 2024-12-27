@@ -99,6 +99,11 @@ public class UserServiceImp implements UserService {
         return user.getLastname() + ", " + user.getFirstName() + "\'s Password Successfully Reset";
     }
 
+    @Override
+    public String update(UserRegisterRequestDto dto) {
+        return "";
+    }
+
     @Transactional
     @Override
     public void createUser(UserRegisterRequestDto dto) {
@@ -151,21 +156,42 @@ public class UserServiceImp implements UserService {
             savedUser.setDepartment(department);
             this.userRepository.save(savedUser);
 
-        } else if (dto.role().equals(Role.MODERATOR)) {
-            var club = this.clubRepository.findById(dto.moderatorClubId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Club not Found"));
+        } else if (dto.role().equals(Role.MODERATOR) || dto.role().equals(Role.PERSONNEL)) {
+            if (dto.role().equals(Role.MODERATOR)) {
+                var club = this.clubRepository.findById(dto.moderatorClubId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Club not Found"));
 
-            // remove the old moderator from the club
-            var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(dto.moderatorClubId(), Role.MODERATOR);
-            unregisterPersonnelForBeingModerator(memberRoles);
+                // remove the old moderator from the club
+                var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(dto.moderatorClubId(), Role.MODERATOR);
+                unregisterPersonnelForBeingModerator(memberRoles);
 
-            var memberRole = MemberRole.builder()
-                    .role(ClubRole.MODERATOR)
-                    .user(savedUser)
-                    .club(club)
-                    .build();
+                var memberRole = MemberRole.builder()
+                        .role(ClubRole.MODERATOR)
+                        .user(savedUser)
+                        .club(club)
+                        .build();
 
-            this.memberRoleRepository.save(memberRole);
+                this.memberRoleRepository.save(memberRole);
+
+                // set moderator to acad type
+                savedUser.setType(PersonnelType.ACADEMIC);
+                var department = getDepartment(dto.departmentId());
+                var course = getCourse(dto.courseId());
+                savedUser.setDepartment(department);
+                savedUser.setCourse(course);
+            } else {
+                if (dto.type().equals(PersonnelType.ACADEMIC)) {
+                    var department = getDepartment(dto.departmentId());
+                    var course = getCourse(dto.courseId());
+                    savedUser.setDepartment(department);
+                    savedUser.setCourse(course);
+                } else {
+                    savedUser.setOffice(dto.office());
+                }
+                savedUser.setType(dto.type());
+            }
+
+            this.userRepository.save(savedUser);
         } else if (dto.role().equals(Role.STUDENT_OFFICER)) {
             if (dto.yearLevel() == 0) throw new ForbiddenException("Please Select Student Year Level");
 
@@ -280,7 +306,6 @@ public class UserServiceImp implements UserService {
         roles.add(Role.COMMUNITY);
         roles.add(Role.FINANCE);
         roles.add(Role.OFFICE_HEAD);
-        roles.add(Role.PERSONNEL);
         roles.add(Role.GUIDANCE);
         roles.add(Role.CASHIER);
         roles.add(Role.LIBRARIAN);
