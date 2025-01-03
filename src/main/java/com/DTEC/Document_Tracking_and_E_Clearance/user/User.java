@@ -1,6 +1,5 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.biometric.Biometric;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.Clearance;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoff;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRole;
@@ -8,6 +7,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.Department;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
+import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.Fingerprint;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -97,9 +97,9 @@ public class User implements UserDetails {
     @Column(name = "last_modified", insertable = false)
     private LocalDate lastModified;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     @JsonManagedReference
-    private List<Biometric> biometrics;
+    private List<Fingerprint> fingerprints;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
     @JsonManagedReference

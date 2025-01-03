@@ -1,6 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubMapper;
+import com.DTEC.Document_Tracking_and_E_Clearance.club.Type;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.CourseMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.DepartmentMapper;
@@ -38,6 +39,30 @@ public class UserMapper {
                 .password(this.passwordEncoder.encode("1234"))
                 .role(dto.role())
                 .build();
+    }
+
+    public DetailedUserResponseDto toDetailedUserResponseDto(User user) {
+        var socialClub = this.memberRoleUtil.getClubByType(user.getMemberRoles(), Type.SOCIAL);
+        var departmentClub = this.memberRoleUtil.getClubByType(user.getMemberRoles(), Type.DEPARTMENT);
+        return new DetailedUserResponseDto(
+                user.getId(),
+                user.getFirstName(),
+                user.getMiddleName(),
+                user.getLastname(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getYearLevel(),
+                user.getCourse() != null ? this.courseMapper.toCourseResponseDto(user.getCourse()) : null,
+                user.getDepartment() != null ? this.departmentMapper.toDepartmentResponseDto(user.getDepartment()) : null,
+                socialClub != null ? this.clubMapper.toClubInformationResponseDto(socialClub) : null,
+                socialClub != null ? this.memberRoleUtil.getClubRoleByClub(socialClub, user.getId()) : null,
+                departmentClub != null ? this.clubMapper.toClubInformationResponseDto(departmentClub) : null,
+                departmentClub != null ? this.memberRoleUtil.getClubRoleByClub(departmentClub, user.getId()) : null,
+                !user.getMemberRoles().isEmpty() ? this.clubMapper.toClubInformationResponseDto(this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles())) : null,
+                user.getRole().equals(Role.PERSONNEL) ? user.getType() : null,
+                user.getRole().equals(Role.PERSONNEL) ? user.getOffice() : null
+        );
     }
 
     public UserInfoResponseDto toUserInfoResponseDto(User user) {

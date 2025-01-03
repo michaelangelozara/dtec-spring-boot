@@ -229,7 +229,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        implementationLetterInCampus.setStatus(LetterStatus.FOR_EVALUATION);
+        implementationLetterInCampus.setStatus(LetterStatus.IN_PROGRESS);
         this.implementationLetterInCampusRepository.save(implementationLetterInCampus);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -263,7 +263,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        implementationLetterOffCampus.setStatus(LetterStatus.FOR_EVALUATION);
+        implementationLetterOffCampus.setStatus(LetterStatus.IN_PROGRESS);
         this.implementationLetterOffCampusRepository.save(implementationLetterOffCampus);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -524,9 +524,6 @@ public class GenericLetterServiceImp implements GenericLetterService {
         if (user.getRole().equals(Role.COMMUNITY)) {
             if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
-            // check if the moderator has already been signed
-            if (getSignedPerson(implementationLetterOffCampus, Role.MODERATOR).isEmpty())
-                throw new ForbiddenException("The Moderator doesn't signed yet");
 
             implementationLetterOffCampus.setCurrentLocation(CurrentLocation.PRESIDENT);
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);

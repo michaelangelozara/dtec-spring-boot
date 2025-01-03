@@ -10,7 +10,7 @@ public interface UserService {
 
     void createUser(UserRegisterRequestDto dto);
 
-    UserInfoResponseDto getUserById(int id);
+    UserInfoResponseDto getUserByUsername(int id);
 
     List<UserInfoResponseDto> getAllUsers(int s, int e);
 
@@ -20,5 +20,9 @@ public interface UserService {
 
     String resetPassword(int userId);
 
-    String update(UserRegisterRequestDto dto);
+    void update(UserRegisterRequestDto dto, int userId);
+
+    DetailedUserResponseDto getUserById(int id);
+
+    List<UserInfoResponseDto> searchUsers(String searchTerm);
 }

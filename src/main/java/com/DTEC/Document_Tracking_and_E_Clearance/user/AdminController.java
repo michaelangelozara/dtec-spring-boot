@@ -71,6 +71,56 @@ public class AdminController {
         );
     }
 
+    @PostMapping("/update-user/{user-id}")
+    public ResponseEntity<ApiResponse<Void>> updateUser(
+            @PathVariable("user-id") int id,
+            @RequestBody UserRegisterRequestDto dto
+    ){
+        this.userService.update(dto, id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "User has been Modified",
+                                null,
+                                "",
+                                ""
+                        )
+                );
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<ApiResponse<List<UserInfoResponseDto>>> searchUser(
+            @RequestParam("q") String searchTerm
+    ){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                this.userService.searchUsers(searchTerm),
+                                "",
+                                ""
+                        )
+                );
+    }
+
+    @GetMapping("/users/{user-id}")
+    public ResponseEntity<ApiResponse<DetailedUserResponseDto>> getUserById(
+            @PathVariable("user-id") int userId
+    ){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                this.userService.getUserById(userId),
+                                "",
+                                ""
+                        )
+                );
+    }
+
     @DeleteMapping("/users/delete/{user-id}")
     public ResponseEntity<ApiResponse<String>> deleteUser(
             @PathVariable("user-id") int id
@@ -142,7 +192,7 @@ public class AdminController {
     @PostMapping("/students/release-clearances")
     public ResponseEntity<ApiResponse<Void>> releaseAllStudentsClearances() {
         String response = this.clearanceService.releaseStudentClearances();
-        return ResponseEntity.status(HttpStatus.OK).body(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
                         true,
                         response,
@@ -156,7 +206,7 @@ public class AdminController {
     @PostMapping("/personnel/release-clearances")
     public ResponseEntity<ApiResponse<Void>> releaseAllPersonnelClearances() {
         String response = this.clearanceService.releasePersonnelClearances();
-        return ResponseEntity.status(HttpStatus.OK).body(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
                         true,
                         response,

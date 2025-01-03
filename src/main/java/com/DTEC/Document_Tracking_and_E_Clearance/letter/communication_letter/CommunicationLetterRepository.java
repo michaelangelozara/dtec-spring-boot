@@ -1,7 +1,5 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubRole;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

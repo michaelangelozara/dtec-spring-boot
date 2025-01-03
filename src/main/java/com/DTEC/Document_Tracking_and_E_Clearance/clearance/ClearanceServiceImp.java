@@ -608,11 +608,15 @@ public class ClearanceServiceImp implements ClearanceService {
 
     @Override
     public ClearanceResponseDto getNewClearance() {
-        var student = this.userUtil.getCurrentUser();
-        if (student == null) throw new UnauthorizedException("Session Expired");
+        try {
+            var student = this.userUtil.getCurrentUser();
+            if (student == null) throw new UnauthorizedException("Session Expired");
 
-        var clearancePage = this.clearanceRepository.findClearanceByUserId(student.getId());
-        return this.clearanceMapper.toClearanceResponseDto(clearancePage.get(0));
+            var clearancePage = this.clearanceRepository.findClearanceByUserId(student.getId());
+            return this.clearanceMapper.toClearanceResponseDto(clearancePage.get(0));
+        } catch (IndexOutOfBoundsException e) {
+            throw new ForbiddenException("Clearance is not Available, Please Contact the Admin to Release the Clearance");
+        }
     }
 
     @Override

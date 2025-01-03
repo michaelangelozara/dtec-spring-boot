@@ -52,7 +52,7 @@ public class AdminConfig {
 
                 User adminTorres = User.builder()
                         .firstName("Christian James")
-                        .middleName("")
+                        .middleName("Valdez")
                         .lastname("Torres")
                         .email("charistialjamestorres@gmail.com")
                         .role(Role.SUPER_ADMIN)

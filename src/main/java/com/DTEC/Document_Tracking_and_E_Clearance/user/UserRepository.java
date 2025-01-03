@@ -61,4 +61,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "OR u.role = 'VPA' " +
             "OR u.role = 'PRESIDENT'")
     List<User> findAllOfficeInChargeForPersonnelClearance();
+
+    @Query("""
+            SELECT u FROM User u WHERE u.firstName LIKE %:searchTerm% OR u.lastname LIKE %:searchTerm%
+            """)
+    List<User> findUserBySearchTerm(@Param("searchTerm") String searchTerm);
 }

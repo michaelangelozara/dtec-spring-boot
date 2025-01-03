@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // this allows to authenticate and refresh user's access token
             // without validating the token's expiration and type
-            if(request.getServletPath().contains("/api/v1/auth")){
+            if(request.getServletPath().contains("/api/v1/auth") || request.getServletPath().startsWith("/ws")){
                 filterChain.doFilter(request, response);
                 return;
             }

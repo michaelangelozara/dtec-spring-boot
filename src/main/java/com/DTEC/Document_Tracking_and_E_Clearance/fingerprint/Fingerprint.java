@@ -1,30 +1,38 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.biometric;
+package com.DTEC.Document_Tracking_and_E_Clearance.fingerprint;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.e_signature.ESignature;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "biometrics")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
-public class Biometric {
+@Entity
+@Table(name = "fingerprints")
+@EntityListeners(AuditingEntityListener.class)
+public class Fingerprint {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Lob
-    private String data;
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
+    private String fingerprint;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
+    private User user;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -35,7 +43,7 @@ public class Biometric {
     private LocalDate lastModified;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "e_signature_id")
     @JsonBackReference
-    private User user;
+    private ESignature eSignature;
 }
