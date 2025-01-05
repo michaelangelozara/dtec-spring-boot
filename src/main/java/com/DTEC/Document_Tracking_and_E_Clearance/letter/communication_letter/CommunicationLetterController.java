@@ -58,7 +58,7 @@ public class CommunicationLetterController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR','STUDENT_OFFICER', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR','STUDENT_OFFICER', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
     public ResponseEntity<ApiResponse<CommunicationLetterResponseDto>> getCommunicationLetter(
             @PathVariable("id") int id
     ) {

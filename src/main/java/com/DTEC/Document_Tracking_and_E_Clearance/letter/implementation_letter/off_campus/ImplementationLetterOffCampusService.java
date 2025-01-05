@@ -65,7 +65,7 @@ public class ImplementationLetterOffCampusService {
                 .implementationLetterOffCampus(savedImplementationLetter)
                 .build();
 
-        var community = getSignedPeople(savedImplementationLetter, Role.COMMUNITY);
+        var officeHead = getSignedPeople(savedImplementationLetter, Role.OFFICE_HEAD);
         var president = getSignedPeople(savedImplementationLetter, Role.PRESIDENT);
 
         List<CAOO> caoos = new ArrayList<>();
@@ -80,7 +80,7 @@ public class ImplementationLetterOffCampusService {
             caoos.add(tempCaoo);
         }
 
-        this.signedPeopleRepository.saveAll(List.of(signedPeople, community, president));
+        this.signedPeopleRepository.saveAll(List.of(signedPeople, officeHead, president));
         this.caooRepository.saveAll(caoos);
     }
 

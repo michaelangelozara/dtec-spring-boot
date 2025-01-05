@@ -44,6 +44,8 @@ public class ClearanceUtil {
     }
 
     public static ClearanceSignoff getClearanceSignoff(User user, Clearance clearance) {
+        if(user == null) return null;
+
         return ClearanceSignoff.builder()
                 .status(ClearanceSignOffStatus.PENDING)
                 .clearance(clearance)
@@ -99,6 +101,6 @@ public class ClearanceUtil {
         map.put("BSHM", Role.HRM_LAB);
 
         return users.stream().filter(u -> u.getRole().equals(map.get(courseShortName))).findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Laboratory In-Charge not Found"));
+                .orElse(null);
     }
 }

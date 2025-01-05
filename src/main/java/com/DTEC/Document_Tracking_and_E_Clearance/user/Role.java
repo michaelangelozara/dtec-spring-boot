@@ -9,7 +9,6 @@ public enum Role {
     STUDENT_OFFICER,
     DSA,
     PRESIDENT,
-    COMMUNITY,
     FINANCE,
     OFFICE_HEAD,
 

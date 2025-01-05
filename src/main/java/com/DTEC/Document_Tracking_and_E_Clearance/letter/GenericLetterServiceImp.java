@@ -134,8 +134,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var budgetProposal = this.budgetProposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Budget Proposal"));
 
-        if (budgetProposal.getStatus().equals(LetterStatus.COMPLETED)
-                || budgetProposal.getStatus().equals(LetterStatus.DECLINED)) return;
+        // this avoids letter manipulation if it is completed or declined
+        breaker(budgetProposal);
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -164,12 +164,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
+    private void breaker(SharedFields sharedFields) {
+        if (sharedFields.getStatus().equals(LetterStatus.COMPLETED) ||
+                sharedFields.getStatus().equals(LetterStatus.DECLINED)) return;
+    }
+
     private void communicationLetterOnClick(int id) {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Invalid Communication Letter"));
 
-        if (communicationLetter.getStatus().equals(LetterStatus.COMPLETED) ||
-                communicationLetter.getStatus().equals(LetterStatus.DECLINED)) return;
+        // this avoids letter manipulation if it is completed or declined
+        breaker(communicationLetter);
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -202,8 +207,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var implementationLetterInCampus = this.implementationLetterInCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter In Campus"));
 
-        if (implementationLetterInCampus.getStatus().equals(LetterStatus.COMPLETED) ||
-                implementationLetterInCampus.getStatus().equals(LetterStatus.DECLINED)) return;
+        // this avoids letter manipulation if it is completed or declined
+        breaker(implementationLetterInCampus);
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -236,8 +241,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var implementationLetterOffCampus = this.implementationLetterOffCampusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter Off Campus"));
 
-        if (implementationLetterOffCampus.getStatus().equals(LetterStatus.COMPLETED) ||
-                implementationLetterOffCampus.getStatus().equals(LetterStatus.DECLINED)) return;
+        // this avoids letter manipulation if it is completed or declined
+        breaker(implementationLetterOffCampus);
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -519,7 +524,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         if (signedPerson.getStatus().equals(SignedPeopleStatus.EVALUATED))
             throw new ForbiddenException("You already Signed this Letter");
 
-        if (user.getRole().equals(Role.COMMUNITY)) {
+        if (user.getRole().equals(Role.OFFICE_HEAD)) {
             if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
 
@@ -529,7 +534,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
             if (getSignedPerson(implementationLetterOffCampus, Role.STUDENT_OFFICER).isEmpty())
                 throw new ForbiddenException("The Student Officer doesn't signed yet");
 
-            if (getSignedPerson(implementationLetterOffCampus, Role.COMMUNITY).isEmpty())
+            if (getSignedPerson(implementationLetterOffCampus, Role.OFFICE_HEAD).isEmpty())
                 throw new ForbiddenException("The Moderator doesn't signed yet");
 
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);

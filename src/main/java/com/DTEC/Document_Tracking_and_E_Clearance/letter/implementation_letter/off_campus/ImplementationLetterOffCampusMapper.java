@@ -68,7 +68,7 @@ public class ImplementationLetterOffCampusMapper {
                 .dateAndTimeOfImplementation(utcDateTime.toLocalDateTime())
                 .programOrFlow(dto.programOrFlowOfActivity())
                 .type(TypeOfLetter.IMPLEMENTATION_LETTER_OFF_CAMPUS)
-                .currentLocation(CurrentLocation.COMMUNITY)
+                .currentLocation(CurrentLocation.OFFICE_HEAD)
                 .status(LetterStatus.FOR_EVALUATION)
                 .build();
     }

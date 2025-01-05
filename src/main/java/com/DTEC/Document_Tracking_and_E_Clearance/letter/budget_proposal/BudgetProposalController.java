@@ -59,7 +59,7 @@ public class BudgetProposalController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'STUDENT_OFFICER', 'MODERATOR', 'DSA', 'COMMUNITY', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'STUDENT_OFFICER', 'MODERATOR', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
     public ResponseEntity<ApiResponse<BudgetProposalResponseDto>> getBudgetProposal(
             @PathVariable("id") int id
     ) {

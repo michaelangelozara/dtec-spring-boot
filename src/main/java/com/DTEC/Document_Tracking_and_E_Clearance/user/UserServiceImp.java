@@ -14,7 +14,6 @@ import com.DTEC.Document_Tracking_and_E_Clearance.department.DepartmentRepositor
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.*;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.TokenRepository;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,9 +76,8 @@ public class UserServiceImp implements UserService {
 
     @Override
     public String deleteUser(int id) {
-        var user = this.userRepository.findById(id).orElse(null);
-        if (user == null)
-            throw new ResourceNotFoundException("Deletion Failed. Invalid User");
+        var user = this.userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
         user.setDeleted(true);
         user.setDeletedAt(LocalDate.now());
@@ -139,9 +137,10 @@ public class UserServiceImp implements UserService {
         return this.userMapper.toUserInfoDtoList(users);
     }
 
-    private void setUpUser(User savedUser, UserRegisterRequestDto dto){
+    private void setUpUser(User savedUser, UserRegisterRequestDto dto) {
         if (dto.role().equals(Role.PROGRAM_HEAD)) {
             var course = getCourse(dto.courseId());
+            var department = getDepartment(dto.departmentId());
 
             var oldProgramHeadOptional = course.getUsers().stream().filter(u -> u.getRole().equals(Role.PROGRAM_HEAD)).findFirst();
 
@@ -153,6 +152,7 @@ public class UserServiceImp implements UserService {
             }
 
             savedUser.setCourse(course);
+            savedUser.setDepartment(department);
             this.userRepository.save(savedUser);
         } else if (dto.role().equals(Role.DEAN)) {
             var department = getDepartment(dto.departmentId());
@@ -265,6 +265,12 @@ public class UserServiceImp implements UserService {
                     .club(socialClub)
                     .build();
             this.memberRoleRepository.saveAll(List.of(departmentMemberRole, socialMemberRole));
+            this.userRepository.save(savedUser);
+        } else if (UserUtil.getLabInChargeRoles().contains(dto.role())) {
+            var department = getDepartment(dto.departmentId());
+            var course = getCourse(dto.courseId());
+            savedUser.setDepartment(department);
+            savedUser.setCourse(course);
             this.userRepository.save(savedUser);
         } else {
             throw new ForbiddenException("Please Select a Valid Role");
@@ -471,7 +477,6 @@ public class UserServiceImp implements UserService {
         roles.add(Role.ADMIN);
         roles.add(Role.DSA);
         roles.add(Role.PRESIDENT);
-        roles.add(Role.COMMUNITY);
         roles.add(Role.FINANCE);
         roles.add(Role.OFFICE_HEAD);
         roles.add(Role.GUIDANCE);
@@ -479,12 +484,6 @@ public class UserServiceImp implements UserService {
         roles.add(Role.LIBRARIAN);
         roles.add(Role.SCHOOL_NURSE);
         roles.add(Role.REGISTRAR);
-        roles.add(Role.SCIENCE_LAB);
-        roles.add(Role.COMPUTER_SCIENCE_LAB);
-        roles.add(Role.ELECTRONICS_LAB);
-        roles.add(Role.CRIM_LAB);
-        roles.add(Role.HRM_LAB);
-        roles.add(Role.NURSING_LAB);
         roles.add(Role.ACCOUNTING_CLERK);
         roles.add(Role.CUSTODIAN);
         roles.add(Role.VPAF);

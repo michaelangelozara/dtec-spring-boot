@@ -4,7 +4,6 @@ public enum CurrentLocation {
     MODERATOR,
     DSA,
     PRESIDENT,
-    COMMUNITY,
     FINANCE,
     OFFICE_HEAD
 }

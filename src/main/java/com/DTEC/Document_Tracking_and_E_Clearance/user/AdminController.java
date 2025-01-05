@@ -71,7 +71,7 @@ public class AdminController {
         );
     }
 
-    @PostMapping("/update-user/{user-id}")
+    @PutMapping("/update-user/{user-id}")
     public ResponseEntity<ApiResponse<Void>> updateUser(
             @PathVariable("user-id") int id,
             @RequestBody UserRegisterRequestDto dto

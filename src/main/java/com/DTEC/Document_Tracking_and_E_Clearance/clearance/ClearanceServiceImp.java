@@ -123,6 +123,9 @@ public class ClearanceServiceImp implements ClearanceService {
                 ;
                 var cs8 = ClearanceUtil.getClearanceSignoff(dean, savedClearance);
 
+                if(cs9 != null)
+                    clearanceSignoffs.add(cs9);
+
                 clearanceSignoffs.addAll(List.of(
                         cs1,
                         cs2,
@@ -131,8 +134,7 @@ public class ClearanceServiceImp implements ClearanceService {
                         cs5,
                         cs6,
                         cs7,
-                        cs8,
-                        cs9
+                        cs8
                 ));
             }
             this.clearanceSignoffRepository.saveAll(clearanceSignoffs);
@@ -215,6 +217,20 @@ public class ClearanceServiceImp implements ClearanceService {
                     csMe.setStatus(ClearanceSignOffStatus.COMPLETED);
 
                     if (UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
+                        var course = personnel.getCourse();
+                        var usersFromCourse = course.getUsers();
+                        var tempProgramHead = UserUtil.getUserByRole(usersFromCourse, Role.PROGRAM_HEAD);
+                        var tempCs8 = ClearanceUtil.getClearanceSignoff(tempProgramHead, savedClearance);
+
+                        var department = personnel.getDepartment();
+                        var usersFromDepartment = department.getUsers();
+                        var tempDean = UserUtil.getUserByRole(usersFromDepartment, Role.DEAN);
+                        var tempCs9 = ClearanceUtil.getClearanceSignoff(tempDean, savedClearance);
+
+                        clearanceSignoffs.add(tempCs8);
+                        clearanceSignoffs.add(tempCs9);
+                        clearanceSignoffs.add(csMe);
+
                         clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, cs8, cs9, cs10, csMe));
                     } else {
                         var users = UserUtil.getAllUserExceptTo(allPersonnel, new HashSet<>() {

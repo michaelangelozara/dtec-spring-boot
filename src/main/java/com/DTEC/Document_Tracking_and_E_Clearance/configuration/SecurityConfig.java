@@ -44,7 +44,6 @@ public class SecurityConfig {
             "STUDENT_OFFICER",
             "DSA",
             "PRESIDENT",
-            "COMMUNITY",
             "FINANCE",
             "OFFICE_HEAD",
             "GUIDANCE",
@@ -74,7 +73,6 @@ public class SecurityConfig {
             "STUDENT_OFFICER",
             "DSA",
             "PRESIDENT",
-            "COMMUNITY",
             "FINANCE",
             "OFFICE_HEAD"
     };
