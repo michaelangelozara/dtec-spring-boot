@@ -10,7 +10,10 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.InternalServerErrorE
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.*;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.PersonnelType;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -84,12 +88,12 @@ public class ClearanceServiceImp implements ClearanceService {
 
             List<ClearanceSignoff> clearanceSignoffs = new ArrayList<>();
             for (var savedClearance : savedClearances) {
-                var cs1 = getClearanceSignoff(dsa, savedClearance);
-                var cs2 = getClearanceSignoff(guidance, savedClearance);
-                var cs3 = getClearanceSignoff(cashier, savedClearance);
-                var cs4 = getClearanceSignoff(librarian, savedClearance);
-                var cs5 = getClearanceSignoff(schoolNurse, savedClearance);
-                var cs6 = getClearanceSignoff(registrar, savedClearance);
+                var cs1 = ClearanceUtil.getClearanceSignoff(dsa, savedClearance);
+                var cs2 = ClearanceUtil.getClearanceSignoff(guidance, savedClearance);
+                var cs3 = ClearanceUtil.getClearanceSignoff(cashier, savedClearance);
+                var cs4 = ClearanceUtil.getClearanceSignoff(librarian, savedClearance);
+                var cs5 = ClearanceUtil.getClearanceSignoff(schoolNurse, savedClearance);
+                var cs6 = ClearanceUtil.getClearanceSignoff(registrar, savedClearance);
                 // TODO - In this part the assignment of the lab depends on the course of the user
 
                 // get the user of this clearance
@@ -100,7 +104,7 @@ public class ClearanceServiceImp implements ClearanceService {
 
                 var labInCharge = ClearanceUtil.getLabInChargeBasedOnStudentCourse(allOfficeInCharge, studentCourse.getShortName());
 
-                var cs9 = getClearanceSignoff(labInCharge, savedClearance);
+                var cs9 = ClearanceUtil.getClearanceSignoff(labInCharge, savedClearance);
 
                 // get the program head of this user
                 var programHead = student.getCourse().getUsers()
@@ -108,7 +112,7 @@ public class ClearanceServiceImp implements ClearanceService {
                         .filter(u -> u.getRole().equals(Role.PROGRAM_HEAD))
                         .findFirst()
                         .orElseThrow(() -> new ResourceNotFoundException("The clearance can't release due to the Program Head's account is not created yet"));
-                var cs7 = getClearanceSignoff(programHead, savedClearance);
+                var cs7 = ClearanceUtil.getClearanceSignoff(programHead, savedClearance);
 
                 // get dean of this user
                 var dean = student.getDepartment().getUsers()
@@ -117,7 +121,7 @@ public class ClearanceServiceImp implements ClearanceService {
                         .findFirst()
                         .orElseThrow(() -> new ResourceNotFoundException("The clearance can't release due to the Dean's account is not created yet"));
                 ;
-                var cs8 = getClearanceSignoff(dean, savedClearance);
+                var cs8 = ClearanceUtil.getClearanceSignoff(dean, savedClearance);
 
                 clearanceSignoffs.addAll(List.of(
                         cs1,
@@ -140,34 +144,33 @@ public class ClearanceServiceImp implements ClearanceService {
         }
     }
 
+    @Transactional
     @Override
     public String releasePersonnelClearances() {
         try {
-            var students = this.userRepository.findAllPersonnel();
-            if (students.isEmpty())
+            var allPersonnel = this.userRepository.findAllPersonnel();
+            if (allPersonnel.isEmpty())
                 throw new ResourceNotFoundException("No Registered Personnel yet");
 
             // fetch all Office in-charges
             var allOfficeInCharge = this.userRepository.findAllOfficeInChargeForPersonnelClearance();
 
-            var multimedia = getUserByRole(allOfficeInCharge, Role.MULTIMEDIA, "Multimedia");
-            var librarian = getUserByRole(allOfficeInCharge, Role.LIBRARIAN, "Librarian");
-            var cashier = getUserByRole(allOfficeInCharge, Role.CASHIER, "Cashier");
-            var registrar = getUserByRole(allOfficeInCharge, Role.REGISTRAR, "Registrar");
-            var accountingClerk = getUserByRole(allOfficeInCharge, Role.ACCOUNTING_CLERK, "Accounting Clerk");
-            var finance = getUserByRole(allOfficeInCharge, Role.FINANCE, "Finance");
-            var custodian = getUserByRole(allOfficeInCharge, Role.CUSTODIAN, "Property Custodian");
-            var programHead = getUserByRole(allOfficeInCharge, Role.PROGRAM_HEAD, "Program Head");
-            var dean = getUserByRole(allOfficeInCharge, Role.DEAN, "Dean");
-            var vpaf = getUserByRole(allOfficeInCharge, Role.VPAF, "VPAF");
-            var vpa = getUserByRole(allOfficeInCharge, Role.VPA, "VPA");
-            var president = getUserByRole(allOfficeInCharge, Role.PRESIDENT, "President");
+            var multimedia = UserUtil.getUserByRole(allOfficeInCharge, Role.MULTIMEDIA, "Multimedia");
+            var librarian = UserUtil.getUserByRole(allOfficeInCharge, Role.LIBRARIAN, "Librarian");
+            var cashier = UserUtil.getUserByRole(allOfficeInCharge, Role.CASHIER, "Cashier");
+            var registrar = UserUtil.getUserByRole(allOfficeInCharge, Role.REGISTRAR, "Registrar");
+            var accountingClerk = UserUtil.getUserByRole(allOfficeInCharge, Role.ACCOUNTING_CLERK, "Accounting Clerk");
+            var finance = UserUtil.getUserByRole(allOfficeInCharge, Role.FINANCE, "Finance");
+            var custodian = UserUtil.getUserByRole(allOfficeInCharge, Role.CUSTODIAN, "Property Custodian");
+            var vpaf = UserUtil.getUserByRole(allOfficeInCharge, Role.VPAF, "VPAF");
+            var vpa = UserUtil.getUserByRole(allOfficeInCharge, Role.VPA, "VPA");
+            var president = UserUtil.getUserByRole(allOfficeInCharge, Role.PRESIDENT, "President");
 
-            List<Clearance> clearances = students
+            List<Clearance> clearances = allPersonnel
                     .stream()
-                    .map(student -> Clearance.builder()
+                    .map(personnel -> Clearance.builder()
                             .schoolYear(this.schoolYearGenerator.generateSchoolYear())
-                            .user(student)
+                            .user(personnel)
                             .type(ClearanceType.PERSONNEL_CLEARANCE)
                             .status(ClearanceStatus.PENDING)
                             .build()).toList();
@@ -176,60 +179,98 @@ public class ClearanceServiceImp implements ClearanceService {
             List<ClearanceSignoff> clearanceSignoffs = new ArrayList<>();
             for (var savedClearance : savedClearances) {
                 var personnel = savedClearance.getUser();
-                if (personnel.getType().equals(PersonnelType.ACADEMIC)) {
-                    var cs1 = getClearanceSignoff(multimedia, savedClearance);
-                    var cs2 = getClearanceSignoff(librarian, savedClearance);
-                    var cs3 = getClearanceSignoff(cashier, savedClearance);
-                    var cs4 = getClearanceSignoff(registrar, savedClearance);
-                    var cs5 = getClearanceSignoff(accountingClerk, savedClearance);
-                    var cs6 = getClearanceSignoff(finance, savedClearance);
-                    var cs7 = getClearanceSignoff(custodian, savedClearance);
-                    var cs8 = getClearanceSignoff(programHead, savedClearance);
-                    var cs9 = getClearanceSignoff(dean, savedClearance);
-                    var cs10 = getClearanceSignoff(vpaf, savedClearance);
-                    var cs11 = getClearanceSignoff(vpa, savedClearance);
-                    var cs12 = getClearanceSignoff(president, savedClearance);
+                var cs1 = ClearanceUtil.getClearanceSignoff(multimedia, savedClearance);
+                var cs2 = ClearanceUtil.getClearanceSignoff(librarian, savedClearance);
+                var cs3 = ClearanceUtil.getClearanceSignoff(cashier, savedClearance);
+                var cs4 = ClearanceUtil.getClearanceSignoff(registrar, savedClearance);
+                var cs5 = ClearanceUtil.getClearanceSignoff(accountingClerk, savedClearance);
+                var cs6 = ClearanceUtil.getClearanceSignoff(finance, savedClearance);
+                var cs7 = ClearanceUtil.getClearanceSignoff(custodian, savedClearance);
+                var cs8 = ClearanceUtil.getClearanceSignoff(vpaf, savedClearance);
+                var cs9 = ClearanceUtil.getClearanceSignoff(vpa, savedClearance);
+                var cs10 = ClearanceUtil.getClearanceSignoff(president, savedClearance);
 
-                    clearanceSignoffs.addAll(List.of(
-                            cs1,
-                            cs2,
-                            cs3,
-                            cs4,
-                            cs5,
-                            cs6,
-                            cs7,
-                            cs8,
-                            cs9,
-                            cs10,
-                            cs11,
-                            cs12
-                    ));
+                if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) || personnel.getRole().equals(Role.MODERATOR)) {
+                    // this needs to specify the program head receiver of the personnel
+                    var course = personnel.getCourse();
+                    var usersFromCourse = course.getUsers();
+                    var tempProgramHead = UserUtil.getUserByRole(usersFromCourse, Role.PROGRAM_HEAD);
+                    var tempCs8 = ClearanceUtil.getClearanceSignoff(tempProgramHead, savedClearance);
+
+                    var department = personnel.getDepartment();
+                    var usersFromDepartment = department.getUsers();
+                    var tempDean = UserUtil.getUserByRole(usersFromDepartment, Role.DEAN);
+                    var tempCs9 = ClearanceUtil.getClearanceSignoff(tempDean, savedClearance);
+                    var tempCs10 = ClearanceUtil.getClearanceSignoff(vpaf, savedClearance);
+                    var cs11 = ClearanceUtil.getClearanceSignoff(vpa, savedClearance);
+                    var cs12 = ClearanceUtil.getClearanceSignoff(president, savedClearance);
+
+                    clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, tempCs8, tempCs9, tempCs10, cs11, cs12));
+                } else if (personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.NON_ACADEMIC)) {
+                    clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, cs8, cs9, cs10));
+                } else if (UserUtil.getOfficeInChargeRoles().contains(personnel.getRole())) {
+                    var csMe = ClearanceUtil.getClearanceSignoff(personnel, savedClearance);
+                    String signature = this.userUtil.getOfficeInChargeSignature(personnel);
+                    csMe.setSignature(signature); // Automatically set their own signature
+                    csMe.setStatus(ClearanceSignOffStatus.COMPLETED);
+
+                    if (UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
+                        clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, cs8, cs9, cs10, csMe));
+                    } else {
+                        var users = UserUtil.getAllUserExceptTo(allPersonnel, new HashSet<>() {
+                            {
+                                add(Role.OFFICE_HEAD);
+                                add(Role.DSA);
+                                add(Role.PERSONNEL);
+                                add(Role.MODERATOR);
+                                add(Role.PROGRAM_HEAD);
+                                add(Role.DEAN);
+                                add(Role.COMPUTER_SCIENCE_LAB);
+                                add(Role.SCIENCE_LAB);
+                                add(Role.ELECTRONICS_LAB);
+                                add(Role.CRIM_LAB);
+                                add(Role.HRM_LAB);
+                                add(Role.NURSING_LAB);
+                            }
+                        });
+
+                        if (!personnel.getRole().equals(Role.DEAN) && !personnel.getRole().equals(Role.PROGRAM_HEAD)) {
+                            var tempClearanceSignoffs = new ArrayList<>(users
+                                    .stream()
+                                    .map(user -> ClearanceUtil.getClearanceSignoff(user, savedClearance)).toList());
+                            tempClearanceSignoffs.add(csMe);
+
+                            clearanceSignoffs.addAll(tempClearanceSignoffs);
+                        } else {
+                            // possible roles are Dean and program head
+                            if (personnel.getRole().equals(Role.PROGRAM_HEAD)) {
+                                var department = personnel.getDepartment();
+                                var usersFromDepartment = department.getUsers();
+                                var tempDean = UserUtil.getUserByRole(usersFromDepartment, Role.DEAN);
+                                var tempCs9 = ClearanceUtil.getClearanceSignoff(tempDean, savedClearance);
+
+                                var tempClearanceSignoffs = new ArrayList<>(users
+                                        .stream()
+                                        .map(user -> ClearanceUtil.getClearanceSignoff(user, savedClearance)).toList());
+                                tempClearanceSignoffs.add(csMe);
+                                tempClearanceSignoffs.add(tempCs9);
+
+                                clearanceSignoffs.addAll(tempClearanceSignoffs);
+                            } else {
+                                // Dean role
+                                var tempClearanceSignoffs = new ArrayList<>(users
+                                        .stream()
+                                        .map(user -> ClearanceUtil.getClearanceSignoff(user, savedClearance)).toList());
+                                tempClearanceSignoffs.add(csMe);
+                                clearanceSignoffs.addAll(tempClearanceSignoffs);
+                            }
+                        }
+                    }
                 } else {
-                    var cs1 = getClearanceSignoff(multimedia, savedClearance);
-                    var cs2 = getClearanceSignoff(librarian, savedClearance);
-                    var cs3 = getClearanceSignoff(cashier, savedClearance);
-                    var cs4 = getClearanceSignoff(registrar, savedClearance);
-                    var cs5 = getClearanceSignoff(accountingClerk, savedClearance);
-                    var cs6 = getClearanceSignoff(finance, savedClearance);
-                    var cs7 = getClearanceSignoff(custodian, savedClearance);
-                    var cs8 = getClearanceSignoff(vpaf, savedClearance);
-                    var cs9 = getClearanceSignoff(vpa, savedClearance);
-                    var cs10 = getClearanceSignoff(president, savedClearance);
-
-                    clearanceSignoffs.addAll(List.of(
-                            cs1,
-                            cs2,
-                            cs3,
-                            cs4,
-                            cs5,
-                            cs6,
-                            cs7,
-                            cs8,
-                            cs9,
-                            cs10
-                    ));
+                    throw new ForbiddenException("Clearance can't release due to invalid role");
                 }
             }
+
             this.clearanceSignoffRepository.saveAll(clearanceSignoffs);
             return "Clearances Successfully Released";
         } catch (RuntimeException e) {
@@ -237,20 +278,6 @@ public class ClearanceServiceImp implements ClearanceService {
         } catch (Exception e) {
             throw new InternalServerErrorException("Something went wrong");
         }
-    }
-
-    private User getUserByRole(List<User> allOfficeInCharge, Role role, String nameOfOffice) {
-        return allOfficeInCharge.stream().filter(oic -> oic.getRole().equals(role)).findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("The clearance can't release due to the " + nameOfOffice + "'s account is not created yet"));
-    }
-
-    private ClearanceSignoff getClearanceSignoff(User user, Clearance clearance) {
-        return ClearanceSignoff.builder()
-                .status(ClearanceSignOffStatus.PENDING)
-                .clearance(clearance)
-                .role(user.getRole())
-                .user(user)
-                .build();
     }
 
     @Override

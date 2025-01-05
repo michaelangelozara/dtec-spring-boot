@@ -59,7 +59,7 @@ public class UserMapper {
                 socialClub != null ? this.memberRoleUtil.getClubRoleByClub(socialClub, user.getId()) : null,
                 departmentClub != null ? this.clubMapper.toClubInformationResponseDto(departmentClub) : null,
                 departmentClub != null ? this.memberRoleUtil.getClubRoleByClub(departmentClub, user.getId()) : null,
-                !user.getMemberRoles().isEmpty() ? this.clubMapper.toClubInformationResponseDto(this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles())) : null,
+                this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles()) != null ? this.clubMapper.toClubInformationResponseDto(this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles())) : null,
                 user.getRole().equals(Role.PERSONNEL) ? user.getType() : null,
                 user.getRole().equals(Role.PERSONNEL) ? user.getOffice() : null
         );

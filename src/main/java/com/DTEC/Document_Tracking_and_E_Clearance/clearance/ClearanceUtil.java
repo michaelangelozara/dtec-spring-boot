@@ -43,6 +43,15 @@ public class ClearanceUtil {
         return true;
     }
 
+    public static ClearanceSignoff getClearanceSignoff(User user, Clearance clearance) {
+        return ClearanceSignoff.builder()
+                .status(ClearanceSignOffStatus.PENDING)
+                .clearance(clearance)
+                .role(user.getRole())
+                .user(user)
+                .build();
+    }
+
     public static boolean isOneOfLabInChargeSigned(List<ClearanceSignoff> clearanceSignoffs) {
         for (var clearanceSignoff : clearanceSignoffs) {
             if ((clearanceSignoff.getRole().equals(Role.SCIENCE_LAB) ||

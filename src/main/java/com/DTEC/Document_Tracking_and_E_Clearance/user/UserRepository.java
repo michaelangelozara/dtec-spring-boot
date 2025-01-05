@@ -14,7 +14,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT s FROM User s WHERE STR(s.role) = 'STUDENT' OR STR(s.role) = 'STUDENT_OFFICER'")
     List<User> findAllStudents();
 
-    @Query("SELECT s FROM User s WHERE STR(s.role) = 'PERSONNEL' OR STR(s.role) = 'MODERATOR'")
+    @Query("SELECT s FROM User s WHERE STR(s.role) != 'STUDENT' AND STR(s.role) != 'STUDENT_OFFICER' AND STR(s.role) != 'ADMIN' AND STR(s.role) != 'SUPER_ADMIN'")
     List<User> findAllPersonnel();
 
     boolean existsByUsername(String username);

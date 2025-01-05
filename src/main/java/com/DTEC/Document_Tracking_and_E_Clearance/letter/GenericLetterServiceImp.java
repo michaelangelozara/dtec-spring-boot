@@ -101,8 +101,6 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(stringRole, pageable, user.getId());
             implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
-            // Sort the responses by a common property, e.g., "createdDate"
-            genericResponses.sort(Comparator.comparing(GenericResponse::getCreatedDate).reversed());
         }
 
         // sort the gathered data
