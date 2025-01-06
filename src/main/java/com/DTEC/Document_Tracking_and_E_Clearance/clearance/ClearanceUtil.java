@@ -2,14 +2,13 @@ package com.DTEC.Document_Tracking_and_E_Clearance.clearance;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignOffStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoff;
-import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 
 import java.util.*;
 
 public class ClearanceUtil {
-    public static boolean areLibrarianAndMultimediaSigned(List<ClearanceSignoff> clearanceSignoffs) {
+    public static boolean isLibrarianOrMultimediaSigned(List<ClearanceSignoff> clearanceSignoffs) {
         for (var clearanceSignoff : clearanceSignoffs) {
             if ((clearanceSignoff.getRole().equals(Role.LIBRARIAN) ||
                     clearanceSignoff.getRole().equals(Role.MULTIMEDIA)) &&
@@ -44,7 +43,7 @@ public class ClearanceUtil {
     }
 
     public static ClearanceSignoff getClearanceSignoff(User user, Clearance clearance) {
-        if(user == null) return null;
+        if (user == null) return null;
 
         return ClearanceSignoff.builder()
                 .status(ClearanceSignOffStatus.PENDING)
@@ -52,6 +51,26 @@ public class ClearanceUtil {
                 .role(user.getRole())
                 .user(user)
                 .build();
+    }
+
+    public static boolean areAllSignaturesSettled(List<ClearanceSignoff> clearanceSignoffs, List<Role> roles) {
+        for (var role : roles) {
+            for (var clearanceSignoff : clearanceSignoffs) {
+                if (role.equals(clearanceSignoff.getRole()) && clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.PENDING) ||
+                        role.equals(clearanceSignoff.getRole()) && clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.IN_PROGRESS))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isSectionSignedAlready(List<ClearanceSignoff> clearanceSignoffs, Role role) {
+        for (var clearanceSignoff : clearanceSignoffs) {
+            if (clearanceSignoff.getRole().equals(role) && clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.COMPLETED)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isOneOfLabInChargeSigned(List<ClearanceSignoff> clearanceSignoffs) {
@@ -70,9 +89,9 @@ public class ClearanceUtil {
         return false;
     }
 
-    public static boolean isMyRoleIncludedForSigning(List<ClearanceSignoff> clearanceSignoffs, Role role){
-        for(var clearanceSignoff : clearanceSignoffs){
-            if(clearanceSignoff.getRole().equals(role)){
+    public static boolean isMyRoleIncludedForSigning(List<ClearanceSignoff> clearanceSignoffs, Role role) {
+        for (var clearanceSignoff : clearanceSignoffs) {
+            if (clearanceSignoff.getRole().equals(role)) {
                 return true;
             }
         }
@@ -80,7 +99,7 @@ public class ClearanceUtil {
         return false;
     }
 
-    public static boolean isLabInChargeRole(Role role){
+    public static boolean isLabInChargeRole(Role role) {
         Set<Role> roles = new HashSet<>();
         roles.add(Role.SCIENCE_LAB);
         roles.add(Role.COMPUTER_SCIENCE_LAB);

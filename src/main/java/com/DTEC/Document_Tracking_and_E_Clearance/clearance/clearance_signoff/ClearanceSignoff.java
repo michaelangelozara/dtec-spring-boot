@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,6 +35,9 @@ public class ClearanceSignoff {
     @LastModifiedDate
     @Column(name = "last_modified", insertable = false)
     private LocalDate lastModified;
+
+    @Column(name = "date_and_time_of_signature")
+    private LocalDateTime dateAndTimeOfSignature;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")

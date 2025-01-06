@@ -168,7 +168,6 @@ public class UserServiceImp implements UserService {
 
             savedUser.setDepartment(department);
             this.userRepository.save(savedUser);
-
         } else if (dto.role().equals(Role.MODERATOR) || dto.role().equals(Role.PERSONNEL)) {
             if (dto.role().equals(Role.MODERATOR)) {
                 var club = this.clubRepository.findById(dto.moderatorClubId())

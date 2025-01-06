@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -123,7 +124,7 @@ public class ClearanceServiceImp implements ClearanceService {
                 ;
                 var cs8 = ClearanceUtil.getClearanceSignoff(dean, savedClearance);
 
-                if(cs9 != null)
+                if (cs9 != null)
                     clearanceSignoffs.add(cs9);
 
                 clearanceSignoffs.addAll(List.of(
@@ -215,6 +216,7 @@ public class ClearanceServiceImp implements ClearanceService {
                     String signature = this.userUtil.getOfficeInChargeSignature(personnel);
                     csMe.setSignature(signature); // Automatically set their own signature
                     csMe.setStatus(ClearanceSignOffStatus.COMPLETED);
+                    csMe.setDateAndTimeOfSignature(LocalDateTime.now());
 
                     if (UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
                         var course = personnel.getCourse();
@@ -253,6 +255,7 @@ public class ClearanceServiceImp implements ClearanceService {
                         if (!personnel.getRole().equals(Role.DEAN) && !personnel.getRole().equals(Role.PROGRAM_HEAD)) {
                             var tempClearanceSignoffs = new ArrayList<>(users
                                     .stream()
+                                    .filter(user -> !personnel.getRole().equals(user.getRole()))
                                     .map(user -> ClearanceUtil.getClearanceSignoff(user, savedClearance)).toList());
                             tempClearanceSignoffs.add(csMe);
 
@@ -308,8 +311,10 @@ public class ClearanceServiceImp implements ClearanceService {
 
             // check each clearance if their signatures completed before proceed to the dean
             for (var clearance : clearances) {
+                var personnel = clearance.getUser();
+
                 if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.GUIDANCE,
                             Role.CASHIER,
                             Role.LIBRARIAN,
@@ -317,19 +322,22 @@ public class ClearanceServiceImp implements ClearanceService {
                             Role.PROGRAM_HEAD,
                             Role.REGISTRAR,
                             Role.DSA
-                    ))) {
+                    )) && ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())) {
                         clearanceList.add(clearance);
                     }
                 } else {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
-                            Role.CASHIER,
-                            Role.REGISTRAR,
-                            Role.ACCOUNTING_CLERK,
-                            Role.FINANCE,
-                            Role.CUSTODIAN,
-                            Role.PROGRAM_HEAD
-                    )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
-                        clearanceList.add(clearance);
+                    if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
+                            personnel.getRole().equals(Role.MODERATOR) || UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
+                        if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                                Role.CASHIER,
+                                Role.REGISTRAR,
+                                Role.ACCOUNTING_CLERK,
+                                Role.FINANCE,
+                                Role.CUSTODIAN,
+                                Role.PROGRAM_HEAD
+                        )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
+                            clearanceList.add(clearance);
+                        }
                     }
                 }
 
@@ -340,8 +348,10 @@ public class ClearanceServiceImp implements ClearanceService {
 
             // check each clearance if their signatures completed before proceed to the program head
             for (var clearance : clearances) {
+                var personnel = clearance.getUser();
+
                 if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.GUIDANCE,
                             Role.CASHIER,
                             Role.LIBRARIAN,
@@ -351,7 +361,11 @@ public class ClearanceServiceImp implements ClearanceService {
                         clearanceList.add(clearance);
                     }
                 } else {
-                    clearanceList.add(clearance);
+                    if((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
+                            personnel.getRole().equals(Role.MODERATOR) || UserUtil.getLabInChargeRoles().contains(personnel.getRole())){
+                        clearanceList.add(clearance);
+                    }
+
                 }
             }
             return this.clearanceMapper.toClearanceResponseDtoList(clearanceList);
@@ -360,7 +374,7 @@ public class ClearanceServiceImp implements ClearanceService {
             // check each clearance if their signatures completed before proceed to the program head
             for (var clearance : clearances) {
                 if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.GUIDANCE,
                             Role.CASHIER,
                             Role.LIBRARIAN,
@@ -377,7 +391,7 @@ public class ClearanceServiceImp implements ClearanceService {
             var clearances = this.clearanceRepository.findAllClearancesForVPAFAndVPAAndPresident();
             for (var clearance : clearances) {
                 if (clearance.getType().equals(ClearanceType.PERSONNEL_CLEARANCE)) {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.CASHIER,
                             Role.REGISTRAR,
                             Role.ACCOUNTING_CLERK,
@@ -385,7 +399,7 @@ public class ClearanceServiceImp implements ClearanceService {
                             Role.CUSTODIAN,
                             Role.PROGRAM_HEAD,
                             Role.DEAN
-                    )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
+                    )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                         clearanceList.add(clearance);
                     }
                 }
@@ -395,7 +409,7 @@ public class ClearanceServiceImp implements ClearanceService {
             var clearances = this.clearanceRepository.findAllClearancesForVPAFAndVPAAndPresident();
             for (var clearance : clearances) {
                 if (clearance.getType().equals(ClearanceType.PERSONNEL_CLEARANCE)) {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.CASHIER,
                             Role.REGISTRAR,
                             Role.ACCOUNTING_CLERK,
@@ -404,7 +418,7 @@ public class ClearanceServiceImp implements ClearanceService {
                             Role.PROGRAM_HEAD,
                             Role.DEAN,
                             Role.VPAF
-                    )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
+                    )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                         clearanceList.add(clearance);
                     }
                 }
@@ -414,7 +428,7 @@ public class ClearanceServiceImp implements ClearanceService {
             var clearances = this.clearanceRepository.findAllClearancesForVPAFAndVPAAndPresident();
             for (var clearance : clearances) {
                 if (clearance.getType().equals(ClearanceType.PERSONNEL_CLEARANCE)) {
-                    if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.CASHIER,
                             Role.REGISTRAR,
                             Role.ACCOUNTING_CLERK,
@@ -424,7 +438,7 @@ public class ClearanceServiceImp implements ClearanceService {
                             Role.DEAN,
                             Role.VPAF,
                             Role.VPA
-                    )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
+                    )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                         clearanceList.add(clearance);
                     }
                 }
@@ -461,6 +475,7 @@ public class ClearanceServiceImp implements ClearanceService {
         return this.clearanceMapper.toClearanceResponseDtoList(sortedClearances);
     }
 
+    @Transactional
     @Override
     public String signClearance(int clearanceId, String signature) {
         var clearance = this.clearanceRepository.findById(clearanceId)
@@ -472,109 +487,115 @@ public class ClearanceServiceImp implements ClearanceService {
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
 
-        if (isSectionSignedAlready(clearance.getClearanceSignoffs(), user.getRole()))
+        if (ClearanceUtil.isSectionSignedAlready(clearance.getClearanceSignoffs(), user.getRole()))
             throw new ForbiddenException("This Section has already been Signed");
 
-        if (user.getRole().equals(Role.DSA)) {
-            if (isClearanceReadyForDSAOrDeanForStudentClearance(clearance.getClearanceSignoffs(), List.of(
-                    // required signed roles to proceed to dsa
-                    Role.GUIDANCE,
-                    Role.LIBRARIAN,
-                    Role.SCHOOL_NURSE,
-                    Role.REGISTRAR
-            ))) {
-            } else {
-                throw new ForbiddenException("DSA can't sign yet because some required personnel and offices have not signed yet");
-            }
-        } else if (user.getRole().equals(Role.DEAN)) {
-            if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                if (isClearanceReadyForDSAOrDeanForStudentClearance(clearance.getClearanceSignoffs(), List.of(
-                        // required signed roles to proceed to dean
-                        Role.GUIDANCE,
-                        Role.LIBRARIAN,
-                        Role.SCHOOL_NURSE,
-                        Role.REGISTRAR,
-                        Role.DSA
-                )) && ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())) {
-                } else {
-                    throw new ForbiddenException("DEAN can't sign yet because some required personnel and offices have not signed yet");
-                }
-            } else {
-                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
-                        // required signed roles to proceed to dean
-                        Role.GUIDANCE,
-                        Role.REGISTRAR,
-                        Role.CASHIER,
-                        Role.ACCOUNTING_CLERK,
-                        Role.FINANCE,
-                        Role.CUSTODIAN,
-                        Role.PROGRAM_HEAD
-                )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
-                    // TODO this is just temporary removed, due to the assigning of type of personnel is not yet implemented
-//                    ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())
-                } else {
-                    throw new ForbiddenException("DEAN can't sign yet because some required Office In-Charge have not signed yet");
-                }
-            }
-        } else if (user.getRole().equals(Role.VPAF)) {
-            if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
-                        // required signed roles to proceed to dean
-                        Role.GUIDANCE,
-                        Role.REGISTRAR,
-                        Role.CASHIER,
-                        Role.ACCOUNTING_CLERK,
-                        Role.FINANCE,
-                        Role.CUSTODIAN,
-                        Role.PROGRAM_HEAD,
-                        Role.DEAN
-                )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
-                    // TODO this is just temporary removed, due to the assigning of type of personnel is not yet implemented
-//                    ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())
-                } else {
-                    throw new ForbiddenException("VPAF can't sign yet because some required Office In-Charge have not signed yet");
-                }
-            }
-        } else if (user.getRole().equals(Role.VPA)) {
-            if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
-                        // required signed roles to proceed to dean
-                        Role.GUIDANCE,
-                        Role.REGISTRAR,
-                        Role.CASHIER,
-                        Role.ACCOUNTING_CLERK,
-                        Role.FINANCE,
-                        Role.CUSTODIAN,
-                        Role.PROGRAM_HEAD,
-                        Role.VPAF
-                )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
-                    // TODO this is just temporary removed, due to the assigning of type of personnel is not yet implemented
-//                    ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())
-                } else {
-                    throw new ForbiddenException("VPA can't sign yet because some required Office In-Charge have not signed yet");
-                }
-            }
-        } else if (user.getRole().equals(Role.PRESIDENT)) {
-            if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
-                        // required signed roles to proceed to dean
-                        Role.GUIDANCE,
-                        Role.REGISTRAR,
-                        Role.CASHIER,
-                        Role.ACCOUNTING_CLERK,
-                        Role.FINANCE,
-                        Role.CUSTODIAN,
-                        Role.PROGRAM_HEAD,
-                        Role.VPAF,
-                        Role.VPA
-                )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
-                    // TODO this is just temporary removed, due to the assigning of type of personnel is not yet implemented
-//                    ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())
-                } else {
-                    throw new ForbiddenException("PRESIDENT can't sign yet because some required Office In-Charge have not signed yet");
-                }
-            }
-        }
+        var personnel = clearance.getUser();
+
+//        if (user.getRole().equals(Role.DSA)) {
+//            if (isClearanceReadyForDSAOrDeanForStudentClearance(clearance.getClearanceSignoffs(), List.of(
+//                    // required signed roles to proceed to dsa
+//                    Role.GUIDANCE,
+//                    Role.LIBRARIAN,
+//                    Role.SCHOOL_NURSE,
+//                    Role.REGISTRAR
+//            ))) {
+//            } else {
+//                throw new ForbiddenException("DSA can't sign yet because some required personnel and offices have not signed yet");
+//            }
+//        } else if (user.getRole().equals(Role.DEAN)) {
+//            if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
+//                if (isClearanceReadyForDSAOrDeanForStudentClearance(clearance.getClearanceSignoffs(), List.of(
+//                        // required signed roles to proceed to dean
+//                        Role.GUIDANCE,
+//                        Role.LIBRARIAN,
+//                        Role.SCHOOL_NURSE,
+//                        Role.REGISTRAR,
+//                        Role.DSA
+//                )) && ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())) {
+//                } else {
+//                    throw new ForbiddenException("DEAN can't sign yet because some required personnel and offices have not signed yet");
+//                }
+//            } else {
+//                // this is for acad personnel
+//                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
+//                        // required signed roles to proceed to dean
+//                        Role.GUIDANCE,
+//                        Role.REGISTRAR,
+//                        Role.CASHIER,
+//                        Role.ACCOUNTING_CLERK,
+//                        Role.FINANCE,
+//                        Role.CUSTODIAN,
+//                        Role.PROGRAM_HEAD
+//                )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs()) &&
+//                        ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
+//                                personnel.getRole().equals(Role.MODERATOR))) {
+//                } else {
+//                    throw new ForbiddenException("DEAN can't sign yet because some required Office In-Charge have not signed yet");
+//                }
+//            }
+//        } else if (user.getRole().equals(Role.VPAF)) {
+//            if (clearance.getType().equals(ClearanceType.PERSONNEL_CLEARANCE)) {
+//                // check if the personnel is acad
+//                if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
+//                        personnel.getRole().equals(Role.MODERATOR)) {
+//                    if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
+//                            // required signed roles to proceed to dean
+//                            Role.GUIDANCE,
+//                            Role.REGISTRAR,
+//                            Role.CASHIER,
+//                            Role.ACCOUNTING_CLERK,
+//                            Role.FINANCE,
+//                            Role.CUSTODIAN,
+//                            Role.PROGRAM_HEAD,
+//                            Role.DEAN
+//                    )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
+//                    } else {
+//                        throw new ForbiddenException("VPAF can't sign yet because some required Office In-Charge have not signed yet");
+//                    }
+//                } else {
+//
+//                }
+//            }
+//        } else if (user.getRole().equals(Role.VPA)) {
+//            if (clearance.getType().equals(ClearanceType.PERSONNEL_CLEARANCE)) {
+//                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
+//                        // required signed roles to proceed to dean
+//                        Role.GUIDANCE,
+//                        Role.REGISTRAR,
+//                        Role.CASHIER,
+//                        Role.ACCOUNTING_CLERK,
+//                        Role.FINANCE,
+//                        Role.CUSTODIAN,
+//                        Role.PROGRAM_HEAD,
+//                        Role.VPAF
+//                )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
+//                    // TODO this is just temporary removed, due to the assigning of type of personnel is not yet implemented
+////                    ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())
+//                } else {
+//                    throw new ForbiddenException("VPA can't sign yet because some required Office In-Charge have not signed yet");
+//                }
+//            }
+//        } else if (user.getRole().equals(Role.PRESIDENT)) {
+//            if (clearance.getType().equals(ClearanceType.PERSONNEL_CLEARANCE)) {
+//                if (ClearanceUtil.isClearanceReadyForDSAOrDeanForPersonnelClearance(clearance.getClearanceSignoffs(), List.of(
+//                        // required signed roles to proceed to dean
+//                        Role.GUIDANCE,
+//                        Role.REGISTRAR,
+//                        Role.CASHIER,
+//                        Role.ACCOUNTING_CLERK,
+//                        Role.FINANCE,
+//                        Role.CUSTODIAN,
+//                        Role.PROGRAM_HEAD,
+//                        Role.DEAN,
+//                        Role.VPAF,
+//                        Role.VPA
+//                )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
+//                } else {
+//                    throw new ForbiddenException("PRESIDENT can't sign yet because some required Office In-Charge have not signed yet");
+//                }
+//            }
+//        }
 
         var clearanceSignoff = clearance.getClearanceSignoffs()
                 .stream()
@@ -583,10 +604,12 @@ public class ClearanceServiceImp implements ClearanceService {
 
         clearanceSignoff.setSignature(signature);
         clearanceSignoff.setStatus(ClearanceSignOffStatus.COMPLETED);
+        clearanceSignoff.setDateAndTimeOfSignature(LocalDateTime.now());
         this.clearanceSignoffRepository.save(clearanceSignoff);
 
+        // check if all the needed signatures are completed
         if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
-            if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+            if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                     Role.DSA,
                     Role.GUIDANCE,
                     Role.CASHIER,
@@ -600,9 +623,9 @@ public class ClearanceServiceImp implements ClearanceService {
                 this.clearanceRepository.save(clearance);
             }
         } else {
-            var personnel = clearance.getUser();
-            if (personnel.getType().equals(PersonnelType.ACADEMIC)) {
-                if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+            if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
+                    personnel.getRole().equals(Role.MODERATOR) || UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
+                if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                         Role.CASHIER,
                         Role.REGISTRAR,
                         Role.ACCOUNTING_CLERK,
@@ -613,12 +636,12 @@ public class ClearanceServiceImp implements ClearanceService {
                         Role.VPAF,
                         Role.VPA,
                         Role.PRESIDENT
-                )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
+                )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                     clearance.setStatus(ClearanceStatus.COMPLETED);
                     this.clearanceRepository.save(clearance);
                 }
-            } else {
-                if (areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+            } else if (personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.NON_ACADEMIC)) {
+                if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                         Role.CASHIER,
                         Role.REGISTRAR,
                         Role.ACCOUNTING_CLERK,
@@ -627,26 +650,45 @@ public class ClearanceServiceImp implements ClearanceService {
                         Role.VPAF,
                         Role.VPA,
                         Role.PRESIDENT
-                )) && ClearanceUtil.areLibrarianAndMultimediaSigned(clearance.getClearanceSignoffs())) {
+                )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                     clearance.setStatus(ClearanceStatus.COMPLETED);
                     this.clearanceRepository.save(clearance);
+                }
+            } else {
+                if (!personnel.getRole().equals(Role.PROGRAM_HEAD) && !personnel.getRole().equals(Role.DEAN)) {
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                            Role.CASHIER,
+                            Role.REGISTRAR,
+                            Role.ACCOUNTING_CLERK,
+                            Role.FINANCE,
+                            Role.CUSTODIAN,
+                            Role.VPAF,
+                            Role.VPA,
+                            Role.PRESIDENT
+                    )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
+                        clearance.setStatus(ClearanceStatus.COMPLETED);
+                        this.clearanceRepository.save(clearance);
+                    }
+                } else {
+                    // program head and dean
+                    if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
+                            Role.CASHIER,
+                            Role.REGISTRAR,
+                            Role.ACCOUNTING_CLERK,
+                            Role.FINANCE,
+                            Role.CUSTODIAN,
+                            Role.VPAF,
+                            Role.VPA,
+                            Role.PRESIDENT
+                    ))) {
+                        clearance.setStatus(ClearanceStatus.COMPLETED);
+                        this.clearanceRepository.save(clearance);
+                    }
                 }
             }
 
         }
-
         return "Signature has been attached";
-    }
-
-    private boolean areAllSignaturesSettled(List<ClearanceSignoff> clearanceSignoffs, List<Role> roles) {
-        for (var role : roles) {
-            for (var clearanceSignoff : clearanceSignoffs) {
-                if (role.equals(clearanceSignoff.getRole()) && clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.PENDING) ||
-                        role.equals(clearanceSignoff.getRole()) && clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.IN_PROGRESS))
-                    return false;
-            }
-        }
-        return true;
     }
 
     @Override
@@ -697,15 +739,6 @@ public class ClearanceServiceImp implements ClearanceService {
         clearance.setSubmitted(true);
         this.clearanceRepository.save(clearance);
         return "Clearance has been signed";
-    }
-
-    private boolean isSectionSignedAlready(List<ClearanceSignoff> clearanceSignoffs, Role role) {
-        for (var clearanceSignoff : clearanceSignoffs) {
-            if (clearanceSignoff.getRole().equals(role) && clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.COMPLETED)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean isClearanceReadyForDSAOrDeanForStudentClearance(

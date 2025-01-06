@@ -2,6 +2,8 @@ package com.DTEC.Document_Tracking_and_E_Clearance.clearance;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +16,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/clearances")
 public class clearanceController {
 
+    private static final Logger log = LoggerFactory.getLogger(clearanceController.class);
     private final ClearanceService clearanceService;
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
 
