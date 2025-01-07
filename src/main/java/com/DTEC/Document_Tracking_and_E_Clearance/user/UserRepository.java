@@ -16,7 +16,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT s FROM User s WHERE STR(s.role) = 'STUDENT' OR STR(s.role) = 'STUDENT_OFFICER'")
     List<User> findAllStudents();
 
-    @Query("SELECT s FROM User s WHERE STR(s.role) != 'STUDENT' AND STR(s.role) != 'STUDENT_OFFICER' AND STR(s.role) != 'ADMIN' AND STR(s.role) != 'SUPER_ADMIN'")
+    @Query("SELECT s FROM User s WHERE STR(s.role) != 'STUDENT' AND STR(s.role) != 'STUDENT_OFFICER' AND STR(s.role) != 'ADMIN' AND STR(s.role) != 'SUPER_ADMIN' AND s.isDeleted = false ")
     List<User> findAllPersonnel();
 
     boolean existsByUsername(String username);
@@ -71,4 +71,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.isDeleted = false")
     Page<User> findAll(Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.role =:role")
+    Optional<User> findNoDuplicateOICByRole(@Param("role") Role role);
+
+    @Query("SELECT u FROM User u WHERE u.role =:role")
+    Page<User> findAUserByRole(@Param("role") Role role, Pageable pageable);
 }

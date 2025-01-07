@@ -16,7 +16,7 @@ public interface UserService {
 
     UserInfoResponseDto me();
 
-    String deleteUser(int id);
+    void deleteUser(int id);
 
     String resetPassword(int userId);
 
@@ -25,4 +25,6 @@ public interface UserService {
     DetailedUserResponseDto getUserById(int id);
 
     List<UserInfoResponseDto> searchUsers(String searchTerm);
+
+    void changePassword(String password1, String password2);
 }

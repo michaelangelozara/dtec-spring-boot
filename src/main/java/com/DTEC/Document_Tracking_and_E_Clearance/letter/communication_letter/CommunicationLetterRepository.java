@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface CommunicationLetterRepository extends JpaRepository<CommunicationLetter, Integer> {
 
     @Query("""
@@ -18,4 +20,7 @@ public interface CommunicationLetterRepository extends JpaRepository<Communicati
 
     @Query("SELECT c FROM CommunicationLetter c JOIN c.club cl JOIN cl.memberRoles mr WHERE mr.user.id =:id AND STR(mr.role) =:role")
     Page<CommunicationLetter> findAll(Pageable pageable, @Param("id") int id, @Param("role") String role);
+
+    @Query("SELECT c FROM CommunicationLetter c LEFT JOIN c.signedPeople sp LEFT JOIN sp.user u WHERE (u.firstName LIKE %:query% OR u.lastname LIKE %:query%) AND u.id =:id")
+    List<CommunicationLetter> findAllOIC(@Param("query") String query, @Param("id") int id);
 }

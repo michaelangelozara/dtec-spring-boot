@@ -30,7 +30,6 @@ public class Clearance {
     private Integer id;
 
     @NotBlank(message = "School Year cannot be Blank")
-    @Size(max = 20, message = "School Year must not exceed 20 Characters")
     @Column(name = "school_year", nullable = false)
     private String schoolYear;
 

@@ -56,7 +56,7 @@ public class Club {
     @Column(columnDefinition = "LONGTEXT")
     private String logo;
 
-    @OneToMany(mappedBy = "club")
+    @OneToMany(mappedBy = "club", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<MemberRole> memberRoles;
 

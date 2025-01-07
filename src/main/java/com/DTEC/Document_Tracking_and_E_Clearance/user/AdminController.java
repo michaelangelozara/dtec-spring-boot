@@ -121,15 +121,16 @@ public class AdminController {
                 );
     }
 
-    @DeleteMapping("/users/delete/{user-id}")
-    public ResponseEntity<ApiResponse<String>> deleteUser(
+    @DeleteMapping("/users/delete-user/{user-id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
             @PathVariable("user-id") int id
     ) {
+        this.userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         true,
-                        "",
-                        this.userService.deleteUser(id),
+                        "User is Successfully Deleted",
+                        null,
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()
                 )

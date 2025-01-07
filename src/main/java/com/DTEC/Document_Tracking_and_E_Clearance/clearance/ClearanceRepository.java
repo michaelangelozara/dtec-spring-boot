@@ -65,4 +65,10 @@ public interface ClearanceRepository extends JpaRepository<Clearance, Integer> {
 
     @Query("SELECT c FROM Clearance c WHERE c.status != 'COMPLETED' AND c.type = 'PERSONNEL_CLEARANCE'")
     List<Clearance> findAllClearancesForVPAFAndVPAAndPresident();
+
+    @Query("SELECT c FROM Clearance c JOIN c.user u WHERE (u.firstName LIKE %:search% OR u.lastname LIKE %:search%) AND c.status != 'COMPLETED'")
+    List<Clearance> findAllBySearch(@Param("search") String search);
+
+    @Query("SELECT c FROM Clearance c WHERE c.type =:type AND c.isSubmitted = true AND c.status != 'COMPLETED'")
+    List<Clearance> findAllClearanceByType(@Param("type") ClearanceType type);
 }

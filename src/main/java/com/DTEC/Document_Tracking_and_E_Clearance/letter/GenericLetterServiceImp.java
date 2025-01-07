@@ -135,7 +135,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Budget Proposal"));
 
         // this avoids letter manipulation if it is completed or declined
-        breaker(budgetProposal);
+        if (budgetProposal.getStatus().equals(LetterStatus.COMPLETED) ||
+                budgetProposal.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -164,17 +165,13 @@ public class GenericLetterServiceImp implements GenericLetterService {
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
-    private void breaker(SharedFields sharedFields) {
-        if (sharedFields.getStatus().equals(LetterStatus.COMPLETED) ||
-                sharedFields.getStatus().equals(LetterStatus.DECLINED)) return;
-    }
-
     private void communicationLetterOnClick(int id) {
         var communicationLetter = this.communicationLetterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Invalid Communication Letter"));
 
         // this avoids letter manipulation if it is completed or declined
-        breaker(communicationLetter);
+        if (communicationLetter.getStatus().equals(LetterStatus.COMPLETED) ||
+                communicationLetter.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -208,7 +205,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter In Campus"));
 
         // this avoids letter manipulation if it is completed or declined
-        breaker(implementationLetterInCampus);
+        if (implementationLetterInCampus.getStatus().equals(LetterStatus.COMPLETED) ||
+                implementationLetterInCampus.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -242,7 +240,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Implementation Letter Off Campus"));
 
         // this avoids letter manipulation if it is completed or declined
-        breaker(implementationLetterOffCampus);
+        if (implementationLetterOffCampus.getStatus().equals(LetterStatus.COMPLETED) ||
+                implementationLetterOffCampus.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
         if (user == null) throw new UnauthorizedException("Session Expired");
@@ -564,6 +563,31 @@ public class GenericLetterServiceImp implements GenericLetterService {
             default:
                 throw new ForbiddenException("Invalid Type of Letter");
         }
+    }
+
+    @Override
+    public List<GenericResponse> searchLetter(String query) {
+        var user = this.userUtil.getCurrentUser();
+
+        List<GenericResponse> genericResponses = new ArrayList<>();
+
+        List<BudgetProposal> budgetProposals = this.budgetProposalRepository.findAllOIC(query, user.getId());
+        budgetProposals.forEach(b -> genericResponses.add(transformToGeneric(b)));
+
+        List<CommunicationLetter> communicationLetters = this.communicationLetterRepository.findAllOIC(query, user.getId());
+        communicationLetters.forEach(c -> genericResponses.add(transformToGeneric(c, c)));
+
+        List<ImplementationLetterInCampus> implementationLetterInCampuses = this.implementationLetterInCampusRepository.findAllOIC(query, user.getId());
+        implementationLetterInCampuses.forEach(i -> genericResponses.add(transformToGeneric(i)));
+
+        List<ImplementationLetterOffCampus> implementationLetterOffCampuses = this.implementationLetterOffCampusRepository.findAllOIC(query, user.getId());
+        implementationLetterOffCampuses.forEach(i -> genericResponses.add(transformToGeneric(i)));
+
+        // sort the gathered data
+        genericResponses.sort(Comparator.comparing(GenericResponse::getCreatedDate).reversed());
+
+        // Return a sublist for the specified range
+        return genericResponses.subList(0, genericResponses.size());
     }
 
     private void rejectBP(int id, String reasonOfRejection) {

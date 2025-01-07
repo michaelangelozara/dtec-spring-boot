@@ -11,6 +11,6 @@ public class SchoolYearGenerator {
         int currentYear = LocalDate.now().getYear();
         int currentMonth = LocalDate.now().getMonthValue();
         String semester = (currentMonth >= 1 && currentMonth <= 6) ? "2nd" : "1st";
-        return semester + " S.Y " + currentYear + "-" + (currentYear + 1);
+        return semester + " SEM S.Y " + currentYear + "-" + (currentYear + 1);
     }
 }

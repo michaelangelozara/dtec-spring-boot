@@ -33,7 +33,7 @@ public class BudgetProposalController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
                         true,
-                        "Budget Proposal has been saved, Please contact your Moderator for final submission",
+                        "Budget Proposal has been Submitted",
                         null,
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()

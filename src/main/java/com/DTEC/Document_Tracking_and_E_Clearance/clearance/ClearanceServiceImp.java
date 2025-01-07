@@ -200,6 +200,9 @@ public class ClearanceServiceImp implements ClearanceService {
                     var tempProgramHead = UserUtil.getUserByRole(usersFromCourse, Role.PROGRAM_HEAD);
                     var tempCs8 = ClearanceUtil.getClearanceSignoff(tempProgramHead, savedClearance);
 
+                    var labInCharge = ClearanceUtil.getLabInChargeBasedOnStudentCourse(allOfficeInCharge, course.getShortName());
+                    var cs13 = ClearanceUtil.getClearanceSignoff(labInCharge, savedClearance);
+
                     var department = personnel.getDepartment();
                     var usersFromDepartment = department.getUsers();
                     var tempDean = UserUtil.getUserByRole(usersFromDepartment, Role.DEAN);
@@ -208,8 +211,9 @@ public class ClearanceServiceImp implements ClearanceService {
                     var cs11 = ClearanceUtil.getClearanceSignoff(vpa, savedClearance);
                     var cs12 = ClearanceUtil.getClearanceSignoff(president, savedClearance);
 
-                    clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, tempCs8, tempCs9, tempCs10, cs11, cs12));
-                } else if (personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.NON_ACADEMIC)) {
+                    clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, tempCs8, tempCs9, tempCs10, cs11, cs12, cs13));
+                } else if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.NON_ACADEMIC)) ||
+                        UserUtil.getDOGSRoles().contains(personnel.getRole())) { // this condition includes the DSA, Office Head, Guidance, and School Nurse
                     clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, cs8, cs9, cs10));
                 } else if (UserUtil.getOfficeInChargeRoles().contains(personnel.getRole())) {
                     var csMe = ClearanceUtil.getClearanceSignoff(personnel, savedClearance);
@@ -361,8 +365,8 @@ public class ClearanceServiceImp implements ClearanceService {
                         clearanceList.add(clearance);
                     }
                 } else {
-                    if((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
-                            personnel.getRole().equals(Role.MODERATOR) || UserUtil.getLabInChargeRoles().contains(personnel.getRole())){
+                    if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
+                            personnel.getRole().equals(Role.MODERATOR) || UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
                         clearanceList.add(clearance);
                     }
 
@@ -370,7 +374,7 @@ public class ClearanceServiceImp implements ClearanceService {
             }
             return this.clearanceMapper.toClearanceResponseDtoList(clearanceList);
         } else if (user.getRole().equals(Role.DSA)) {
-            List<Clearance> clearances = this.clearanceRepository.findAll();
+            List<Clearance> clearances = this.clearanceRepository.findAllClearanceByType(ClearanceType.STUDENT_CLEARANCE);
             // check each clearance if their signatures completed before proceed to the program head
             for (var clearance : clearances) {
                 if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
@@ -452,6 +456,9 @@ public class ClearanceServiceImp implements ClearanceService {
                 }
             }
             return this.clearanceMapper.toClearanceResponseDtoList(clearanceList);
+        } else if (user.getRole().equals(Role.MULTIMEDIA)) {
+            List<Clearance> clearances = this.clearanceRepository.findAllClearanceByType(ClearanceType.PERSONNEL_CLEARANCE);
+            return this.clearanceMapper.toClearanceResponseDtoList(clearances);
         } else {
             List<Clearance> clearances = this.clearanceRepository.findAll();
             return this.clearanceMapper.toClearanceResponseDtoList(clearances);
@@ -716,7 +723,7 @@ public class ClearanceServiceImp implements ClearanceService {
                 .stream()
                 .filter(cs -> cs.getUser().getId().equals(user.getId()))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid Office In-Charge Assigned for this Clearance"));
+                .orElseThrow(() -> new ResourceNotFoundException("You can't sign this Clearance"));
 
         if (clearanceSignoff.getStatus().equals(ClearanceSignOffStatus.COMPLETED)) return;
 
@@ -741,23 +748,9 @@ public class ClearanceServiceImp implements ClearanceService {
         return "Clearance has been signed";
     }
 
-    private boolean isClearanceReadyForDSAOrDeanForStudentClearance(
-            List<ClearanceSignoff> clearanceSignoffs,
-            List<Role> signedRoles
-    ) {
-        for (var signedRole : signedRoles) {
-            boolean isExist = false;
-            for (var clearanceSignoff : clearanceSignoffs) {
-                if (clearanceSignoff.getUser() != null && clearanceSignoff.getRole().equals(signedRole)) {
-                    isExist = true;
-                    break;
-                }
-            }
-
-            if (!isExist) {
-                return false;
-            }
-        }
-        return true;
+    @Override
+    public List<ClearanceResponseDto> search(String query) {
+        var clearances = this.clearanceRepository.findAllBySearch(query);
+        return this.clearanceMapper.toClearanceResponseDtoList(clearances);
     }
 }

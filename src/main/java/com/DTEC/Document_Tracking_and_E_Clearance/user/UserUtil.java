@@ -37,6 +37,21 @@ public class UserUtil {
                 .orElseThrow(() -> new ResourceNotFoundException("There's no " + role.name() + " in the Organization."));
     }
 
+    public static String getUserFullName(User user) {
+        if (user == null) {
+            return ""; // Return empty string if user is null
+        }
+
+        String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+        String lastName = user.getLastname() != null ? user.getLastname() : "";
+        String middleInitial = (user.getMiddleName() != null && !user.getMiddleName().isEmpty())
+                ? user.getMiddleName().charAt(0) + ". "
+                : "";
+
+        return firstName + " " + middleInitial + lastName;
+
+    }
+
     public static Set<Role> getOfficeInChargeRoles() {
         Set<Role> roles = new HashSet<>();
         roles.add(Role.DSA);
@@ -75,6 +90,16 @@ public class UserUtil {
         return roles;
     }
 
+    // dsa, office head, guidance, and school nurse
+    public static Set<Role> getDOGSRoles() {
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.DSA);
+        roles.add(Role.OFFICE_HEAD);
+        roles.add(Role.GUIDANCE);
+        roles.add(Role.SCHOOL_NURSE);
+        return roles;
+    }
+
     public String getOfficeInChargeSignature(User oic) {
         var fingerprints = oic.getFingerprints();
         var eSignature = fingerprints
@@ -91,5 +116,26 @@ public class UserUtil {
                 .stream()
                 .filter(u -> !roles.contains(u.getRole()))
                 .toList();
+    }
+
+    public static boolean rolesNoMultipleAccount(Role role) {
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.ADMIN);
+        roles.add(Role.DSA);
+        roles.add(Role.PRESIDENT);
+        roles.add(Role.FINANCE);
+        roles.add(Role.OFFICE_HEAD);
+        roles.add(Role.GUIDANCE);
+        roles.add(Role.LIBRARIAN);
+        roles.add(Role.VPAF);
+        roles.add(Role.VPA);
+        roles.add(Role.MULTIMEDIA);
+        roles.add(Role.SCIENCE_LAB);
+        roles.add(Role.COMPUTER_SCIENCE_LAB);
+        roles.add(Role.ELECTRONICS_LAB);
+        roles.add(Role.CRIM_LAB);
+        roles.add(Role.HRM_LAB);
+        roles.add(Role.NURSING_LAB);
+        return roles.contains(role);
     }
 }

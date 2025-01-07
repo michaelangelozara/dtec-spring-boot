@@ -1,10 +1,13 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface ImplementationLetterOffCampusRepository extends JpaRepository<ImplementationLetterOffCampus, Integer> {
 
@@ -19,4 +22,7 @@ public interface ImplementationLetterOffCampusRepository extends JpaRepository<I
             @Param("id") int id,
             @Param("role") String role
     );
+
+    @Query("SELECT i FROM ImplementationLetterOffCampus i LEFT JOIN i.signedPeople sp LEFT JOIN sp.user u WHERE (u.firstName LIKE %:query% OR u.lastname LIKE %:query%) AND u.id =:id")
+    List<ImplementationLetterOffCampus> findAllOIC(@Param("query") String query, @Param("id") int id);
 }

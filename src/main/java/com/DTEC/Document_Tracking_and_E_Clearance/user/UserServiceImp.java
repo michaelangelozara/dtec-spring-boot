@@ -75,14 +75,13 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public String deleteUser(int id) {
+    public void deleteUser(int id) {
         var user = this.userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
         user.setDeleted(true);
         user.setDeletedAt(LocalDate.now());
         this.userRepository.save(user);
-        return "User Successfully Deleted";
     }
 
     @Override
@@ -135,6 +134,28 @@ public class UserServiceImp implements UserService {
     public List<UserInfoResponseDto> searchUsers(String searchTerm) {
         var users = this.userRepository.findUserBySearchTerm(searchTerm);
         return this.userMapper.toUserInfoDtoList(users);
+    }
+
+    @Transactional
+    @Override
+    public void changePassword(String password1, String password2) {
+        var user = this.userUtil.getCurrentUser();
+        var newUser = this.userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+        // check if the passwords match
+        if(password1.equals(password2)){
+            if(password1.isEmpty())
+                throw new ForbiddenException("Password is Empty");
+
+            if(password1.length() < 8)
+                throw new ForbiddenException("Please Provide Password more than 7 Characters");
+
+            newUser.setFirstTimeLogin(false);
+            newUser.setPassword(this.passwordEncoder.encode(password1));
+            this.userRepository.save(newUser);
+        }else{
+         throw new ForbiddenException("Passwords do not match!");
+        }
     }
 
     private void setUpUser(User savedUser, UserRegisterRequestDto dto) {

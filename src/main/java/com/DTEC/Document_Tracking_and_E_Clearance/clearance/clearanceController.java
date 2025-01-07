@@ -136,4 +136,20 @@ public class clearanceController {
                 )
         );
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ClearanceResponseDto>>> searchClearance(
+            @RequestParam("q") String query
+    ){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "List of Clearances by search",
+                                this.clearanceService.search(query),
+                                "",
+                                this.dateTimeFormatterUtil.formatIntoDateTime()
+                        )
+                );
+    }
 }

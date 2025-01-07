@@ -1,6 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.user;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubMapper;
+import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubRole;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.Type;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.CourseMapper;
@@ -18,14 +19,16 @@ public class UserMapper {
     private final DepartmentMapper departmentMapper;
     private final CourseMapper courseMapper;
     private final MemberRoleUtil memberRoleUtil;
+    private final UserRepository userRepository;
 
 
-    public UserMapper(PasswordEncoder passwordEncoder, ClubMapper clubMapper, DepartmentMapper departmentMapper, CourseMapper courseMapper, MemberRoleUtil memberRoleUtil) {
+    public UserMapper(PasswordEncoder passwordEncoder, ClubMapper clubMapper, DepartmentMapper departmentMapper, CourseMapper courseMapper, MemberRoleUtil memberRoleUtil, UserRepository userRepository) {
         this.passwordEncoder = passwordEncoder;
         this.clubMapper = clubMapper;
         this.departmentMapper = departmentMapper;
         this.courseMapper = courseMapper;
         this.memberRoleUtil = memberRoleUtil;
+        this.userRepository = userRepository;
     }
 
     public User toUser(UserRegisterRequestDto dto) {
@@ -66,8 +69,29 @@ public class UserMapper {
     }
 
     public UserInfoResponseDto toUserInfoResponseDto(User user) {
+//        var officerClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
+//        var memberClub = this.memberRoleUtil.getClubOfMember(user.getMemberRoles());
+//        var moderator = officerClub.getMemberRoles().stream().filter(mr -> mr.getRole().equals(ClubRole.MODERATOR)).findFirst().orElse(null);
+//        var dsa = this.userRepository.findNoDuplicateOICByRole(Role.DSA).orElse(null);
+//        var president = this.userRepository.findNoDuplicateOICByRole(Role.PRESIDENT).orElse(null);
+//        var officeHead = this.userRepository.findNoDuplicateOICByRole(Role.OFFICE_HEAD).orElse(null);
+//        var finance = this.userRepository.findNoDuplicateOICByRole(Role.FINANCE).orElse(null);
+
         var officerClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
         var memberClub = this.memberRoleUtil.getClubOfMember(user.getMemberRoles());
+
+        var moderator = (officerClub != null && officerClub.getMemberRoles() != null)
+                ? officerClub.getMemberRoles().stream()
+                .filter(mr -> mr.getRole().equals(ClubRole.MODERATOR))
+                .findFirst()
+                .orElse(null)
+                : null;
+
+        var dsa = this.userRepository.findNoDuplicateOICByRole(Role.DSA).orElse(null);
+        var president = this.userRepository.findNoDuplicateOICByRole(Role.PRESIDENT).orElse(null);
+        var officeHead = this.userRepository.findNoDuplicateOICByRole(Role.OFFICE_HEAD).orElse(null);
+        var finance = this.userRepository.findNoDuplicateOICByRole(Role.FINANCE).orElse(null);
+
         return new UserInfoResponseDto(
                 user.getId(),
                 user.getFirstName(),
@@ -82,9 +106,16 @@ public class UserMapper {
                 user.getDepartment() != null ? this.departmentMapper.toDepartmentResponseDto(user.getDepartment()) : null,
                 officerClub != null ? this.clubMapper.toClubInformationResponseDto(officerClub) : null,
                 memberClub != null ? this.clubMapper.toClubInformationResponseDto(memberClub) : null,
-                officerClub != null ? officerClub.getName() : "N/A"
+                officerClub != null ? officerClub.getName() : "N/A",
+                user.isFirstTimeLogin(),
+                moderator != null ? UserUtil.getUserFullName(moderator.getUser()) : "",
+                dsa != null ? UserUtil.getUserFullName(dsa) : "",
+                president != null ? UserUtil.getUserFullName(president) : "",
+                officeHead != null ? UserUtil.getUserFullName(officeHead) : "",
+                finance != null ? UserUtil.getUserFullName(finance) : ""
         );
     }
+
 
     public List<UserInfoResponseDto> toUserInfoDtoList(List<User> users) {
         return users

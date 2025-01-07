@@ -14,4 +14,6 @@ public interface GenericLetterService {
     void signLetter(TypeOfLetter type, String signature, int letterId);
 
     void rejectLetter(TypeOfLetter type, int id, String reasonOfRejection);
+
+    List<GenericResponse> searchLetter(String query);
 }

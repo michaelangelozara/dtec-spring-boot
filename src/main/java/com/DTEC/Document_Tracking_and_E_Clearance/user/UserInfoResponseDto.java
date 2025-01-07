@@ -21,6 +21,12 @@ public record UserInfoResponseDto(
         DepartmentResponseDto department,
         ClubResponseDto departmentClub,
         ClubResponseDto socialClub,
-        @JsonProperty("officer_at") String officerAt
+        @JsonProperty("officer_at") String officerAt,
+        @JsonProperty("is_first_time_login") boolean isFirstTimeLogin,
+        String moderator,
+        String dsa,
+        String president,
+        @JsonProperty("office_head") String officeHead,
+        String finance
 ) {
 }

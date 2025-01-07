@@ -25,7 +25,8 @@ public class GenericLetterController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<GenericResponse>>> getLettersForModerator(
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MODERATOR', 'STUDENT_OFFICER', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
+    public ResponseEntity<ApiResponse<List<GenericResponse>>> getAllLetters(
             @RequestParam(name = "s", defaultValue = "10") int s
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(
@@ -94,6 +95,22 @@ public class GenericLetterController {
                         this.dateTimeFormatterUtil.formatIntoDateTime()
                 )
         );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<GenericResponse>>> search(
+            @RequestParam("q") String query
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                this.genericLetterService.searchLetter(query),
+                                "",
+                                this.dateTimeFormatterUtil.formatIntoDateTime()
+                        )
+                );
     }
 
 }

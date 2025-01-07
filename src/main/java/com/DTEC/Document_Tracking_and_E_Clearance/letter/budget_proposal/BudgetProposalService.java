@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +86,9 @@ public class BudgetProposalService {
         var president = getSignedPeople(savedBudgetProposal, Role.PRESIDENT);
 
         List<ExpectedExpense> expectedExpenses = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
         for (var expectedExpense : dto.expectedExpenses()) {
+            totalAmount = totalAmount.add(expectedExpense.amount());
             var tempExpectedExpense = ExpectedExpense.builder()
                     .name(expectedExpense.name())
                     .amount(expectedExpense.amount())
@@ -93,6 +96,9 @@ public class BudgetProposalService {
                     .build();
             expectedExpenses.add(tempExpectedExpense);
         }
+
+        if(totalAmount.compareTo(dto.allottedAmount()) != 0)
+            throw new BadRequestException("The Amount Allotted doesn't match to the total of expenses");
 
         this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa, finance, president));
         this.expectedExpenseRepository.saveAll(expectedExpenses);
