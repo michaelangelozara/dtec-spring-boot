@@ -120,4 +120,10 @@ public class FingerprintServiceImp implements FingerprintService {
                 eSignature.getImage()
         );
     }
+
+    @Override
+    public List<FingerprintResponseDto> getAllFingerprints() {
+        var fingerprints = this.fingerprintRepository.findAll();
+        return this.fingerprintMapper.toFingerprintResponseDtoList(fingerprints);
+    }
 }

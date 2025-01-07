@@ -14,4 +14,6 @@ public interface FingerprintService {
     void addESignature(Map<String, String> data);
 
     ESignatureResponseDto getMyESignature();
+
+    List<FingerprintResponseDto> getAllFingerprints();
 }

@@ -211,7 +211,10 @@ public class ClearanceServiceImp implements ClearanceService {
                     var cs11 = ClearanceUtil.getClearanceSignoff(vpa, savedClearance);
                     var cs12 = ClearanceUtil.getClearanceSignoff(president, savedClearance);
 
-                    clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, tempCs8, tempCs9, tempCs10, cs11, cs12, cs13));
+                    if (cs13 != null)
+                        clearanceSignoffs.add(cs13);
+
+                    clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, tempCs8, tempCs9, tempCs10, cs11, cs12));
                 } else if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.NON_ACADEMIC)) ||
                         UserUtil.getDOGSRoles().contains(personnel.getRole())) { // this condition includes the DSA, Office Head, Guidance, and School Nurse
                     clearanceSignoffs.addAll(List.of(cs1, cs2, cs3, cs4, cs5, cs6, cs7, cs8, cs9, cs10));

@@ -76,6 +76,11 @@ public class GenericLetterServiceImp implements GenericLetterService {
         if (user == null) throw new UnauthorizedException("Invalid User");
 
         if (user.getRole().equals(Role.MODERATOR) || user.getRole().equals(Role.STUDENT_OFFICER)) {
+            if(!user.getRole().equals(Role.MODERATOR)){
+                Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
+                implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
+            }
+
             Page<BudgetProposal> budgetProposalPage = this.budgetProposalRepository.findAll(pageable, user.getId(), user.getRole().name());
             budgetProposalPage.getContent().forEach(b -> genericResponses.add(transformToGeneric(b)));
 
@@ -84,9 +89,6 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             Page<ImplementationLetterInCampus> implementationLetterInCampusPage = this.implementationLetterInCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
             implementationLetterInCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
-
-            Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
-            implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
         } else {
             String stringRole = user.getRole().name();
 

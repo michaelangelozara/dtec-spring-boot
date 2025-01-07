@@ -85,7 +85,6 @@ public class WebSocketController {
                 );
     }
 
-
     @MessageMapping("/disconnect")
     public void disconnect(
             @Payload FingerprintValidationRequestDto data

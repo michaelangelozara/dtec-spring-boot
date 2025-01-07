@@ -120,7 +120,6 @@ public class UserUtil {
 
     public static boolean rolesNoMultipleAccount(Role role) {
         Set<Role> roles = new HashSet<>();
-        roles.add(Role.ADMIN);
         roles.add(Role.DSA);
         roles.add(Role.PRESIDENT);
         roles.add(Role.FINANCE);
