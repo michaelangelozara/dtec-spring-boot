@@ -10,12 +10,15 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedExceptio
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class FingerprintServiceImp implements FingerprintService {
@@ -26,6 +29,9 @@ public class FingerprintServiceImp implements FingerprintService {
     private final UserUtil userUtil;
     private final FingerprintMapper fingerprintMapper;
     private final ESignatureRepository eSignatureRepository;
+
+    @Value("${websocket.code}")
+    private String webCode;
 
 
     public FingerprintServiceImp(FingerprintRepository fingerprintRepository, UserRepository userRepository, SimpMessagingTemplate simpMessagingTemplate, UserUtil userUtil, FingerprintMapper fingerprintMapper, ESignatureRepository eSignatureRepository) {
@@ -68,7 +74,7 @@ public class FingerprintServiceImp implements FingerprintService {
     @Override
     public List<FingerprintResponseDto> getFingerprints() {
         var user = this.userUtil.getCurrentUser();
-        if(user == null)
+        if (user == null)
             throw new UnauthorizedException("Session Expired");
 
         var fingerprints = this.fingerprintRepository.findAllByUserId(user.getId());
@@ -82,7 +88,7 @@ public class FingerprintServiceImp implements FingerprintService {
             Integer userId = Integer.parseInt(data.get("user_id"));
             String image = data.get("image");
 
-            if(image == null || image.isEmpty())
+            if (image == null || image.isEmpty())
                 throw new BadRequestException("Invalid Image");
             var eSignature = ESignature.builder()
                     .image(image)
@@ -93,14 +99,14 @@ public class FingerprintServiceImp implements FingerprintService {
                     .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
             var fingerprints = user.getFingerprints();
-            if(fingerprints.isEmpty()) throw new ForbiddenException("Please Register Fingerprint First");
+            if (fingerprints.isEmpty()) throw new ForbiddenException("Please Register Fingerprint First");
 
-            for(var fingerprint: fingerprints){
+            for (var fingerprint : fingerprints) {
                 fingerprint.setESignature(savedESignature);
             }
             this.fingerprintRepository.saveAll(fingerprints);
 
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             throw new ForbiddenException("Invalid User id");
         }
     }
@@ -109,12 +115,12 @@ public class FingerprintServiceImp implements FingerprintService {
     @Override
     public ESignatureResponseDto getMyESignature() {
         var user = this.userUtil.getCurrentUser();
-        if(user == null) throw new ResourceNotFoundException("User not Found");
+        if (user == null) throw new ResourceNotFoundException("User not Found");
 
         var fingerprints = this.fingerprintRepository.findAllByUserId(user.getId());
 
         var eSignature = fingerprints.get(0).getESignature();
-        if(eSignature == null) throw new ResourceNotFoundException("E-Signature not Found");
+        if (eSignature == null) throw new ResourceNotFoundException("E-Signature not Found");
         return new ESignatureResponseDto(
                 eSignature.getId(),
                 eSignature.getImage()
@@ -122,8 +128,17 @@ public class FingerprintServiceImp implements FingerprintService {
     }
 
     @Override
-    public List<FingerprintResponseDto> getAllFingerprints() {
+    public Map<String, List<String>> getAllFingerprints(String code) {
+        if (!code.equals(webCode)) {
+            throw new BadRequestException("Code is incorrect");
+        }
+        List<String> encodedFingerprints = new ArrayList<>();
         var fingerprints = this.fingerprintRepository.findAll();
-        return this.fingerprintMapper.toFingerprintResponseDtoList(fingerprints);
+        for(var fingerprint : fingerprints){
+            encodedFingerprints.add(fingerprint.getFingerprint());
+        }
+        Map<String, List<String>> map = new HashMap<>();
+        map.put("fingerprints", encodedFingerprints);
+        return map;
     }
 }

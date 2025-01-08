@@ -2,6 +2,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.web_socket;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
+import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintResponseDto;
 import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintService;
 import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintValidationRequestDto;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -95,5 +97,4 @@ public class WebSocketController {
             }
         }
     }
-
 }

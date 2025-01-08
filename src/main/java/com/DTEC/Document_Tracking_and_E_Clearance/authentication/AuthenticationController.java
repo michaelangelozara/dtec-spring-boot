@@ -3,6 +3,8 @@ package com.DTEC.Document_Tracking_and_E_Clearance.authentication;
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
 import com.DTEC.Document_Tracking_and_E_Clearance.configuration.JwtService;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
+import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintResponseDto;
+import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintService;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.TokenRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.LoginRequestDto;
@@ -14,12 +16,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -30,13 +31,32 @@ public class AuthenticationController {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
+    private final FingerprintService fingerprintService;
 
-    public AuthenticationController(UserService userService, JwtService jwtService, UserRepository userRepository, TokenRepository tokenRepository, DateTimeFormatterUtil dateTimeFormatterUtil) {
+    public AuthenticationController(UserService userService, JwtService jwtService, UserRepository userRepository, TokenRepository tokenRepository, DateTimeFormatterUtil dateTimeFormatterUtil, FingerprintService fingerprintService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
+        this.fingerprintService = fingerprintService;
+    }
+
+    @PostMapping("/fingerprints")
+    public ResponseEntity<ApiResponse<Map<String, List<String>>>> getAllStoredFingerprints(
+            @RequestBody Map<String, String> map
+    ) {
+        String code = map.get("code");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                this.fingerprintService.getAllFingerprints(code),
+                                "",
+                                null
+                        )
+                );
     }
 
     @PostMapping("/authenticate")
