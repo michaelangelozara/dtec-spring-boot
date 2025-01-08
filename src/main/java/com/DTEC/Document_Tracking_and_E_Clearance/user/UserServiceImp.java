@@ -219,6 +219,8 @@ public class UserServiceImp implements UserService {
                     savedUser.setDepartment(department);
                     savedUser.setCourse(course);
                 } else {
+                    savedUser.setCourse(null);
+                    savedUser.setDepartment(null);
                     savedUser.setOffice(dto.office());
                 }
                 savedUser.setType(dto.type());

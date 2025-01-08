@@ -137,7 +137,7 @@ public class AdminController {
         );
     }
 
-    @PostMapping("/users/reset-password")
+    @PutMapping("/users/reset-password")
     public ResponseEntity<ApiResponse<String>> resetPassword(
             @RequestParam(name = "id") int id
     ) {
