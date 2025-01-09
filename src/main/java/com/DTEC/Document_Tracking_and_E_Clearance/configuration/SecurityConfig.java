@@ -84,6 +84,7 @@ public class SecurityConfig {
             "STUDENT",
             "PERSONNEL",
             "STUDENT_OFFICER",
+            "MODERATOR",
             "GUIDANCE",
             "DEAN",
             "PRESIDENT",
