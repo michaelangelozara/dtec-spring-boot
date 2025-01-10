@@ -15,7 +15,7 @@ public record ImplementationLetterInCampusResponseDto(
         @JsonProperty("semester_and_school_year") String semesterAndSchoolYear,
         String title,
         String venue,
-        @JsonProperty("date_time") LocalDateTime dateTime,
+        @JsonProperty("date_time") String dateTime,
         @JsonProperty("expected_output") String expectedOutput,
         String objective,
         @JsonProperty("projected_expenses") String projectedExpense,

@@ -34,13 +34,16 @@ public class ImplementationLetterInCampusMapper {
                 .stream()
                 .filter(s -> s.getRole().equals(Role.MODERATOR) && s.getUser() != null)
                 .findFirst();
+
+        String[] timeArr = implementationLetterInCampus.getDateTime().toString().split("T");
+
         return new ImplementationLetterInCampusResponseDto(
                 implementationLetterInCampus.getId(),
                 implementationLetterInCampus.getNameOfActivity(),
                 implementationLetterInCampus.getSemesterAndSchoolYear(),
                 implementationLetterInCampus.getTitle(),
                 implementationLetterInCampus.getVenue(),
-                implementationLetterInCampus.getDateTime(),
+                timeArr[0] + " " + timeArr[1],
                 implementationLetterInCampus.getExpectedOutput(),
                 implementationLetterInCampus.getObjective(),
                 implementationLetterInCampus.getProjectedExpense(),

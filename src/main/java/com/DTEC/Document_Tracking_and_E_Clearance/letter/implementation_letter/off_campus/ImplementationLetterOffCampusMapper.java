@@ -33,13 +33,15 @@ public class ImplementationLetterOffCampusMapper {
                 .stream()
                 .filter(s -> s.getRole().equals(Role.MODERATOR) && s.getUser() != null)
                 .findFirst();
+        String[] arrDateTime = implementationLetterOffCampus.getDateAndTimeOfImplementation().toString().split("T");
+
         return new ImplementationLetterOffCampusResponseDto(
                 implementationLetterOffCampus.getId(),
                 implementationLetterOffCampus.getTitleOfActivity(),
                 implementationLetterOffCampus.getDescription(),
                 implementationLetterOffCampus.getReasons(),
 //                this.dateTimeFormatterUtil.formatIntoDateTime(implementationLetterOffCampus.getDateAndTimeOfImplementation()),
-                "Temp Date and Time",
+                arrDateTime[0] + " " + arrDateTime[1],
                 implementationLetterOffCampus.getProgramOrFlow(),
                 studentOfficer.isPresent() ? studentOfficer.get().getSignature() : "N/A",
                 implementationLetterOffCampus.getCreatedAt() != null ? this.dateTimeFormatterUtil.formatIntoDateTime(implementationLetterOffCampus.getCreatedAt()) : "N/A",
