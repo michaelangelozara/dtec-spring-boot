@@ -4,6 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetP
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampus;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter.PermitToEnter;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -70,4 +71,9 @@ public class SignedPeople {
     @JoinColumn(name = "implementation_letter_off_campus_id")
     @JsonBackReference
     private ImplementationLetterOffCampus implementationLetterOffCampus;
+
+    @ManyToOne
+    @JoinColumn(name = "permit_to_enter_id")
+    @JsonBackReference
+    private PermitToEnter permitToEnter;
 }
