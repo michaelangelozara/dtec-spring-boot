@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NotContextException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -145,6 +146,20 @@ public class ClearanceServiceImp implements ClearanceService {
         } catch (Exception e) {
             throw new InternalServerErrorException("Something went wrong");
         }
+    }
+
+    public List<ClearanceResponseDto> getAllStudentCompletedClearances() {
+        var clearances = this.clearanceRepository.findAllStudentCompletedClearances();
+        return this.clearanceMapper.toClearanceResponseDtoList(clearances);
+    }
+
+    @Override
+    public void confirmClearance(int clearanceId) {
+        var clearance = this.clearanceRepository.findById(clearanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Clearance not Found"));
+
+        clearance.setClearancePermitReleased(true);
+        this.clearanceRepository.save(clearance);
     }
 
     @Transactional

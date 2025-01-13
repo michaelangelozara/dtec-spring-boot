@@ -31,5 +31,9 @@ public enum Role {
     ELECTRONICS_LAB,
     CRIM_LAB,
     HRM_LAB,
-    NURSING_LAB
+    NURSING_LAB,
+
+    AUXILIARY_SERVICE_HEAD,
+    PPLO,
+    CHAPEL,
 }

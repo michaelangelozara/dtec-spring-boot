@@ -40,7 +40,6 @@ public class ImplementationLetterOffCampusMapper {
                 implementationLetterOffCampus.getTitleOfActivity(),
                 implementationLetterOffCampus.getDescription(),
                 implementationLetterOffCampus.getReasons(),
-//                this.dateTimeFormatterUtil.formatIntoDateTime(implementationLetterOffCampus.getDateAndTimeOfImplementation()),
                 arrDateTime[0] + " " + arrDateTime[1],
                 implementationLetterOffCampus.getProgramOrFlow(),
                 studentOfficer.isPresent() ? studentOfficer.get().getSignature() : "N/A",

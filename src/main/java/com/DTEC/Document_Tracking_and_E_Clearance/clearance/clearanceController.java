@@ -140,7 +140,7 @@ public class clearanceController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<ClearanceResponseDto>>> searchClearance(
             @RequestParam("q") String query
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
                         new ApiResponse<>(
@@ -149,6 +149,39 @@ public class clearanceController {
                                 this.clearanceService.search(query),
                                 "",
                                 this.dateTimeFormatterUtil.formatIntoDateTime()
+                        )
+                );
+    }
+
+    @GetMapping("/students/completed-clearances")
+    @PreAuthorize("hasAnyRole('CASHIER')")
+    public ResponseEntity<ApiResponse<List<ClearanceResponseDto>>> getAllCompletedClearance() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                this.clearanceService.getAllStudentCompletedClearances(),
+                                "",
+                                ""
+                        )
+                );
+    }
+
+    @PostMapping("/students/completed-clearances/{id}")
+    @PreAuthorize("hasAnyRole('CASHIER')")
+    public ResponseEntity<ApiResponse<Void>> confirmClearance(
+            @PathVariable("id") int clearanceId
+    ) {
+        this.clearanceService.confirmClearance(clearanceId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                null,
+                                "",
+                                ""
                         )
                 );
     }

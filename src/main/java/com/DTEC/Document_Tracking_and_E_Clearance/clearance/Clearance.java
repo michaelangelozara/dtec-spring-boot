@@ -48,6 +48,9 @@ public class Clearance {
     @Column(name = "is_submitted")
     private boolean isSubmitted;
 
+    @Column(name = "is_clearance_permit_released")
+    private boolean isClearancePermitReleased;
+
     @Enumerated(EnumType.STRING)
     private ClearanceType type;
 

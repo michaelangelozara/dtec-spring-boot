@@ -63,7 +63,10 @@ public class SecurityConfig {
             "CUSTODIAN",
             "VPAF",
             "VPA",
-            "MULTIMEDIA"
+            "MULTIMEDIA",
+            "AUXILIARY_SERVICE_HEAD",
+            "PPLO",
+            "CHAPEL"
     };
     private final String[] STAFF_ROLES = {
             "SUPER_ADMIN",
@@ -74,7 +77,10 @@ public class SecurityConfig {
             "DSA",
             "PRESIDENT",
             "FINANCE",
-            "OFFICE_HEAD"
+            "OFFICE_HEAD",
+            "AUXILIARY_SERVICE_HEAD",
+            "PPLO",
+            "CHAPEL"
     };
     private final String[] ADMIN = {"SUPER_ADMIN", "ADMIN"};
 

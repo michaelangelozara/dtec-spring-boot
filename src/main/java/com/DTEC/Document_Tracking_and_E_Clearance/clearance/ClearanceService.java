@@ -21,4 +21,8 @@ public interface ClearanceService {
     String studentSignClearance(int clearanceId, String signature);
 
     List<ClearanceResponseDto> search(String query);
+
+    List<ClearanceResponseDto> getAllStudentCompletedClearances();
+
+    void confirmClearance(int clearanceId);
 }
