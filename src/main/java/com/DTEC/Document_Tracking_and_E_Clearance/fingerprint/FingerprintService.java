@@ -4,7 +4,6 @@ import com.DTEC.Document_Tracking_and_E_Clearance.e_signature.ESignatureResponse
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface FingerprintService {
 

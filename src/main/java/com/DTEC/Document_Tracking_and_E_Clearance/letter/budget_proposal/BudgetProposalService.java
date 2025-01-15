@@ -57,6 +57,8 @@ public class BudgetProposalService {
 
         if(userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
+        if(!UserUtil.checkESignature(user)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
+
         var budgetProposal = BudgetProposal.builder()
                 .nameOfActivity(dto.name())
                 .date(dto.date())
@@ -75,7 +77,7 @@ public class BudgetProposalService {
                 .user(user)
                 .role(user.getRole())
                 .status(SignedPeopleStatus.EVALUATED)
-                .signature(dto.studentOfficerSignature())
+                .signature(user.getESignature())
                 .budgetProposal(savedBudgetProposal)
                 .build();
 

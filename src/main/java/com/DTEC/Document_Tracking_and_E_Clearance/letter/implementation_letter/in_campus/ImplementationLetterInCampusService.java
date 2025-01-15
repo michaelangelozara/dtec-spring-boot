@@ -56,12 +56,14 @@ public class ImplementationLetterInCampusService {
         var implementationLetter = this.implementationLetterInCampusMapper.toImplementationLetter(dto);
         implementationLetter.setClub(userClub);
 
+        if(!UserUtil.checkESignature(user)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
+
         var savedImplementation = this.implementationLetterInCampusRepository.save(implementationLetter);
 
         var signedPeople = SignedPeople.builder()
                 .user(user)
                 .role(user.getRole())
-                .signature(dto.signature())
+                .signature(user.getESignature())
                 .status(SignedPeopleStatus.EVALUATED)
                 .implementationLetterInCampus(savedImplementation)
                 .build();

@@ -7,6 +7,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -97,6 +98,12 @@ public class FingerprintServiceImp implements FingerprintService {
 
             var user = this.userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+
+            if(user.getRole().equals(Role.STUDENT_OFFICER) || user.getRole().equals(Role.MODERATOR)){
+                user.setESignature(image);
+                this.userRepository.save(user);
+                return;
+            }
 
             var fingerprints = user.getFingerprints();
             if (fingerprints.isEmpty()) throw new ForbiddenException("Please Register Fingerprint First");

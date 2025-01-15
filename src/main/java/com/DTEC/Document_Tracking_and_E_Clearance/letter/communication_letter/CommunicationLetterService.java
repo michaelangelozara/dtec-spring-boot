@@ -67,12 +67,14 @@ public class CommunicationLetterService {
                 .typeOfCampus(type)
                 .build();
 
+        if(!UserUtil.checkESignature(user)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
+
         var savedCommunicationLetter = this.communicationLetterRepository.save(communicationLetter);
 
         var signedPeople = SignedPeople.builder()
                 .user(user)
                 .role(user.getRole())
-                .signature(dto.signature())
+                .signature(user.getESignature())
                 .status(SignedPeopleStatus.EVALUATED)
                 .communicationLetter(savedCommunicationLetter)
                 .build();

@@ -5,6 +5,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.Co
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter.PermitToEnter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.SFEF;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -76,4 +77,9 @@ public class SignedPeople {
     @JoinColumn(name = "permit_to_enter_id")
     @JsonBackReference
     private PermitToEnter permitToEnter;
+
+    @ManyToOne
+    @JoinColumn(name = "sfef_id")
+    @JsonBackReference
+    private SFEF sfef;
 }

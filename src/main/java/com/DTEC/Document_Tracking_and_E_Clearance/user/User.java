@@ -6,6 +6,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRole;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.Department;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter.PermitToEnter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.SFEF;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
 import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.Fingerprint;
@@ -118,6 +119,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<PermitToEnter> permitToEnters;
+
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<SFEF> sfefs;
 
     @ManyToOne
     @JoinColumn(name = "course_id")

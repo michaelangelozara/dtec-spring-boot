@@ -37,6 +37,12 @@ public class UserUtil {
                 .orElseThrow(() -> new ResourceNotFoundException("There's no " + role.name() + " in the Organization."));
     }
 
+    public static boolean checkESignature(User user){
+        if(user.getESignature().isEmpty())
+            return false;
+        return true;
+    }
+
     public static String getUserFullName(User user) {
         if (user == null) {
             return ""; // Return empty string if user is null

@@ -53,6 +53,8 @@ public class ImplementationLetterOffCampusService {
 
         if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
+        if(!UserUtil.checkESignature(user)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
+
         var implementationLetter = this.implementationLetterOffCampusMapper.toImplementationLetterOffCampus(dto);
         implementationLetter.setClub(userClub);
         var savedImplementationLetter = this.implementationLetterOffCampusRepository.save(implementationLetter);
@@ -60,7 +62,7 @@ public class ImplementationLetterOffCampusService {
         var signedPeople = SignedPeople.builder()
                 .user(user)
                 .role(user.getRole())
-                .signature(dto.signature())
+                .signature(user.getESignature())
                 .status(SignedPeopleStatus.EVALUATED)
                 .implementationLetterOffCampus(savedImplementationLetter)
                 .build();

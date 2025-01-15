@@ -88,6 +88,20 @@ public class UserController {
                 );
     }
 
+    @GetMapping("/get-sm-e-signature")
+    public ResponseEntity<ApiResponse<String>> getModeratorOrStudentOfficerESignature(){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "",
+                                this.userService.getModeratorStudentOfficerESignature(),
+                                "",
+                                ""
+                        )
+                );
+    }
+
     @GetMapping("/my-e-signature/e-signature")
     public ResponseEntity<ApiResponse<ESignatureResponseDto>> getMyESignature() {
         return ResponseEntity.status(HttpStatus.OK)

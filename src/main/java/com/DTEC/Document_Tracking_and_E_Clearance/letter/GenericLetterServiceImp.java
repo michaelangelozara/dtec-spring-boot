@@ -4,18 +4,18 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposal;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposalMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposalRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetter;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetterMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetterRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetterType;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampus;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampusMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.in_campus.ImplementationLetterInCampusRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampus;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampusMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.ImplementationLetterOffCampusRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter.PermitToEnter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter.PermitToEnterRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.SFEF;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.SFEFRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
@@ -38,11 +38,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private final ImplementationLetterInCampusRepository implementationLetterInCampusRepository;
     private final ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository;
     private final CommunicationLetterRepository communicationLetterRepository;
-
-    private final BudgetProposalMapper budgetProposalMapper;
-    private final CommunicationLetterMapper communicationLetterMapper;
-    private final ImplementationLetterInCampusMapper implementationLetterInCampusMapper;
-    private final ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper;
+    private final PermitToEnterRepository permitToEnterRepository;
+    private final SFEFRepository sfefRepository;
 
     private final SignedPeopleMapper signedPeopleMapper;
 
@@ -50,15 +47,13 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
     private final SignedPeopleRepository signedPeopleRepository;
 
-    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, BudgetProposalMapper budgetProposalMapper, CommunicationLetterMapper communicationLetterMapper, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository) {
+    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, PermitToEnterRepository permitToEnterRepository, SFEFRepository sfefRepository, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterOffCampusRepository = implementationLetterOffCampusRepository;
         this.communicationLetterRepository = communicationLetterRepository;
-        this.budgetProposalMapper = budgetProposalMapper;
-        this.communicationLetterMapper = communicationLetterMapper;
-        this.implementationLetterInCampusMapper = implementationLetterInCampusMapper;
-        this.implementationLetterOffCampusMapper = implementationLetterOffCampusMapper;
+        this.permitToEnterRepository = permitToEnterRepository;
+        this.sfefRepository = sfefRepository;
         this.signedPeopleMapper = signedPeopleMapper;
         this.userUtil = userUtil;
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
@@ -76,7 +71,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         if (user == null) throw new UnauthorizedException("Invalid User");
 
         if (user.getRole().equals(Role.MODERATOR) || user.getRole().equals(Role.STUDENT_OFFICER)) {
-            if(!user.getRole().equals(Role.MODERATOR)){
+            if (!user.getRole().equals(Role.MODERATOR)) {
                 Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
                 implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
             }
@@ -89,6 +84,15 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             Page<ImplementationLetterInCampus> implementationLetterInCampusPage = this.implementationLetterInCampusRepository.findAll(pageable, user.getId(), user.getRole().name());
             implementationLetterInCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
+
+            Page<PermitToEnter> permitToEnterPage = this.permitToEnterRepository.findAll(pageable, user.getId(), user.getRole().name());
+            permitToEnterPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
+
+            Page<SFEF> sfefPage = this.sfefRepository.findAll(pageable, user.getId(), user.getRole().name());
+            sfefPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
+        } else if (user.getRole().equals(Role.MULTIMEDIA) || user.getRole().equals(Role.CHAPEL)) {
+            Page<SFEF> sfefPage = this.sfefRepository.findAll(pageable, user.getId());
+            sfefPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
         } else {
             String stringRole = user.getRole().name();
 
@@ -103,6 +107,12 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             Page<ImplementationLetterOffCampus> implementationLetterOffCampusPage = this.implementationLetterOffCampusRepository.findAll(stringRole, pageable, user.getId());
             implementationLetterOffCampusPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
+
+            Page<PermitToEnter> permitToEnterPage = this.permitToEnterRepository.findAll(stringRole, pageable, user.getId());
+            permitToEnterPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
+
+            Page<SFEF> sfefPage = this.sfefRepository.findAll(stringRole, pageable, user.getId());
+            sfefPage.getContent().forEach(i -> genericResponses.add(transformToGeneric(i)));
         }
 
         // sort the gathered data
@@ -126,6 +136,12 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 break;
             case IMPLEMENTATION_LETTER_OFF_CAMPUS:
                 implementationLetterOffCampusOnClick(id);
+                break;
+            case PERMIT_TO_ENTER:
+                permitToEnterOnClick(id);
+                break;
+            case SFEF:
+                SFEFOnClick(id);
                 break;
             default:
                 throw new ForbiddenException("Invalid Type of Letter");
@@ -246,7 +262,6 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 implementationLetterOffCampus.getStatus().equals(LetterStatus.DECLINED)) return;
 
         var user = this.userUtil.getCurrentUser();
-        if (user == null) throw new UnauthorizedException("Session Expired");
 
         var signedPerson = implementationLetterOffCampus.getSignedPeople()
                 .stream()
@@ -269,6 +284,74 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
         implementationLetterOffCampus.setStatus(LetterStatus.IN_PROGRESS);
         this.implementationLetterOffCampusRepository.save(implementationLetterOffCampus);
+        this.signedPeopleRepository.save(tempSignedPerson);
+    }
+
+    private void permitToEnterOnClick(int id) {
+        var permitToEnter = this.permitToEnterRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Permit To Enter not Found"));
+
+        // this avoids letter manipulation if it is completed or declined
+        if (permitToEnter.getStatus().equals(LetterStatus.COMPLETED) ||
+                permitToEnter.getStatus().equals(LetterStatus.DECLINED)) return;
+
+        var user = this.userUtil.getCurrentUser();
+
+        var signedPerson = permitToEnter.getSignedPeople()
+                .stream()
+                .filter(s -> s.getUser() != null && s.getUser().getId().equals(user.getId())).findFirst();
+
+        if (signedPerson.isPresent()) return;
+
+        if (!permitToEnter.getCurrentLocation().name().equals(user.getRole().name())) return;
+
+        var signedPeople = permitToEnter.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole()))
+                .findFirst();
+
+        if (signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+
+        var tempSignedPerson = signedPeople.get();
+        tempSignedPerson.setUser(user);
+        tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
+
+        permitToEnter.setStatus(LetterStatus.IN_PROGRESS);
+        this.permitToEnterRepository.save(permitToEnter);
+        this.signedPeopleRepository.save(tempSignedPerson);
+    }
+
+    private void SFEFOnClick(int id) {
+        var sfef = this.sfefRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("SFEF not Found"));
+
+        // this avoids letter manipulation if it is completed or declined
+        if (sfef.getStatus().equals(LetterStatus.COMPLETED) ||
+                sfef.getStatus().equals(LetterStatus.DECLINED)) return;
+
+        var user = this.userUtil.getCurrentUser();
+
+        var signedPerson = sfef.getSignedPeople()
+                .stream()
+                .filter(s -> s.getUser() != null && s.getUser().getId().equals(user.getId())).findFirst();
+
+        if (signedPerson.isPresent()) return;
+
+        if (!sfef.getCurrentLocation().name().equals(user.getRole().name())) return;
+
+        var signedPeople = sfef.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole()))
+                .findFirst();
+
+        if (signedPeople.isEmpty()) throw new ForbiddenException("Invalid Assigned Office In-Charge for this letter");
+
+        var tempSignedPerson = signedPeople.get();
+        tempSignedPerson.setUser(user);
+        tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
+
+        sfef.setStatus(LetterStatus.IN_PROGRESS);
+        this.sfefRepository.save(sfef);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
 
@@ -331,6 +414,12 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 break;
             case IMPLEMENTATION_LETTER_OFF_CAMPUS:
                 signatureForILOCLetter(signature, letterId, user);
+                break;
+            case PERMIT_TO_ENTER:
+                signatureForPermitToEnter(signature, letterId, user);
+                break;
+            case SFEF:
+                signatureForSFEF(signature, letterId, user);
                 break;
             default:
                 throw new ForbiddenException("Invalid Type of Letter");
@@ -547,6 +636,87 @@ public class GenericLetterServiceImp implements GenericLetterService {
         this.signedPeopleRepository.save(signedPerson);
     }
 
+    private void signatureForPermitToEnter(String signature, int id, User user) {
+        var permitToEnter = this.permitToEnterRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Permit To Enter not Found"));
+
+        Optional<SignedPeople> optionalSignedPerson = permitToEnter.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
+
+        if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+
+        var signedPerson = optionalSignedPerson.get();
+        signedPerson.setSignature(signature);
+        signedPerson.setUser(user);
+
+        if (user.getRole().equals(Role.MODERATOR)) {
+            permitToEnter.setCurrentLocation(CurrentLocation.OFFICE_HEAD);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else if (user.getRole().equals(Role.OFFICE_HEAD)) {
+            if (getSignedPerson(permitToEnter, Role.MODERATOR).isEmpty())
+                throw new ForbiddenException("The Moderator doesn't signed yet");
+
+            permitToEnter.setCurrentLocation(CurrentLocation.PRESIDENT);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else if (user.getRole().equals(Role.PRESIDENT)) {
+            if (getSignedPerson(permitToEnter, Role.OFFICE_HEAD).isEmpty())
+                throw new ForbiddenException("The Office doesn't signed yet");
+
+            permitToEnter.setStatus(LetterStatus.COMPLETED);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else {
+            throw new ForbiddenException("You can't Perform to this action");
+        }
+        this.permitToEnterRepository.save(permitToEnter);
+        this.signedPeopleRepository.save(signedPerson);
+    }
+
+    private void signatureForSFEF(String signature, int id, User user) {
+        var sfef = this.sfefRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("SFEF not Found"));
+
+        Optional<SignedPeople> optionalSignedPerson = sfef.getSignedPeople()
+                .stream()
+                .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
+
+        if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
+
+        var signedPerson = optionalSignedPerson.get();
+        signedPerson.setSignature(signature);
+        signedPerson.setUser(user);
+
+        if (user.getRole().equals(Role.MODERATOR)) {
+            sfef.setCurrentLocation(CurrentLocation.AUXILIARY_SERVICE_HEAD);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else if (user.getRole().equals(Role.AUXILIARY_SERVICE_HEAD)) {
+            if (getSignedPerson(sfef, Role.MODERATOR).isEmpty())
+                throw new ForbiddenException("The Moderator doesn't signed yet");
+
+            sfef.setCurrentLocation(CurrentLocation.PPLO);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else if (user.getRole().equals(Role.PPLO)) {
+            if (getSignedPerson(sfef, Role.AUXILIARY_SERVICE_HEAD).isEmpty())
+                throw new ForbiddenException("The Auxiliary doesn't signed yet");
+
+            sfef.setCurrentLocation(CurrentLocation.PRESIDENT);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else if (user.getRole().equals(Role.PRESIDENT)) {
+            if (getSignedPerson(sfef, Role.MULTIMEDIA).isEmpty())
+                throw new ForbiddenException("The Multimedia doesn't signed yet");
+
+            sfef.setStatus(LetterStatus.COMPLETED);
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        } else {
+            if (!user.getRole().equals(Role.CHAPEL) && !user.getRole().equals(Role.MULTIMEDIA))
+                throw new ForbiddenException("You can't Perform to this action");
+
+            signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+        }
+        this.sfefRepository.save(sfef);
+        this.signedPeopleRepository.save(signedPerson);
+    }
+
     @Override
     public void rejectLetter(TypeOfLetter type, int id, String reasonOfRejection) {
         switch (type) {
@@ -562,9 +732,51 @@ public class GenericLetterServiceImp implements GenericLetterService {
             case IMPLEMENTATION_LETTER_OFF_CAMPUS:
                 rejectILOC(id, reasonOfRejection);
                 break;
+            case PERMIT_TO_ENTER:
+                rejectPTE(id, reasonOfRejection);
+                break;
+            case SFEF:
+                rejectSFEF(id, reasonOfRejection);
+                break;
             default:
                 throw new ForbiddenException("Invalid Type of Letter");
         }
+    }
+
+    private void rejectPTE(int id, String reasonOfRejection) {
+        var permitToEnter = this.permitToEnterRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Permit To Enter not Found"));
+
+        var user = this.userUtil.getCurrentUser();
+        var signedPerson = SignedPeople.builder()
+                .permitToEnter(permitToEnter)
+                .user(user)
+                .status(SignedPeopleStatus.EVALUATED)
+                .role(user.getRole())
+                .build();
+        this.signedPeopleRepository.save(signedPerson);
+
+        permitToEnter.setStatus(LetterStatus.DECLINED);
+        permitToEnter.setReasonOfRejection(reasonOfRejection);
+        this.permitToEnterRepository.save(permitToEnter);
+    }
+
+    private void rejectSFEF(int id, String reasonOfRejection) {
+        var sfef = this.sfefRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("SFEF not Found"));
+
+        var user = this.userUtil.getCurrentUser();
+        var signedPerson = SignedPeople.builder()
+                .sfef(sfef)
+                .user(user)
+                .status(SignedPeopleStatus.EVALUATED)
+                .role(user.getRole())
+                .build();
+        this.signedPeopleRepository.save(signedPerson);
+
+        sfef.setStatus(LetterStatus.DECLINED);
+        sfef.setReasonOfRejection(reasonOfRejection);
+        this.sfefRepository.save(sfef);
     }
 
     @Override
@@ -597,7 +809,6 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Budget Proposal not Found"));
 
         var user = this.userUtil.getCurrentUser();
-        if (user == null) throw new UnauthorizedException("Session Expired");
 
         var signedPerson = SignedPeople.builder()
                 .budgetProposal(budgetProposal)

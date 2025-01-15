@@ -158,6 +158,14 @@ public class UserServiceImp implements UserService {
         }
     }
 
+    @Override
+    public String getModeratorStudentOfficerESignature() {
+        var user = this.userUtil.getCurrentUser();
+        var fetchedUser = this.userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+        return fetchedUser.getESignature();
+    }
+
     private void setUpUser(User savedUser, UserRegisterRequestDto dto) {
         if (dto.role().equals(Role.PROGRAM_HEAD)) {
             var course = getCourse(dto.courseId());

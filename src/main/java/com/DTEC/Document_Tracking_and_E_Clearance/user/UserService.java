@@ -27,4 +27,6 @@ public interface UserService {
     List<UserInfoResponseDto> searchUsers(String searchTerm);
 
     void changePassword(String password1, String password2);
+
+    String getModeratorStudentOfficerESignature();
 }

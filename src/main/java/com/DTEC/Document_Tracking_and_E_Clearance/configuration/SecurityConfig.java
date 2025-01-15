@@ -141,6 +141,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/budget-proposals/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/generic-letters/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/clearances/**").hasAnyRole(CLEARANCE_ROLES)
+                        .requestMatchers("/api/v1/permit-to-enters/**").hasAnyRole(STAFF_ROLES)
+                        .requestMatchers("/api/v1/sfefs/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN)
                         .anyRequest().authenticated()
                 )

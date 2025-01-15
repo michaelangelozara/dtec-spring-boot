@@ -25,7 +25,7 @@ public class GenericLetterController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MODERATOR', 'STUDENT_OFFICER', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MODERATOR', 'STUDENT_OFFICER', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD', 'MULTIMEDIA', 'CHAPEL', 'PPLO', 'AUXILIARY_SERVICE_HEAD')")
     public ResponseEntity<ApiResponse<List<GenericResponse>>> getAllLetters(
             @RequestParam(name = "s", defaultValue = "10") int s
     ) {

@@ -1,4 +1,4 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter;
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -7,26 +7,26 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/permit-to-enters")
-public class PermitToEnterController {
+@RequestMapping("/api/v1/sfefs")
+public class SFEFController {
 
-    private final PermitToEnterService permitToEnterService;
+    private final SFEFService sfefService;
 
-    public PermitToEnterController(PermitToEnterService permitToEnterService) {
-        this.permitToEnterService = permitToEnterService;
+    public SFEFController(SFEFService sfefService) {
+        this.sfefService = sfefService;
     }
 
-    @PostMapping("/request-permit-to-enter")
+    @PostMapping("/add")
     @PreAuthorize("hasRole('STUDENT_OFFICER')")
-    public ResponseEntity<ApiResponse<Void>> requestLetter(
-            @RequestBody PermitToEnterRequestDto dto
-    ) {
-        this.permitToEnterService.add(dto);
+    public ResponseEntity<ApiResponse<Void>> add(
+            @RequestBody SFEFRequestDto dto
+    ){
+        this.sfefService.add(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         new ApiResponse<>(
                                 true,
-                                "Letter has been Submitted",
+                                "Letter has been Sent",
                                 null,
                                 "",
                                 ""
@@ -35,15 +35,15 @@ public class PermitToEnterController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PermitToEnterResponseDto>> getLetter(
+    public ResponseEntity<ApiResponse<SFEFResponseDto>> getSFEFById(
             @PathVariable("id") int id
-    ) {
-        return ResponseEntity.status(HttpStatus.OK)
+    ){
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         new ApiResponse<>(
                                 true,
-                                "Letter is Successfully Fetched",
-                                this.permitToEnterService.getPermitToEnterById(id),
+                                "Letter is successfully Fetched",
+                                this.sfefService.getSFEFById(id),
                                 "",
                                 ""
                         )
