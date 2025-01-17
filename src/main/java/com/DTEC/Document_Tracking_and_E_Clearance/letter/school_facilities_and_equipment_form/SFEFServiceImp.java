@@ -48,7 +48,7 @@ public class SFEFServiceImp implements SFEFService{
         var student = this.userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-        if(!UserUtil.checkESignature(student)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
+        if(dto.signature() == null || dto.signature().isEmpty()) throw new ForbiddenException("Please Attach your E-Signature!");
 
         var sfef = this.sfefMapper.toSFEF(dto);
         var club = this.memberRoleUtil.getClubOfOfficer(student.getMemberRoles());
@@ -66,7 +66,7 @@ public class SFEFServiceImp implements SFEFService{
                 .build();
 
         var moderator = getSignedPeople(savedSFEF, Role.MODERATOR);
-        var officeHead = getSignedPeople(savedSFEF, Role.OFFICE_HEAD);
+        var officeHead = getSignedPeople(savedSFEF, Role.AUXILIARY_SERVICE_HEAD);
         var chapel = getSignedPeople(savedSFEF, Role.CHAPEL);
         var PPIC = getSignedPeople(savedSFEF, Role.PPLO);
         var multimedia = getSignedPeople(savedSFEF, Role.MULTIMEDIA);

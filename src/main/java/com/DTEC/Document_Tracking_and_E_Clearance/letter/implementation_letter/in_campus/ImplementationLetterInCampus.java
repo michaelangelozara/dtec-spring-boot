@@ -38,9 +38,6 @@ public class ImplementationLetterInCampus implements SharedFields {
     private String semesterAndSchoolYear;
 
     @Column(nullable = false)
-    private String title;
-
-    @Column(nullable = false)
     @Size(max = 100, message = "Venue must not exceed 100 Characters")
     private String venue;
 

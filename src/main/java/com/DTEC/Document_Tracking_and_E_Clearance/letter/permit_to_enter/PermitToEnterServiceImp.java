@@ -39,11 +39,11 @@ public class PermitToEnterServiceImp implements PermitToEnterService {
         var student = this.userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
+        if(dto.signature() == null || dto.signature().isEmpty()) throw new ForbiddenException("Please Attach your E-Signature!");
+
         var permitToEnter = this.permitToEnterMapper.toPermitToEnter(dto);
         var club = this.memberRoleUtil.getClubOfOfficer(student.getMemberRoles());
         if (club == null) throw new ResourceNotFoundException("You can't perform here, You're not an Officer");
-
-        if(!UserUtil.checkESignature(student)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
 
         permitToEnter.setClub(club);
         var savedPermitToEnter = this.permitToEnterRepository.save(permitToEnter);

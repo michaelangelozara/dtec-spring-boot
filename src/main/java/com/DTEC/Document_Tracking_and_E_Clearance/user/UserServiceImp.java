@@ -163,6 +163,9 @@ public class UserServiceImp implements UserService {
         var user = this.userUtil.getCurrentUser();
         var fetchedUser = this.userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+
+        if(fetchedUser.getESignature() == null || fetchedUser.getESignature().isEmpty()) throw new ResourceNotFoundException("Please Contact the Admin to Register your E-Signature");
+
         return fetchedUser.getESignature();
     }
 
@@ -519,6 +522,9 @@ public class UserServiceImp implements UserService {
         roles.add(Role.VPAF);
         roles.add(Role.VPA);
         roles.add(Role.MULTIMEDIA);
+        roles.add(Role.CHAPEL);
+        roles.add(Role.PPLO);
+        roles.add(Role.AUXILIARY_SERVICE_HEAD);
         return roles.contains(role);
     }
 

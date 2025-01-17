@@ -27,6 +27,9 @@ public record UserInfoResponseDto(
         String dsa,
         String president,
         @JsonProperty("office_head") String officeHead,
-        String finance
+        String finance,
+        String chapel,
+        String multimedia,
+        String pplo
 ) {
 }

@@ -84,7 +84,6 @@ public class ImplementationLetterInCampusService {
 
     private boolean areFieldsComplete(ImplementationLetterInCampusRequestDto dto) {
         if (dto.nameOfActivity().isEmpty()) return false;
-        if (dto.title().isEmpty()) return false;
         if (dto.venue().isEmpty()) return false;
         if (dto.participants().isEmpty()) return false;
         if (dto.rationale().isEmpty()) return false;

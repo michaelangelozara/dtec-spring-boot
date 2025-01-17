@@ -12,6 +12,7 @@ public record SFEFRequestDto(
         LocalDate date,
         @JsonProperty("time_from") String timeFrom,
         @JsonProperty("time_to") String timeTo,
-        List<FacilityOrEquipmentRequestDto> facilityOrEquipments
+        List<FacilityOrEquipmentRequestDto> facilityOrEquipments,
+        String signature
 ) {
 }

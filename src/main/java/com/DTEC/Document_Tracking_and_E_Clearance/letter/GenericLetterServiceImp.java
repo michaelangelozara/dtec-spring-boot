@@ -644,6 +644,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
+        if(signature == null || signature.isEmpty()) throw new ForbiddenException("Please Attach your Signature First!");
+
         if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
         var signedPerson = optionalSignedPerson.get();
@@ -679,6 +681,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
         Optional<SignedPeople> optionalSignedPerson = sfef.getSignedPeople()
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
+
+        if(signature == null || signature.isEmpty()) throw new ForbiddenException("Please Attach your Signature First!");
 
         if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 

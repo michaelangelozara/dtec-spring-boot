@@ -41,7 +41,6 @@ public class ImplementationLetterInCampusMapper {
                 implementationLetterInCampus.getId(),
                 implementationLetterInCampus.getNameOfActivity(),
                 implementationLetterInCampus.getSemesterAndSchoolYear(),
-                implementationLetterInCampus.getTitle(),
                 implementationLetterInCampus.getVenue(),
                 timeArr[0] + " " + timeArr[1],
                 implementationLetterInCampus.getExpectedOutput(),
@@ -67,7 +66,6 @@ public class ImplementationLetterInCampusMapper {
     public ImplementationLetterInCampus toImplementationLetter(ImplementationLetterInCampusRequestDto dto) {
         return ImplementationLetterInCampus.builder()
                 .nameOfActivity(dto.nameOfActivity())
-                .title(dto.title())
                 .venue(dto.venue())
                 .dateTime(this.dateTimeFormatterUtil.formatIntoDateTime(dto.dateTimes()))
                 .objective(dto.objectives())

@@ -6,14 +6,12 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleResponseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record ImplementationLetterInCampusResponseDto(
         int id,
         @JsonProperty("name_of_activity") String nameOfActivity,
         @JsonProperty("semester_and_school_year") String semesterAndSchoolYear,
-        String title,
         String venue,
         @JsonProperty("date_time") String dateTime,
         @JsonProperty("expected_output") String expectedOutput,

@@ -69,14 +69,6 @@ public class UserMapper {
     }
 
     public UserInfoResponseDto toUserInfoResponseDto(User user) {
-//        var officerClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
-//        var memberClub = this.memberRoleUtil.getClubOfMember(user.getMemberRoles());
-//        var moderator = officerClub.getMemberRoles().stream().filter(mr -> mr.getRole().equals(ClubRole.MODERATOR)).findFirst().orElse(null);
-//        var dsa = this.userRepository.findNoDuplicateOICByRole(Role.DSA).orElse(null);
-//        var president = this.userRepository.findNoDuplicateOICByRole(Role.PRESIDENT).orElse(null);
-//        var officeHead = this.userRepository.findNoDuplicateOICByRole(Role.OFFICE_HEAD).orElse(null);
-//        var finance = this.userRepository.findNoDuplicateOICByRole(Role.FINANCE).orElse(null);
-
         var officerClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
         var memberClub = this.memberRoleUtil.getClubOfMember(user.getMemberRoles());
 
@@ -91,6 +83,9 @@ public class UserMapper {
         var president = this.userRepository.findNoDuplicateOICByRole(Role.PRESIDENT).orElse(null);
         var officeHead = this.userRepository.findNoDuplicateOICByRole(Role.OFFICE_HEAD).orElse(null);
         var finance = this.userRepository.findNoDuplicateOICByRole(Role.FINANCE).orElse(null);
+        var chapel = this.userRepository.findNoDuplicateOICByRole(Role.CHAPEL).orElse(null);
+        var multimedia = this.userRepository.findNoDuplicateOICByRole(Role.MULTIMEDIA).orElse(null);
+        var pplo = this.userRepository.findNoDuplicateOICByRole(Role.PPLO).orElse(null);
 
         return new UserInfoResponseDto(
                 user.getId(),
@@ -112,7 +107,10 @@ public class UserMapper {
                 dsa != null ? UserUtil.getUserFullName(dsa) : "",
                 president != null ? UserUtil.getUserFullName(president) : "",
                 officeHead != null ? UserUtil.getUserFullName(officeHead) : "",
-                finance != null ? UserUtil.getUserFullName(finance) : ""
+                finance != null ? UserUtil.getUserFullName(finance) : "",
+                chapel != null ? UserUtil.getUserFullName(chapel) : "",
+                multimedia != null ? UserUtil.getUserFullName(multimedia) : "",
+                pplo != null ? UserUtil.getUserFullName(pplo) : ""
         );
     }
 

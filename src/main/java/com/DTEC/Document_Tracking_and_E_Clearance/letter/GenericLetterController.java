@@ -41,7 +41,7 @@ public class GenericLetterController {
     }
 
     @PostMapping("/on-click/{letter-id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD', 'AUXILIARY_SERVICE_HEAD', 'PPLO', 'CHAPEL', 'MULTIMEDIA')")
     public ResponseEntity<ApiResponse<Void>> onClick(
             @PathVariable("letter-id") int id,
             @RequestParam(name = "type") TypeOfLetter type
@@ -58,7 +58,7 @@ public class GenericLetterController {
     }
 
     @PostMapping("/sign-letter/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'DSA', 'PRESIDENT', 'FINANCE', 'OFFICE_HEAD', 'AUXILIARY_SERVICE_HEAD', 'PPLO', 'CHAPEL', 'MULTIMEDIA')")
     public ResponseEntity<ApiResponse<Void>> signLetter(
             @PathVariable("id") int id,
             @RequestParam(name = "type") TypeOfLetter type,

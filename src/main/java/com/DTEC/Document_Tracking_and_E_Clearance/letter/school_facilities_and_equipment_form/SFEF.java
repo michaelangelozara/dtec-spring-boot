@@ -34,10 +34,13 @@ public class SFEF implements SharedFields {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
     private LetterStatus status;
 
+    @Enumerated(EnumType.STRING)
     private TypeOfLetter type;
 
+    @Enumerated(EnumType.STRING)
     private CurrentLocation currentLocation;
 
     @Column(nullable = false)

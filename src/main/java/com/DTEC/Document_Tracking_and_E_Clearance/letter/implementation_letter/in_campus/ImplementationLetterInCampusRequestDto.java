@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record ImplementationLetterInCampusRequestDto(
         @JsonProperty("name_of_activity") String nameOfActivity,
-        String title,
         @JsonProperty("date_and_times") String dateTimes,
         String venue,
         String participants,
