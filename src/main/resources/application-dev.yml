@@ -29,7 +29,9 @@ application:
       refresh-token:
         expiration: 604800000 # 7 days (ms)
       cookie-expiration: 604800 # 7 days (sec)
-
+  semaphore:
+    api:
+      key: c9f08dfb67921f21eea7b7a3f1d6cd5f
 admins:
   admin1:
     username: "admin_zara"

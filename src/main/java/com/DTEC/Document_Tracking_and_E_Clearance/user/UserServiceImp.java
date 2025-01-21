@@ -11,6 +11,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.course.Course;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.CourseRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.Department;
 import com.DTEC.Document_Tracking_and_E_Clearance.department.DepartmentRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.email.EmailService;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.*;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.TokenRepository;
@@ -47,11 +48,12 @@ public class UserServiceImp implements UserService {
     private final ClubRepository clubRepository;
     private final DepartmentRepository departmentRepository;
     private final MemberRoleRepository memberRoleRepository;
+    private final EmailService emailService;
 
     @Value("${application.security.jwt.cookie-expiration}")
     private long COOKIE_EXPIRATION;
 
-    public UserServiceImp(UserRepository userRepository, UserMapper userMapper, CourseRepository courseRepository, JwtService jwtService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, TokenRepository tokenRepository, UserUtil userUtil, ClubRepository clubRepository, DepartmentRepository departmentRepository, MemberRoleRepository memberRoleRepository) {
+    public UserServiceImp(UserRepository userRepository, UserMapper userMapper, CourseRepository courseRepository, JwtService jwtService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, TokenRepository tokenRepository, UserUtil userUtil, ClubRepository clubRepository, DepartmentRepository departmentRepository, MemberRoleRepository memberRoleRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.courseRepository = courseRepository;
@@ -63,6 +65,7 @@ public class UserServiceImp implements UserService {
         this.clubRepository = clubRepository;
         this.departmentRepository = departmentRepository;
         this.memberRoleRepository = memberRoleRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -92,7 +95,11 @@ public class UserServiceImp implements UserService {
         final String defaultPassword = "1234";
         user.setPassword(this.passwordEncoder.encode(defaultPassword));
         user.setFirstTimeLogin(true);
-        this.userRepository.save(user);
+        var updatedUser = this.userRepository.save(user);
+
+        // send email
+        String token = this.jwtService.generateRefreshToken(updatedUser);
+        this.emailService.sendEmail(UserUtil.removeWhiteSpace(updatedUser.getEmail()), token);
 
         return user.getLastname() + ", " + user.getFirstName() + "\'s Password Successfully Reset";
     }
@@ -113,7 +120,7 @@ public class UserServiceImp implements UserService {
         user.setFirstName(dto.firstName());
         user.setMiddleName(dto.middleName());
         user.setLastname(dto.lastname());
-        user.setEmail(dto.email());
+        user.setEmail(UserUtil.removeWhiteSpace(dto.email()));
         user.setRole(dto.role());
 
         var savedUser = this.userRepository.save(user);
@@ -138,23 +145,30 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public void changePassword(String password1, String password2) {
-        var user = this.userUtil.getCurrentUser();
-        var newUser = this.userRepository.findById(user.getId())
+    public void changePassword(String password1, String password2, String token) {
+        var username = this.jwtService.extractUsername(token);
+        var fetchedUser = this.userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+
+        if (token == null || token.isEmpty()) throw new UnauthorizedException("Invalid Token");
+
+        // check if the token is still valid
+        if (!this.jwtService.isTokenValid(token, fetchedUser))
+            throw new UnauthorizedException("Account Access Expired! Please Visit the ICTSO to Reset Access");
+
         // check if the passwords match
-        if(password1.equals(password2)){
-            if(password1.isEmpty())
+        if (password1.equals(password2)) {
+            if (password1.isEmpty())
                 throw new ForbiddenException("Password is Empty");
 
-            if(password1.length() < 8)
+            if (password1.length() < 8)
                 throw new ForbiddenException("Please Provide Password more than 7 Characters");
 
-            newUser.setFirstTimeLogin(false);
-            newUser.setPassword(this.passwordEncoder.encode(password1));
-            this.userRepository.save(newUser);
-        }else{
-         throw new ForbiddenException("Passwords do not match!");
+            fetchedUser.setFirstTimeLogin(false);
+            fetchedUser.setPassword(this.passwordEncoder.encode(password1));
+            this.userRepository.save(fetchedUser);
+        } else {
+            throw new ForbiddenException("Passwords do not match!");
         }
     }
 
@@ -164,7 +178,8 @@ public class UserServiceImp implements UserService {
         var fetchedUser = this.userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-        if(fetchedUser.getESignature() == null || fetchedUser.getESignature().isEmpty()) throw new ResourceNotFoundException("Please Contact the Admin to Register your E-Signature");
+        if (fetchedUser.getESignature() == null || fetchedUser.getESignature().isEmpty())
+            throw new ResourceNotFoundException("Please Contact the Admin to Register your E-Signature");
 
         return fetchedUser.getESignature();
     }
@@ -331,135 +346,11 @@ public class UserServiceImp implements UserService {
 
         var savedUser = this.userRepository.save(user);
 
+        String jwtToken = this.jwtService.generateRefreshToken(savedUser);
+        this.emailService.sendEmail(UserUtil.removeWhiteSpace(savedUser.getEmail()), jwtToken);
+
         if (isRoleIncluded(dto.role())) return;
 
-//        if (dto.role().equals(Role.PROGRAM_HEAD)) {
-//            var course = getCourse(dto.courseId());
-//
-//            var oldProgramHeadOptional = course.getUsers().stream().filter(u -> u.getRole().equals(Role.PROGRAM_HEAD)).findFirst();
-//
-//            // change the role of the old program head
-//            if (oldProgramHeadOptional.isPresent()) {
-//                var oldProgramHead = oldProgramHeadOptional.get();
-//                oldProgramHead.setRole(Role.PERSONNEL);
-//                this.userRepository.save(oldProgramHead);
-//            }
-//
-//            savedUser.setCourse(course);
-//            this.userRepository.save(savedUser);
-//        } else if (dto.role().equals(Role.DEAN)) {
-//            var department = getDepartment(dto.departmentId());
-//
-//            var oldDean = department.getUsers().stream().filter(u -> u.getRole().equals(Role.DEAN)).findFirst();
-//
-//            // change the role of the old program head
-//            if (oldDean.isPresent()) {
-//                var oldProgramHead = oldDean.get();
-//                oldProgramHead.setRole(Role.PERSONNEL);
-//                this.userRepository.save(oldProgramHead);
-//            }
-//
-//            savedUser.setDepartment(department);
-//            this.userRepository.save(savedUser);
-//
-//        } else if (dto.role().equals(Role.MODERATOR) || dto.role().equals(Role.PERSONNEL)) {
-//            if (dto.role().equals(Role.MODERATOR)) {
-//                var club = this.clubRepository.findById(dto.moderatorClubId())
-//                        .orElseThrow(() -> new ResourceNotFoundException("Club not Found"));
-//
-//                // remove the old moderator from the club
-//                var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(dto.moderatorClubId(), Role.MODERATOR);
-//                unregisterPersonnelForBeingModerator(memberRoles);
-//
-//                var memberRole = MemberRole.builder()
-//                        .role(ClubRole.MODERATOR)
-//                        .user(savedUser)
-//                        .club(club)
-//                        .build();
-//
-//                this.memberRoleRepository.save(memberRole);
-//
-//                // set moderator to acad type
-//                savedUser.setType(PersonnelType.ACADEMIC);
-//                var department = getDepartment(dto.departmentId());
-//                var course = getCourse(dto.courseId());
-//                savedUser.setDepartment(department);
-//                savedUser.setCourse(course);
-//            } else {
-//                if (dto.type().equals(PersonnelType.ACADEMIC)) {
-//                    var department = getDepartment(dto.departmentId());
-//                    var course = getCourse(dto.courseId());
-//                    savedUser.setDepartment(department);
-//                    savedUser.setCourse(course);
-//                } else {
-//                    savedUser.setOffice(dto.office());
-//                }
-//                savedUser.setType(dto.type());
-//            }
-//
-//            this.userRepository.save(savedUser);
-//        } else if (dto.role().equals(Role.STUDENT_OFFICER)) {
-//            if (dto.yearLevel() == 0) throw new ForbiddenException("Please Select Student Year Level");
-//
-//            if (dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER) && dto.socialClubRole().equals(ClubRole.STUDENT_OFFICER))
-//                throw new ForbiddenException("Multiple \"Student officer\" role in multiple departmentClub is Prohibited");
-//
-//            if ((dto.departmentClubRole().equals(ClubRole.MEMBER) && dto.socialClubRole().equals(ClubRole.MEMBER)))
-//                throw new ForbiddenException("The Student Officer must be Officer to either Department or Social Club");
-//
-//            var departmentClub = getClub(dto.departmentClubId(), Type.DEPARTMENT);
-//            var socialClub = getClub(dto.socialClubId(), Type.SOCIAL);
-//
-//            // get the member role that equal to user officer of the club and set to member
-//            if (dto.departmentClubRole().equals(ClubRole.STUDENT_OFFICER)) {
-//                var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(departmentClub.getId(), Role.STUDENT_OFFICER);
-//                unregisterTheStudentFromBeingOfficer(memberRoles);
-//            } else {
-//                var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(socialClub.getId(), Role.STUDENT_OFFICER);
-//                unregisterTheStudentFromBeingOfficer(memberRoles);
-//            }
-//
-//            user.setYearLevel(dto.yearLevel());
-//            user.setDepartment(getDepartment(dto.departmentId()));
-//            user.setCourse(getCourse(dto.courseId()));
-//
-//            var departmentMemberRole = MemberRole.builder()
-//                    .role(dto.departmentClubRole())
-//                    .user(savedUser)
-//                    .club(departmentClub)
-//                    .build();
-//
-//            var socialMemberRole = MemberRole.builder()
-//                    .role(dto.socialClubRole())
-//                    .user(savedUser)
-//                    .club(socialClub)
-//                    .build();
-//            this.memberRoleRepository.saveAll(List.of(departmentMemberRole, socialMemberRole));
-//        } else if (dto.role().equals(Role.STUDENT)) {
-//            if (dto.yearLevel() == 0) throw new ForbiddenException("Please Select Student Year Level");
-//
-//            user.setYearLevel(dto.yearLevel());
-//            user.setDepartment(getDepartment(dto.departmentId()));
-//            user.setCourse(getCourse(dto.courseId()));
-//
-//            var departmentClub = getClub(dto.departmentClubId(), Type.DEPARTMENT);
-//            var socialClub = getClub(dto.socialClubId(), Type.SOCIAL);
-//
-//            var departmentMemberRole = MemberRole.builder()
-//                    .role(ClubRole.MEMBER)
-//                    .user(savedUser)
-//                    .club(departmentClub)
-//                    .build();
-//
-//            var socialMemberRole = MemberRole.builder()
-//                    .role(ClubRole.MEMBER)
-//                    .user(savedUser)
-//                    .club(socialClub)
-//                    .build();
-//            this.memberRoleRepository.saveAll(List.of(departmentMemberRole, socialMemberRole));
-//        } else {
-//            throw new ForbiddenException("Please Select a Valid Role");
-//        }
         setUpUser(savedUser, dto);
     }
 
@@ -569,6 +460,7 @@ public class UserServiceImp implements UserService {
         );
     }
 
+    @Transactional
     @Override
     public String authenticate(LoginRequestDto dto, HttpServletResponse response) {
         try {
@@ -582,6 +474,9 @@ public class UserServiceImp implements UserService {
             // get the user by its username
             var user = this.userRepository.findByUsername(dto.username())
                     .orElseThrow();
+
+            if (user.isFirstTimeLogin())
+                throw new UnauthorizedException("Check your Registered Email to Change Password to Continue using the System");
 
             // generate new access token that will be passed to the user
             var accessToken = this.jwtService.generateToken(user);
@@ -640,5 +535,24 @@ public class UserServiceImp implements UserService {
         });
 
         this.tokenRepository.saveAll(validUserTokens);
+    }
+
+    @Transactional
+    @Override
+    public void forgotPassword(String email){
+        // check if the email doesn't exist already
+        if (!this.userRepository.existsByEmail(email))
+            throw new ForbiddenException("Invalid Email Address");
+
+        var user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid Email Address"));
+
+        final String defaultPassword = "1234";
+        user.setPassword(this.passwordEncoder.encode(defaultPassword));
+        user.setFirstTimeLogin(true);
+        var updatedUser = this.userRepository.save(user);
+
+        String token = this.jwtService.generateToken(updatedUser); // 10 mins Access Token
+        this.emailService.sendEmail(UserUtil.removeWhiteSpace(updatedUser.getEmail()), token);
     }
 }

@@ -143,4 +143,8 @@ public class UserUtil {
         roles.add(Role.NURSING_LAB);
         return roles.contains(role);
     }
+
+    public static String removeWhiteSpace(String str){
+        return str.trim();
+    }
 }

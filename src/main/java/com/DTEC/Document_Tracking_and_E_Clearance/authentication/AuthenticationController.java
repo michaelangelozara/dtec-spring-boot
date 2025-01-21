@@ -120,4 +120,41 @@ public class AuthenticationController {
                 .findFirst()
                 .orElse(null);
     }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestBody Map<String, String> map
+    ) {
+        String password1 = map.get("password1");
+        String password2 = map.get("password2");
+        String token = map.get("token");
+        this.userService.changePassword(password1, password2, token);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "Password is Successfully Updated",
+                                null,
+                                "",
+                                this.dateTimeFormatterUtil.formatIntoDateTime()
+                        )
+                );
+    }
+
+    @PutMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @RequestParam("e") String email
+    ){
+        this.userService.forgotPassword(email);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        new ApiResponse<>(
+                                true,
+                                "Reset Link has been sent to you Registered Email Address",
+                                null,
+                                "",
+                                ""
+                        )
+                );
+    }
 }

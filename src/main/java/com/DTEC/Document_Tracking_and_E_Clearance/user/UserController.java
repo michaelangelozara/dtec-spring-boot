@@ -38,25 +38,6 @@ public class UserController {
                 ));
     }
 
-    @PutMapping("/change-password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
-            @RequestBody Map<String, String> map
-    ) {
-        String password1 = map.get("password1");
-        String password2 = map.get("password2");
-        this.userService.changePassword(password1, password2);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        new ApiResponse<>(
-                                true,
-                                "Password is Successfully Updated",
-                                null,
-                                "",
-                                this.dateTimeFormatterUtil.formatIntoDateTime()
-                        )
-                );
-    }
-
     @GetMapping("/fingerprints")
     public ResponseEntity<ApiResponse<List<FingerprintResponseDto>>> getFingerprints() {
         return ResponseEntity.status(HttpStatus.OK)
@@ -89,7 +70,7 @@ public class UserController {
     }
 
     @GetMapping("/get-sm-e-signature")
-    public ResponseEntity<ApiResponse<String>> getModeratorOrStudentOfficerESignature(){
+    public ResponseEntity<ApiResponse<String>> getModeratorOrStudentOfficerESignature() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
                         new ApiResponse<>(

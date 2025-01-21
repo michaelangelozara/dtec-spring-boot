@@ -37,7 +37,7 @@ public class UserMapper {
                 .middleName(dto.middleName())
                 .lastname(dto.lastname())
                 .username(dto.username())
-                .email(dto.email())
+                .email(UserUtil.removeWhiteSpace(dto.email()))
                 .isFirstTimeLogin(true)
                 .password(this.passwordEncoder.encode("1234"))
                 .role(dto.role())
