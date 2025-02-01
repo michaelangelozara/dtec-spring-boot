@@ -20,10 +20,12 @@ import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeo
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleMapper;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,8 +48,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private final UserUtil userUtil;
     private final DateTimeFormatterUtil dateTimeFormatterUtil;
     private final SignedPeopleRepository signedPeopleRepository;
+    private final MessageService messageService;
 
-    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, PermitToEnterRepository permitToEnterRepository, SFEFRepository sfefRepository, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository) {
+    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, PermitToEnterRepository permitToEnterRepository, SFEFRepository sfefRepository, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterOffCampusRepository = implementationLetterOffCampusRepository;
@@ -58,6 +61,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         this.userUtil = userUtil;
         this.dateTimeFormatterUtil = dateTimeFormatterUtil;
         this.signedPeopleRepository = signedPeopleRepository;
+        this.messageService = messageService;
     }
 
     @Override
@@ -122,6 +126,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         return genericResponses.subList(0, Math.min(s, genericResponses.size()));
     }
 
+    @Transactional
     @Override
     public void onClick(TypeOfLetter type, int id) {
         switch (type) {
@@ -178,7 +183,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        budgetProposal.setStatus(LetterStatus.IN_PROGRESS);
+        if(budgetProposal.getStatus().equals(LetterStatus.FOR_EVALUATION)){
+            budgetProposal.setStatus(LetterStatus.IN_PROGRESS);
+
+            var studentOfficer = GenericLetterUtil.getUserByRole(budgetProposal.getSignedPeople(), Role.STUDENT_OFFICER);
+            if(studentOfficer != null){
+                String fullName = UserUtil.getUserFullName(user);
+                String message = GenericLetterUtil.generateMessage(fullName, budgetProposal);
+                this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
+            }
+        }
+
         this.budgetProposalRepository.save(budgetProposal);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -213,7 +228,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        communicationLetter.setStatus(LetterStatus.IN_PROGRESS);
+        if(communicationLetter.getStatus().equals(LetterStatus.FOR_EVALUATION)){
+            communicationLetter.setStatus(LetterStatus.IN_PROGRESS);
+
+            var studentOfficer = GenericLetterUtil.getUserByRole(communicationLetter.getSignedPeople(), Role.STUDENT_OFFICER);
+            if(studentOfficer != null){
+                String fullName = UserUtil.getUserFullName(user);
+                String message = GenericLetterUtil.generateMessage(fullName, communicationLetter);
+                this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
+            }
+        }
+
         this.communicationLetterRepository.save(communicationLetter);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -248,7 +273,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        implementationLetterInCampus.setStatus(LetterStatus.IN_PROGRESS);
+        if(implementationLetterInCampus.getStatus().equals(LetterStatus.FOR_EVALUATION)){
+            implementationLetterInCampus.setStatus(LetterStatus.IN_PROGRESS);
+
+            var studentOfficer = GenericLetterUtil.getUserByRole(implementationLetterInCampus.getSignedPeople(), Role.STUDENT_OFFICER);
+            if(studentOfficer != null){
+                String fullName = UserUtil.getUserFullName(user);
+                String message = GenericLetterUtil.generateMessage(fullName, implementationLetterInCampus);
+                this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
+            }
+        }
+
         this.implementationLetterInCampusRepository.save(implementationLetterInCampus);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -282,7 +317,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        implementationLetterOffCampus.setStatus(LetterStatus.IN_PROGRESS);
+        if(implementationLetterOffCampus.getStatus().equals(LetterStatus.FOR_EVALUATION)){
+            implementationLetterOffCampus.setStatus(LetterStatus.IN_PROGRESS);
+
+            var studentOfficer = GenericLetterUtil.getUserByRole(implementationLetterOffCampus.getSignedPeople(), Role.STUDENT_OFFICER);
+            if(studentOfficer != null){
+                String fullName = UserUtil.getUserFullName(user);
+                String message = GenericLetterUtil.generateMessage(fullName, implementationLetterOffCampus);
+                this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
+            }
+        }
+
         this.implementationLetterOffCampusRepository.save(implementationLetterOffCampus);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -316,7 +361,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        permitToEnter.setStatus(LetterStatus.IN_PROGRESS);
+        if(permitToEnter.getStatus().equals(LetterStatus.FOR_EVALUATION)){
+            permitToEnter.setStatus(LetterStatus.IN_PROGRESS);
+
+            var studentOfficer = GenericLetterUtil.getUserByRole(permitToEnter.getSignedPeople(), Role.STUDENT_OFFICER);
+            if(studentOfficer != null){
+                String fullName = UserUtil.getUserFullName(user);
+                String message = GenericLetterUtil.generateMessage(fullName, permitToEnter);
+                this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
+            }
+        }
+
         this.permitToEnterRepository.save(permitToEnter);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -350,7 +405,17 @@ public class GenericLetterServiceImp implements GenericLetterService {
         tempSignedPerson.setUser(user);
         tempSignedPerson.setStatus(SignedPeopleStatus.IN_PROGRESS);
 
-        sfef.setStatus(LetterStatus.IN_PROGRESS);
+        if(sfef.getStatus().equals(LetterStatus.FOR_EVALUATION)){
+            sfef.setStatus(LetterStatus.IN_PROGRESS);
+
+            var studentOfficer = GenericLetterUtil.getUserByRole(sfef.getSignedPeople(), Role.STUDENT_OFFICER);
+            if(studentOfficer != null){
+                String fullName = UserUtil.getUserFullName(user);
+                String message = GenericLetterUtil.generateMessage(fullName, sfef);
+                this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
+            }
+        }
+
         this.sfefRepository.save(sfef);
         this.signedPeopleRepository.save(tempSignedPerson);
     }
@@ -488,12 +553,46 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             budgetProposal.setStatus(LetterStatus.COMPLETED);
+
+            // notify the moderator and student officer
+            sendMessage(budgetProposal);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
         }
 
         this.budgetProposalRepository.save(budgetProposal);
         this.signedPeopleRepository.save(signedPerson);
+    }
+
+    private void sendMessage(SharedFields letter) {
+        User studentOfficer = extractUserNumber(letter, Role.STUDENT_OFFICER);
+        if (studentOfficer != null) {
+            String fullName = UserUtil.getUserFullName(studentOfficer);
+            // update student officer
+            this.messageService.sendMessage(studentOfficer.getContactNumber(), GenericLetterUtil.generateMessage(fullName, letter));
+        }
+
+        User moderator = extractUserNumber(letter, Role.MODERATOR);
+        if (moderator != null) {
+            String fullName = UserUtil.getUserFullName(moderator);
+            // update moderator
+            this.messageService.sendMessage(moderator.getContactNumber(), GenericLetterUtil.generateMessage(fullName, letter));
+        }
+    }
+
+
+
+    private User extractUserNumber(SharedFields sharedFields, Role role) {
+        var signedPeople = sharedFields.getSignedPeople();
+        var signedPerson = signedPeople
+                .stream()
+                .filter(sp -> sp.getUser() != null && sp.getUser().getRole().equals(role))
+                .findFirst()
+                .orElse(null);
+        if (signedPerson != null)
+            return signedPerson.getUser();
+        else
+            return null;
     }
 
     private Optional<SignedPeople> getSignedPerson(SharedFields object, Role role) {
@@ -550,6 +649,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             communicationLetter.setStatus(LetterStatus.COMPLETED);
+
+            // notify the moderator and student officer
+            sendMessage(communicationLetter);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
         }
@@ -590,6 +692,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             implementationLetterInCampus.setStatus(LetterStatus.COMPLETED);
+
+            // notify the moderator and student officer
+            sendMessage(implementationLetterInCampus);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
         }
@@ -629,6 +734,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
             implementationLetterOffCampus.setStatus(LetterStatus.COMPLETED);
+
+            // notify the moderator and student officer
+            sendMessage(implementationLetterOffCampus);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
         }
@@ -644,7 +752,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if(signature == null || signature.isEmpty()) throw new ForbiddenException("Please Attach your Signature First!");
+        if (signature == null || signature.isEmpty())
+            throw new ForbiddenException("Please Attach your Signature First!");
 
         if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
@@ -667,6 +776,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             permitToEnter.setStatus(LetterStatus.COMPLETED);
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+
+            // notify the moderator and student officer
+            sendMessage(permitToEnter);
         } else {
             throw new ForbiddenException("You can't Perform to this action");
         }
@@ -682,7 +794,8 @@ public class GenericLetterServiceImp implements GenericLetterService {
                 .stream()
                 .filter(sp -> sp.getRole().equals(user.getRole())).findFirst();
 
-        if(signature == null || signature.isEmpty()) throw new ForbiddenException("Please Attach your Signature First!");
+        if (signature == null || signature.isEmpty())
+            throw new ForbiddenException("Please Attach your Signature First!");
 
         if (optionalSignedPerson.isEmpty()) throw new ForbiddenException("Invalid Assigned Officer for this Letter");
 
@@ -711,6 +824,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
             sfef.setStatus(LetterStatus.COMPLETED);
             signedPerson.setStatus(SignedPeopleStatus.EVALUATED);
+
+            // notify the moderator and student officer
+            sendMessage(sfef);
         } else {
             if (!user.getRole().equals(Role.CHAPEL) && !user.getRole().equals(Role.MULTIMEDIA))
                 throw new ForbiddenException("You can't Perform to this action");

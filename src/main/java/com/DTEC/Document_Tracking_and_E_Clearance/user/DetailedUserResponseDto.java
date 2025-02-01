@@ -13,6 +13,7 @@ public record DetailedUserResponseDto(
         String lastname,
         String username,
         String email,
+        @JsonProperty("contact_number") String contactNumber,
         Role role,
         @JsonProperty("year_level") Integer yearLevel,
         @JsonProperty("course") CourseResponseDto course,

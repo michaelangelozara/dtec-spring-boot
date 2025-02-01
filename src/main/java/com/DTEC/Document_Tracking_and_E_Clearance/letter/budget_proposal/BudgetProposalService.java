@@ -1,17 +1,19 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpense;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpenseRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpense;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpenseRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -33,15 +35,17 @@ public class BudgetProposalService {
     private final MemberRoleUtil memberRoleUtil;
     private final UserUtil userUtil;
     private final SignedPeopleRepository signedPeopleRepository;
+    private final MessageService messageService;
 
 
-    public BudgetProposalService(BudgetProposalRepository budgetProposalRepository, ExpectedExpenseRepository expectedExpenseRepository, BudgetProposalMapper budgetProposalMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository) {
+    public BudgetProposalService(BudgetProposalRepository budgetProposalRepository, ExpectedExpenseRepository expectedExpenseRepository, BudgetProposalMapper budgetProposalMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.expectedExpenseRepository = expectedExpenseRepository;
         this.budgetProposalMapper = budgetProposalMapper;
         this.memberRoleUtil = memberRoleUtil;
         this.userUtil = userUtil;
         this.signedPeopleRepository = signedPeopleRepository;
+        this.messageService = messageService;
     }
 
     @Transactional
@@ -55,9 +59,10 @@ public class BudgetProposalService {
 
         var userClub = this.memberRoleUtil.getClubOfOfficer(user.getMemberRoles());
 
-        if(userClub == null) throw new ForbiddenException("You're not Officer in any Club");
+        if (userClub == null) throw new ForbiddenException("You're not Officer in any Club");
 
-        if(!UserUtil.checkESignature(user)) throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
+        if (!UserUtil.checkESignature(user))
+            throw new ForbiddenException("Please Contact the Admin to Register your E-Signature");
 
         var budgetProposal = BudgetProposal.builder()
                 .nameOfActivity(dto.name())
@@ -99,14 +104,21 @@ public class BudgetProposalService {
             expectedExpenses.add(tempExpectedExpense);
         }
 
-        if(totalAmount.compareTo(dto.allottedAmount()) != 0)
+        if (totalAmount.compareTo(dto.allottedAmount()) != 0)
             throw new BadRequestException("The Amount Allotted doesn't match to the total of expenses");
 
         this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa, finance, president));
+
         this.expectedExpenseRepository.saveAll(expectedExpenses);
+
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessage(fullName, savedBudgetProposal);
+
+        // send message
+        this.messageService.sendMessage(user.getContactNumber(), message);
     }
 
-    private SignedPeople getSignedPeople(BudgetProposal budgetProposal, Role role){
+    private SignedPeople getSignedPeople(BudgetProposal budgetProposal, Role role) {
         return SignedPeople.builder()
                 .role(role)
                 .status(SignedPeopleStatus.FOR_EVALUATION)
@@ -126,13 +138,13 @@ public class BudgetProposalService {
         return true;
     }
 
-    public List<BudgetProposalResponseDto> getAllBudgetProposal(int s, int e){
+    public List<BudgetProposalResponseDto> getAllBudgetProposal(int s, int e) {
         Pageable pageable = PageRequest.of(s, e);
         Page<BudgetProposal> budgetProposals = this.budgetProposalRepository.findAll(pageable);
         return this.budgetProposalMapper.toBudgetProposalInformationResponseDtoList(budgetProposals.getContent());
     }
 
-    public BudgetProposalResponseDto getBudgetProposal(int id){
+    public BudgetProposalResponseDto getBudgetProposal(int id) {
         var budgetProposal = this.budgetProposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Budget Proposal not Found"));
 

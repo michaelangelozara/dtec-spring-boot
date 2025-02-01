@@ -30,7 +30,7 @@ public class MessageService {
 
             // Prepare the request body
             MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
-            requestBody.add("apikey", "c9f08dfb67921f21eea7b7a3f1d6cd5f");
+            requestBody.add("apikey", apiKey);
             requestBody.add("number", to);
             requestBody.add("message", message);
 
@@ -41,7 +41,7 @@ public class MessageService {
             return this.restTemplate.postForObject(SEMAPHORE_URL, request, String.class);
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 }

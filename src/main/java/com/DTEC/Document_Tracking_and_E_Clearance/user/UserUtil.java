@@ -37,8 +37,8 @@ public class UserUtil {
                 .orElseThrow(() -> new ResourceNotFoundException("There's no " + role.name() + " in the Organization."));
     }
 
-    public static boolean checkESignature(User user){
-        if(user.getESignature().isEmpty())
+    public static boolean checkESignature(User user) {
+        if (user.getESignature().isEmpty())
             return false;
         return true;
     }
@@ -124,6 +124,32 @@ public class UserUtil {
                 .toList();
     }
 
+    public static boolean validateContactNumber(String str) {
+        if (!str.startsWith("09") && !str.startsWith("+63"))
+            return false;
+
+        if (str.startsWith("+63") && str.substring(3).length() != 10)
+            return false;
+        else if (str.startsWith("09") && str.length() != 11)
+            return false;
+        else
+            return true;
+    }
+
+    public static boolean validateGmail(String str) {
+        return str.endsWith("@gmail.com");
+    }
+
+    public static String extractContactNumber(String str) {
+        str = str.trim();
+        if (str.startsWith("+63")) {
+            String n = str.substring(3);
+            return "0" + n;
+        }
+
+        return str;
+    }
+
     public static boolean rolesNoMultipleAccount(Role role) {
         Set<Role> roles = new HashSet<>();
         roles.add(Role.DSA);
@@ -144,7 +170,7 @@ public class UserUtil {
         return roles.contains(role);
     }
 
-    public static String removeWhiteSpace(String str){
+    public static String removeWhiteSpace(String str) {
         return str.trim();
     }
 }

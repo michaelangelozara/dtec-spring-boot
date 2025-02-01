@@ -9,6 +9,7 @@ public record UserRegisterRequestDto(
         String lastname,
         String username,
         String email,
+        @JsonProperty("contact_number") String contactNumber,
         Role role,
         @JsonProperty("year_level") int yearLevel,
         @JsonProperty("course_id") int courseId,

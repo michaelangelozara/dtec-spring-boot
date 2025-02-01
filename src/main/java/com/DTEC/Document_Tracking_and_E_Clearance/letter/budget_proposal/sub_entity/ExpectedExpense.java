@@ -26,7 +26,7 @@ public class ExpectedExpense {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "budget_proposal_id")
     @JsonBackReference
     private BudgetProposal budgetProposal;

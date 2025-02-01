@@ -38,6 +38,7 @@ public class UserMapper {
                 .lastname(dto.lastname())
                 .username(dto.username())
                 .email(UserUtil.removeWhiteSpace(dto.email()))
+                .contactNumber(UserUtil.extractContactNumber(dto.contactNumber()))
                 .isFirstTimeLogin(true)
                 .password(this.passwordEncoder.encode("1234"))
                 .role(dto.role())
@@ -54,6 +55,7 @@ public class UserMapper {
                 user.getLastname(),
                 user.getUsername(),
                 user.getEmail(),
+                user.getContactNumber(),
                 user.getRole(),
                 user.getYearLevel(),
                 user.getCourse() != null ? this.courseMapper.toCourseResponseDto(user.getCourse()) : null,

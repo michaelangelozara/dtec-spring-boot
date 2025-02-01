@@ -3,7 +3,6 @@ package com.DTEC.Document_Tracking_and_E_Clearance.authentication;
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
 import com.DTEC.Document_Tracking_and_E_Clearance.configuration.JwtService;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
-import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintResponseDto;
 import com.DTEC.Document_Tracking_and_E_Clearance.fingerprint.FingerprintService;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.DateTimeFormatterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.TokenRepository;
@@ -144,7 +143,7 @@ public class AuthenticationController {
     @PutMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(
             @RequestParam("e") String email
-    ){
+    ) {
         this.userService.forgotPassword(email);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(

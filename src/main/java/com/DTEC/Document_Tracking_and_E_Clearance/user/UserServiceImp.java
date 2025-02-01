@@ -110,6 +110,18 @@ public class UserServiceImp implements UserService {
         if (dto.role().equals(Role.SUPER_ADMIN))
             throw new ForbiddenException("Invalid Role");
 
+        // check if the email is existing already
+        if (this.userRepository.existsByContactNumber(dto.contactNumber()))
+            throw new ConflictException("Contact Number is existing already");
+
+        // validate contact number
+        if (!UserUtil.validateContactNumber(dto.contactNumber()))
+            throw new ForbiddenException("Invalid Contact Number");
+
+        // validate gmail
+        if (!UserUtil.validateGmail(dto.email()))
+            throw new ForbiddenException("Invalid Gmail");
+
         var user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
@@ -122,6 +134,7 @@ public class UserServiceImp implements UserService {
         user.setLastname(dto.lastname());
         user.setEmail(UserUtil.removeWhiteSpace(dto.email()));
         user.setRole(dto.role());
+        user.setContactNumber(UserUtil.extractContactNumber(dto.contactNumber()));
 
         var savedUser = this.userRepository.save(user);
 
@@ -342,6 +355,18 @@ public class UserServiceImp implements UserService {
         if (this.userRepository.existsByEmail(dto.email()))
             throw new ConflictException("Email is existing already");
 
+        // check if the email is existing already
+        if (this.userRepository.existsByContactNumber(dto.contactNumber()))
+            throw new ConflictException("Contact Number is existing already");
+
+        // validate contact number
+        if (!UserUtil.validateContactNumber(dto.contactNumber()))
+            throw new ForbiddenException("Invalid Contact Number");
+
+        // validate gmail
+        if (!UserUtil.validateGmail(dto.email()))
+            throw new ForbiddenException("Invalid Gmail");
+
         var user = this.userMapper.toUser(dto);
 
         var savedUser = this.userRepository.save(user);
@@ -539,7 +564,7 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public void forgotPassword(String email){
+    public void forgotPassword(String email) {
         // check if the email doesn't exist already
         if (!this.userRepository.existsByEmail(email))
             throw new ForbiddenException("Invalid Email Address");

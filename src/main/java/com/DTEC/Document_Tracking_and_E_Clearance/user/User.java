@@ -67,6 +67,9 @@ public class User implements UserDetails {
     @Column(name = "deleted_at")
     private LocalDate deletedAt;
 
+    @Column(name = "contact_number", unique = true)
+    private String contactNumber;
+
     @NotBlank(message = "User Id cannot be Blank")
     @Size(max = 16, message = "User Id must not exceed 16 Characters")
     @Column(length = 16, nullable = false, unique = true)
