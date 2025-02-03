@@ -1,4 +1,4 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form;
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

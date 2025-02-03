@@ -1,14 +1,16 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form;
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.facility_or_equipment.FacilityOrEquipment;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.facility_or_equipment.FacilityOrEquipmentRepository;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.facility_or_equipment.FacilityOrEquipment;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.facility_or_equipment.FacilityOrEquipmentRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
@@ -27,8 +29,9 @@ public class SFEFServiceImp implements SFEFService{
     private final UserRepository userRepository;
     private final SignedPeopleRepository signedPeopleRepository;
     private final MemberRoleUtil memberRoleUtil;
+    private final MessageService messageService;
 
-    public SFEFServiceImp(SFEFRepository sfefRepository, SFEFMapper sfefMapper, FacilityOrEquipmentRepository facilityOrEquipmentRepository, UserUtil userUtil, UserRepository userRepository, SignedPeopleRepository signedPeopleRepository, MemberRoleUtil memberRoleUtil) {
+    public SFEFServiceImp(SFEFRepository sfefRepository, SFEFMapper sfefMapper, FacilityOrEquipmentRepository facilityOrEquipmentRepository, UserUtil userUtil, UserRepository userRepository, SignedPeopleRepository signedPeopleRepository, MemberRoleUtil memberRoleUtil, MessageService messageService) {
         this.sfefRepository = sfefRepository;
         this.sfefMapper = sfefMapper;
         this.facilityOrEquipmentRepository = facilityOrEquipmentRepository;
@@ -36,11 +39,12 @@ public class SFEFServiceImp implements SFEFService{
         this.userRepository = userRepository;
         this.signedPeopleRepository = signedPeopleRepository;
         this.memberRoleUtil = memberRoleUtil;
+        this.messageService = messageService;
     }
 
     @Transactional
     @Override
-    public void add(SFEFRequestDto dto) {
+    public void requestLetter(SFEFRequestDto dto) {
         if(dto.facilityOrEquipments().isEmpty())
             throw new BadRequestException("Facilities or Equipment cannot be empty");
 
@@ -84,6 +88,11 @@ public class SFEFServiceImp implements SFEFService{
             facilityOrEquipments.add(tempFacilityOrEquipment);
         }
         this.facilityOrEquipmentRepository.saveAll(facilityOrEquipments);
+
+        // send message
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedSFEF);
+        this.messageService.sendMessage(user.getContactNumber(), message);
     }
 
     private SignedPeople getSignedPeople(SFEF sfef, Role role){

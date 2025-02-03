@@ -4,9 +4,11 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
@@ -26,8 +28,9 @@ public class ImplementationLetterInCampusService {
     private final SchoolYearGenerator schoolYearGenerator;
     private final MemberRoleUtil memberRoleUtil;
     private final SignedPeopleRepository signedPeopleRepository;
+    private final MessageService messageService;
 
-    public ImplementationLetterInCampusService(ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, UserRepository userRepository, UserUtil userUtil, SchoolYearGenerator schoolYearGenerator, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository) {
+    public ImplementationLetterInCampusService(ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, UserRepository userRepository, UserUtil userUtil, SchoolYearGenerator schoolYearGenerator, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterInCampusMapper = implementationLetterInCampusMapper;
         this.userRepository = userRepository;
@@ -35,6 +38,7 @@ public class ImplementationLetterInCampusService {
         this.schoolYearGenerator = schoolYearGenerator;
         this.memberRoleUtil = memberRoleUtil;
         this.signedPeopleRepository = signedPeopleRepository;
+        this.messageService = messageService;
     }
 
     @Transactional
@@ -72,6 +76,11 @@ public class ImplementationLetterInCampusService {
         var dsa = getSignedPeople(savedImplementation, Role.DSA);
 
         this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa));
+
+        // send message
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedImplementation);
+        this.messageService.sendMessage(user.getContactNumber(), message);
     }
 
     private SignedPeople getSignedPeople(ImplementationLetterInCampus implementationLetterInCampus, Role role){

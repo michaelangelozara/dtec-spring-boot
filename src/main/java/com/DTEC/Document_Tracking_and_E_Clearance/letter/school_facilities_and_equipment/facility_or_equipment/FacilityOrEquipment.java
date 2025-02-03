@@ -1,6 +1,6 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.facility_or_equipment;
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.facility_or_equipment;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.SFEF;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.SFEF;
 import jakarta.persistence.*;
 import lombok.*;
 

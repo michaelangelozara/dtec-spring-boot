@@ -1,6 +1,6 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form;
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment;
 
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form.facility_or_equipment.FacilityOrEquipmentResponseDto;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.facility_or_equipment.FacilityOrEquipmentResponseDto;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleResponseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

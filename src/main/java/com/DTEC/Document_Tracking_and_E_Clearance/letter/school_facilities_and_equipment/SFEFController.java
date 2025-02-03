@@ -1,4 +1,4 @@
-package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment_form;
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment;
 
 import com.DTEC.Document_Tracking_and_E_Clearance.api_response.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ public class SFEFController {
     public ResponseEntity<ApiResponse<Void>> add(
             @RequestBody SFEFRequestDto dto
     ){
-        this.sfefService.add(dto);
+        this.sfefService.requestLetter(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         new ApiResponse<>(

@@ -4,12 +4,13 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOO;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.implementation_letter.off_campus.sub_entity.CAOORepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -27,14 +28,16 @@ public class ImplementationLetterOffCampusService {
     private final CAOORepository caooRepository;
     private final MemberRoleUtil memberRoleUtil;
     private final SignedPeopleRepository signedPeopleRepository;
+    private final MessageService messageService;
 
-    public ImplementationLetterOffCampusService(UserUtil userUtil, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, CAOORepository caooRepository, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository) {
+    public ImplementationLetterOffCampusService(UserUtil userUtil, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, ImplementationLetterOffCampusMapper implementationLetterOffCampusMapper, CAOORepository caooRepository, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
         this.userUtil = userUtil;
         this.implementationLetterOffCampusRepository = implementationLetterOffCampusRepository;
         this.implementationLetterOffCampusMapper = implementationLetterOffCampusMapper;
         this.caooRepository = caooRepository;
         this.memberRoleUtil = memberRoleUtil;
         this.signedPeopleRepository = signedPeopleRepository;
+        this.messageService = messageService;
     }
 
     @Transactional
@@ -84,6 +87,11 @@ public class ImplementationLetterOffCampusService {
 
         this.signedPeopleRepository.saveAll(List.of(signedPeople, officeHead, president));
         this.caooRepository.saveAll(caoos);
+
+        // send message
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedImplementationLetter);
+        this.messageService.sendMessage(user.getContactNumber(), message);
     }
 
     private SignedPeople getSignedPeople(ImplementationLetterOffCampus implementationLetterOffCampus, Role role){

@@ -21,7 +21,7 @@ public class PermitToEnterController {
     public ResponseEntity<ApiResponse<Void>> requestLetter(
             @RequestBody PermitToEnterRequestDto dto
     ) {
-        this.permitToEnterService.add(dto);
+        this.permitToEnterService.requestLetter(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         new ApiResponse<>(

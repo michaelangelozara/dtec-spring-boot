@@ -111,10 +111,9 @@ public class BudgetProposalService {
 
         this.expectedExpenseRepository.saveAll(expectedExpenses);
 
-        String fullName = UserUtil.getUserFullName(user);
-        String message = GenericLetterUtil.generateMessage(fullName, savedBudgetProposal);
-
         // send message
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedBudgetProposal);
         this.messageService.sendMessage(user.getContactNumber(), message);
     }
 

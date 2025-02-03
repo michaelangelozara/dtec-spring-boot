@@ -1,0 +1,8 @@
+package com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment;
+
+public interface SFEFService {
+
+    void requestLetter(SFEFRequestDto dto);
+
+    SFEFResponseDto getSFEFById(int id);
+}

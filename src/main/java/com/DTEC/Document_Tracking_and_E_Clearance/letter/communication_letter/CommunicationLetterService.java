@@ -5,12 +5,13 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.BudgetProposal;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
 import jakarta.transaction.Transactional;
@@ -29,13 +30,15 @@ public class CommunicationLetterService {
     private final MemberRoleUtil memberRoleUtil;
     private final UserUtil userUtil;
     private final SignedPeopleRepository signedPeopleRepository;
+    private final MessageService messageService;
 
-    public CommunicationLetterService(CommunicationLetterRepository communicationLetterRepository, CommunicationLetterMapper communicationLetterMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository) {
+    public CommunicationLetterService(CommunicationLetterRepository communicationLetterRepository, CommunicationLetterMapper communicationLetterMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
         this.communicationLetterRepository = communicationLetterRepository;
         this.communicationLetterMapper = communicationLetterMapper;
         this.memberRoleUtil = memberRoleUtil;
         this.userUtil = userUtil;
         this.signedPeopleRepository = signedPeopleRepository;
+        this.messageService = messageService;
     }
 
     @Transactional
@@ -90,6 +93,11 @@ public class CommunicationLetterService {
         }
 
         this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, dsa, presidentOfOfficeHead));
+
+        // send message
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedCommunicationLetter);
+        this.messageService.sendMessage(user.getContactNumber(), message);
     }
 
     private SignedPeople getSignedPeople(CommunicationLetter communicationLetter, Role role) {

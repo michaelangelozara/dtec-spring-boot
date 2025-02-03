@@ -80,6 +80,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u WHERE u.role =:role")
     Optional<User> findNoDuplicateOICByRole(@Param("role") Role role);
 
-    @Query("SELECT u FROM User u WHERE u.role =:role")
-    Page<User> findAUserByRole(@Param("role") Role role, Pageable pageable);
+    @Query("SELECT u FROM User u WHERE u.role = ?1")
+    List<User> findUsersByRole(Role role);
 }

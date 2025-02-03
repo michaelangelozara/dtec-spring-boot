@@ -8,8 +8,35 @@ import java.util.List;
 
 public class GenericLetterUtil {
 
-    public static String generateMessage(String name, SharedFields sharedFields) {
-        return "Hi " + name + ",\nYour " + sharedFields.getType() + "\nTransaction status is " + sharedFields.getStatus().name() + ".";
+    public enum MessageType {
+        STUDENT,
+        PERSONNEL
+    }
+
+    public static String generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(String name, SharedFields sharedFields) {
+        return "Hi " + name + ",\nYour " + sharedFields.getType() + " has been submitted and forwarded to " + sharedFields.getCurrentLocation().name() + ". You will be updated once it is completed and forwarded to the next office.";
+    }
+
+    public static String generateMessageForFinalDecisionOfLetter(String name, SharedFields sharedFields) {
+        return "Hi " + name + ",\nYour " + sharedFields.getType() + " has been " + sharedFields.getStatus() + ".\nPlease log in to your DTEC account to view the details.";
+    }
+
+    public static String generateMessageAfterClearanceReleased() {
+        return "Your clearance has been released. Please log in to your DTEC account to process and submit your clearance for evaluation";
+    }
+
+    public static String generateMessageForOfficeInChargeWhenClearancesRelease(String name) {
+        return "Hi " + name + ",\nThe clearance has been released. Please log in to your DTEC account to review and sign the pending clearance requests.";
+    }
+
+    public static String generateMessageForUserWhoSubmittedClearance(String name) {
+        return "Hi " + name + ",\nYou have successfully submitted your clearance. Please check your DTEC account for the status.";
+    }
+
+    // the role should be student or personnel
+    public static String generateMessageWhenTheClearanceIsCompleted(String name, MessageType type) {
+        return type.equals(MessageType.STUDENT) ? "Hi " + name + ",\nYour clearance has been completed. Please present this message to the cashier to claim your Exam Permit." :
+                "Hi " + name + ",\nYour clearance has been completed. Please present this message to the Business Office to process your salary.";
     }
 
     public static User getUserByRole(List<SignedPeople> signedPeople, Role role) {
