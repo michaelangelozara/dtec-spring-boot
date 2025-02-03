@@ -53,7 +53,7 @@ public class GenericLetterUtil {
         return "Hi " + name + ",\nYour " + typeOfLetterExtractor(sharedFields) + " has been " + sharedFields.getStatus().name() + ".\nPlease log in to your DTEC account to view the details.";
     }
 
-    public static String generateMessageForModerator(String name, SharedFields sharedFields) {
+    public static String generateMessageForPersonnelThatNeedsToEvaluateLetter(String name, SharedFields sharedFields) {
         return "Hi " + name + ",\nYou have a pending " + typeOfLetterExtractor(sharedFields) + " that needs your evaluation. Please log in to your DTEC account to review the transaction.";
     }
 

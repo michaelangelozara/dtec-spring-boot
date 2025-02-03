@@ -557,7 +557,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
 
         var moderator = memberRoleOfModerator.getUser();
 
-        String message = GenericLetterUtil.generateMessageForModerator(UserUtil.getUserFullName(moderator), letter);
+        String message = GenericLetterUtil.generateMessageForPersonnelThatNeedsToEvaluateLetter(UserUtil.getUserFullName(moderator), letter);
         this.messageService.sendMessage(moderator.getContactNumber(), message);
     }
 
@@ -565,7 +565,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         var OICs = this.userRepository.findUsersByRole(role);
         if (!OICs.isEmpty()) {
             OICs.forEach(oic -> {
-                String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(UserUtil.getUserFullName(oic), sharedFields);
+                String message = GenericLetterUtil.generateMessageForPersonnelThatNeedsToEvaluateLetter(UserUtil.getUserFullName(oic), sharedFields);
                 this.messageService.sendMessage(oic.getContactNumber(), message);
             });
         }
