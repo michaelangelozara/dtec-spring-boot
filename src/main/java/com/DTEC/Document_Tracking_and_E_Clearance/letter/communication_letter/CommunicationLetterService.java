@@ -37,6 +37,7 @@ public class CommunicationLetterService {
         this.userUtil = userUtil;
         this.signedPeopleRepository = signedPeopleRepository;
         this.messageService = messageService;
+        this.genericLetterServiceImp = genericLetterServiceImp;
     }
 
     @Transactional
