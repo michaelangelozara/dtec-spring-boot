@@ -1,5 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.communication_letter.CommunicationLetterType;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
@@ -13,16 +15,46 @@ public class GenericLetterUtil {
         PERSONNEL
     }
 
+    private static String typeOfLetterExtractor(SharedFields letter) {
+        switch (letter.getType()) {
+            case BUDGET_PROPOSAL -> {
+                return "Budget Proposal";
+            }
+            case COMMUNICATION_LETTER -> {
+                if (letter instanceof CommunicationLetter communicationLetter) {
+                    if (communicationLetter.getTypeOfCampus().equals(CommunicationLetterType.IN_CAMPUS)) {
+                        return "Communication Letter (In-Campus)";
+                    } else {
+                        return "Communication Letter (Off-Campus)";
+                    }
+                }
+            }
+            case IMPLEMENTATION_LETTER_IN_CAMPUS -> {
+                return "Implementation Program (In-Campus)";
+            }
+            case IMPLEMENTATION_LETTER_OFF_CAMPUS -> {
+                return "Implementation Program (Off-Campus)";
+            }
+            case PERMIT_TO_ENTER -> {
+                return "Permit to Enter the Campus Outside Regular Schedules";
+            }
+            case SFEF -> {
+                return "Use of School Facilities & Equipment";
+            }
+        }
+        return "Letter is Undefined";
+    }
+
     public static String generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(String name, SharedFields sharedFields) {
-        return "Hi " + name + ",\nYour " + sharedFields.getType().name() + " has been submitted and forwarded to " + sharedFields.getCurrentLocation().name() + ". You will be updated once it is completed and forwarded to the next office.";
+        return "Hi " + name + ",\nYour " + typeOfLetterExtractor(sharedFields) + " has been submitted and forwarded to " + sharedFields.getCurrentLocation().name() + ". You will be updated once it is completed and forwarded to the next office.";
     }
 
     public static String generateMessageForFinalDecisionOfLetter(String name, SharedFields sharedFields) {
-        return "Hi " + name + ",\nYour " + sharedFields.getType().name() + " has been " + sharedFields.getStatus().name() + ".\nPlease log in to your DTEC account to view the details.";
+        return "Hi " + name + ",\nYour " + typeOfLetterExtractor(sharedFields) + " has been " + sharedFields.getStatus().name() + ".\nPlease log in to your DTEC account to view the details.";
     }
 
-    public static String generateMessageForModerator(String name, SharedFields letter) {
-        return "Hi " + name + ",\nYou have a pending " + letter.getType().name() + " that needs your evaluation. Please log in to your DTEC account to review the transaction.";
+    public static String generateMessageForModerator(String name, SharedFields sharedFields) {
+        return "Hi " + name + ",\nYou have a pending " + typeOfLetterExtractor(sharedFields) + " that needs your evaluation. Please log in to your DTEC account to review the transaction.";
     }
 
     public static String generateMessageAfterClearanceReleased() {
