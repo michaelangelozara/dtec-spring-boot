@@ -1,5 +1,7 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.letter;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.club.ClubRole;
+import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
@@ -51,8 +53,9 @@ public class GenericLetterServiceImp implements GenericLetterService {
     private final SignedPeopleRepository signedPeopleRepository;
     private final MessageService messageService;
     private final UserRepository userRepository;
+    private final MemberRoleUtil memberRoleUtil;
 
-    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, PermitToEnterRepository permitToEnterRepository, SFEFRepository sfefRepository, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService, UserRepository userRepository) {
+    public GenericLetterServiceImp(BudgetProposalRepository budgetProposalRepository, ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterOffCampusRepository implementationLetterOffCampusRepository, CommunicationLetterRepository communicationLetterRepository, PermitToEnterRepository permitToEnterRepository, SFEFRepository sfefRepository, SignedPeopleMapper signedPeopleMapper, UserUtil userUtil, DateTimeFormatterUtil dateTimeFormatterUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService, UserRepository userRepository, MemberRoleUtil memberRoleUtil) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterOffCampusRepository = implementationLetterOffCampusRepository;
@@ -65,6 +68,7 @@ public class GenericLetterServiceImp implements GenericLetterService {
         this.signedPeopleRepository = signedPeopleRepository;
         this.messageService = messageService;
         this.userRepository = userRepository;
+        this.memberRoleUtil = memberRoleUtil;
     }
 
     @Override
@@ -534,11 +538,27 @@ public class GenericLetterServiceImp implements GenericLetterService {
             final String message;
             if (sharedFields.getStatus().equals(LetterStatus.COMPLETED) || sharedFields.getStatus().equals(LetterStatus.DECLINED)) {
                 message = GenericLetterUtil.generateMessageForFinalDecisionOfLetter(UserUtil.getUserFullName(studentOfficer), sharedFields);
-            }else{
+            } else {
                 message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(UserUtil.getUserFullName(studentOfficer), sharedFields);
             }
             this.messageService.sendMessage(studentOfficer.getContactNumber(), message);
         }
+    }
+
+    public void sendMessageToModerator(User studentOfficer, SharedFields letter) {
+        var club = this.memberRoleUtil.getClubOfOfficer(studentOfficer.getMemberRoles());
+        if(club == null)
+            throw new ForbiddenException("You are not in any Club. Please Contact the Admin!");
+
+        // extract the Moderator from the Member Role of this club
+        var memberRoleOfModerator = club.getMemberRoles().stream().filter(mr -> mr.getUser() != null && mr.getRole().equals(ClubRole.MODERATOR))
+                .findFirst()
+                .orElseThrow(() -> new ForbiddenException("There's no Moderator in the Club you're in yet. Please Contact the Admin!"));
+
+        var moderator = memberRoleOfModerator.getUser();
+
+        String message = GenericLetterUtil.generateMessageForModerator(UserUtil.getUserFullName(moderator), letter);
+        this.messageService.sendMessage(moderator.getContactNumber(), message);
     }
 
     private void sendMessageToOICWhenReceivesATransactionLetter(SharedFields sharedFields, Role role) {

@@ -4,6 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterServiceImp;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.facility_or_equipment.FacilityOrEquipment;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.school_facilities_and_equipment.facility_or_equipment.FacilityOrEquipmentRepository;
@@ -21,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SFEFServiceImp implements SFEFService{
+public class SFEFServiceImp implements SFEFService {
     private final SFEFRepository sfefRepository;
     private final SFEFMapper sfefMapper;
     private final FacilityOrEquipmentRepository facilityOrEquipmentRepository;
@@ -30,8 +31,9 @@ public class SFEFServiceImp implements SFEFService{
     private final SignedPeopleRepository signedPeopleRepository;
     private final MemberRoleUtil memberRoleUtil;
     private final MessageService messageService;
+    private final GenericLetterServiceImp genericLetterServiceImp;
 
-    public SFEFServiceImp(SFEFRepository sfefRepository, SFEFMapper sfefMapper, FacilityOrEquipmentRepository facilityOrEquipmentRepository, UserUtil userUtil, UserRepository userRepository, SignedPeopleRepository signedPeopleRepository, MemberRoleUtil memberRoleUtil, MessageService messageService) {
+    public SFEFServiceImp(SFEFRepository sfefRepository, SFEFMapper sfefMapper, FacilityOrEquipmentRepository facilityOrEquipmentRepository, UserUtil userUtil, UserRepository userRepository, SignedPeopleRepository signedPeopleRepository, MemberRoleUtil memberRoleUtil, MessageService messageService, GenericLetterServiceImp genericLetterServiceImp) {
         this.sfefRepository = sfefRepository;
         this.sfefMapper = sfefMapper;
         this.facilityOrEquipmentRepository = facilityOrEquipmentRepository;
@@ -40,19 +42,21 @@ public class SFEFServiceImp implements SFEFService{
         this.signedPeopleRepository = signedPeopleRepository;
         this.memberRoleUtil = memberRoleUtil;
         this.messageService = messageService;
+        this.genericLetterServiceImp = genericLetterServiceImp;
     }
 
     @Transactional
     @Override
     public void requestLetter(SFEFRequestDto dto) {
-        if(dto.facilityOrEquipments().isEmpty())
+        if (dto.facilityOrEquipments().isEmpty())
             throw new BadRequestException("Facilities or Equipment cannot be empty");
 
         var user = this.userUtil.getCurrentUser();
         var student = this.userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-        if(dto.signature() == null || dto.signature().isEmpty()) throw new ForbiddenException("Please Attach your E-Signature!");
+        if (dto.signature() == null || dto.signature().isEmpty())
+            throw new ForbiddenException("Please Attach your E-Signature!");
 
         var sfef = this.sfefMapper.toSFEF(dto);
         var club = this.memberRoleUtil.getClubOfOfficer(student.getMemberRoles());
@@ -79,7 +83,7 @@ public class SFEFServiceImp implements SFEFService{
         this.signedPeopleRepository.saveAll(List.of(signedPeople, moderator, officeHead, chapel, PPIC, multimedia, president));
 
         List<FacilityOrEquipment> facilityOrEquipments = new ArrayList<>();
-        for(var facilityOrEquipment : dto.facilityOrEquipments()){
+        for (var facilityOrEquipment : dto.facilityOrEquipments()) {
             var tempFacilityOrEquipment = FacilityOrEquipment.builder()
                     .name(facilityOrEquipment.name())
                     .quantity(facilityOrEquipment.quantity())
@@ -93,9 +97,12 @@ public class SFEFServiceImp implements SFEFService{
         String fullName = UserUtil.getUserFullName(user);
         String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedSFEF);
         this.messageService.sendMessage(user.getContactNumber(), message);
+
+        // send message to Moderator
+        this.genericLetterServiceImp.sendMessageToModerator(user, savedSFEF);
     }
 
-    private SignedPeople getSignedPeople(SFEF sfef, Role role){
+    private SignedPeople getSignedPeople(SFEF sfef, Role role) {
         return SignedPeople.builder()
                 .role(role)
                 .status(SignedPeopleStatus.FOR_EVALUATION)

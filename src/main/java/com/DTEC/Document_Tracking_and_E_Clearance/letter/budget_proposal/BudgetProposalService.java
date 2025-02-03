@@ -4,10 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.*;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpense;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.budget_proposal.sub_entity.ExpectedExpenseRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
@@ -36,9 +33,10 @@ public class BudgetProposalService {
     private final UserUtil userUtil;
     private final SignedPeopleRepository signedPeopleRepository;
     private final MessageService messageService;
+    private final GenericLetterServiceImp genericLetterServiceImp;
 
 
-    public BudgetProposalService(BudgetProposalRepository budgetProposalRepository, ExpectedExpenseRepository expectedExpenseRepository, BudgetProposalMapper budgetProposalMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
+    public BudgetProposalService(BudgetProposalRepository budgetProposalRepository, ExpectedExpenseRepository expectedExpenseRepository, BudgetProposalMapper budgetProposalMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService, GenericLetterServiceImp genericLetterServiceImp) {
         this.budgetProposalRepository = budgetProposalRepository;
         this.expectedExpenseRepository = expectedExpenseRepository;
         this.budgetProposalMapper = budgetProposalMapper;
@@ -46,6 +44,7 @@ public class BudgetProposalService {
         this.userUtil = userUtil;
         this.signedPeopleRepository = signedPeopleRepository;
         this.messageService = messageService;
+        this.genericLetterServiceImp = genericLetterServiceImp;
     }
 
     @Transactional
@@ -111,10 +110,13 @@ public class BudgetProposalService {
 
         this.expectedExpenseRepository.saveAll(expectedExpenses);
 
-        // send message
+        // send message to Student Officer
         String fullName = UserUtil.getUserFullName(user);
         String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedBudgetProposal);
         this.messageService.sendMessage(user.getContactNumber(), message);
+
+        // send message to Moderator
+        this.genericLetterServiceImp.sendMessageToModerator(user, savedBudgetProposal);
     }
 
     private SignedPeople getSignedPeople(BudgetProposal budgetProposal, Role role) {

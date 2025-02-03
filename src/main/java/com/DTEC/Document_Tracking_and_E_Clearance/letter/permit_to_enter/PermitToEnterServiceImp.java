@@ -3,6 +3,7 @@ package com.DTEC.Document_Tracking_and_E_Clearance.letter.permit_to_enter;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterServiceImp;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
@@ -25,8 +26,9 @@ public class PermitToEnterServiceImp implements PermitToEnterService {
     private final SignedPeopleRepository signedPeopleRepository;
     private final MemberRoleUtil memberRoleUtil;
     private final MessageService messageService;
+    private final GenericLetterServiceImp genericLetterServiceImp;
 
-    public PermitToEnterServiceImp(PermitToEnterRepository permitToEnterRepository, PermitToEnterMapper permitToEnterMapper, UserUtil userUtil, UserRepository userRepository, SignedPeopleRepository signedPeopleRepository, MemberRoleUtil memberRoleUtil, MessageService messageService) {
+    public PermitToEnterServiceImp(PermitToEnterRepository permitToEnterRepository, PermitToEnterMapper permitToEnterMapper, UserUtil userUtil, UserRepository userRepository, SignedPeopleRepository signedPeopleRepository, MemberRoleUtil memberRoleUtil, MessageService messageService, GenericLetterServiceImp genericLetterServiceImp) {
         this.permitToEnterRepository = permitToEnterRepository;
         this.permitToEnterMapper = permitToEnterMapper;
         this.userUtil = userUtil;
@@ -34,6 +36,7 @@ public class PermitToEnterServiceImp implements PermitToEnterService {
         this.signedPeopleRepository = signedPeopleRepository;
         this.memberRoleUtil = memberRoleUtil;
         this.messageService = messageService;
+        this.genericLetterServiceImp = genericLetterServiceImp;
     }
 
     @Transactional
@@ -68,6 +71,9 @@ public class PermitToEnterServiceImp implements PermitToEnterService {
         String fullName = UserUtil.getUserFullName(user);
         String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedPermitToEnter);
         this.messageService.sendMessage(user.getContactNumber(), message);
+
+        // send message to Moderator
+        this.genericLetterServiceImp.sendMessageToModerator(user, savedPermitToEnter);
     }
 
     private SignedPeople getSignedPeople(PermitToEnter permitToEnter, Role role) {

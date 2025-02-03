@@ -14,11 +14,15 @@ public class GenericLetterUtil {
     }
 
     public static String generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(String name, SharedFields sharedFields) {
-        return "Hi " + name + ",\nYour " + sharedFields.getType() + " has been submitted and forwarded to " + sharedFields.getCurrentLocation().name() + ". You will be updated once it is completed and forwarded to the next office.";
+        return "Hi " + name + ",\nYour " + sharedFields.getType().name() + " has been submitted and forwarded to " + sharedFields.getCurrentLocation().name() + ". You will be updated once it is completed and forwarded to the next office.";
     }
 
     public static String generateMessageForFinalDecisionOfLetter(String name, SharedFields sharedFields) {
-        return "Hi " + name + ",\nYour " + sharedFields.getType() + " has been " + sharedFields.getStatus() + ".\nPlease log in to your DTEC account to view the details.";
+        return "Hi " + name + ",\nYour " + sharedFields.getType().name() + " has been " + sharedFields.getStatus().name() + ".\nPlease log in to your DTEC account to view the details.";
+    }
+
+    public static String generateMessageForModerator(String name, SharedFields letter) {
+        return "Hi " + name + ",\nYou have a pending " + letter.getType().name() + " that needs your evaluation. Please log in to your DTEC account to review the transaction.";
     }
 
     public static String generateMessageAfterClearanceReleased() {

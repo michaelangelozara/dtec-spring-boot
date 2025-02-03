@@ -4,10 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.CurrentLocation;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.LetterStatus;
-import com.DTEC.Document_Tracking_and_E_Clearance.letter.TypeOfLetter;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.*;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleStatus;
@@ -31,8 +28,9 @@ public class CommunicationLetterService {
     private final UserUtil userUtil;
     private final SignedPeopleRepository signedPeopleRepository;
     private final MessageService messageService;
+    private final GenericLetterServiceImp genericLetterServiceImp;
 
-    public CommunicationLetterService(CommunicationLetterRepository communicationLetterRepository, CommunicationLetterMapper communicationLetterMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
+    public CommunicationLetterService(CommunicationLetterRepository communicationLetterRepository, CommunicationLetterMapper communicationLetterMapper, MemberRoleUtil memberRoleUtil, UserUtil userUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService, GenericLetterServiceImp genericLetterServiceImp) {
         this.communicationLetterRepository = communicationLetterRepository;
         this.communicationLetterMapper = communicationLetterMapper;
         this.memberRoleUtil = memberRoleUtil;
@@ -98,6 +96,9 @@ public class CommunicationLetterService {
         String fullName = UserUtil.getUserFullName(user);
         String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedCommunicationLetter);
         this.messageService.sendMessage(user.getContactNumber(), message);
+
+        // send message to Moderator
+        this.genericLetterServiceImp.sendMessageToModerator(user, savedCommunicationLetter);
     }
 
     private SignedPeople getSignedPeople(CommunicationLetter communicationLetter, Role role) {

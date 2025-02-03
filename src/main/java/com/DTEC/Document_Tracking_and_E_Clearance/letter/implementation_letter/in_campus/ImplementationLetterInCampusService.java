@@ -4,6 +4,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleUtil
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.BadRequestException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterServiceImp;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeople;
 import com.DTEC.Document_Tracking_and_E_Clearance.letter.signed_people.SignedPeopleRepository;
@@ -29,8 +30,9 @@ public class ImplementationLetterInCampusService {
     private final MemberRoleUtil memberRoleUtil;
     private final SignedPeopleRepository signedPeopleRepository;
     private final MessageService messageService;
+    private final GenericLetterServiceImp genericLetterServiceImp;
 
-    public ImplementationLetterInCampusService(ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, UserRepository userRepository, UserUtil userUtil, SchoolYearGenerator schoolYearGenerator, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService) {
+    public ImplementationLetterInCampusService(ImplementationLetterInCampusRepository implementationLetterInCampusRepository, ImplementationLetterInCampusMapper implementationLetterInCampusMapper, UserRepository userRepository, UserUtil userUtil, SchoolYearGenerator schoolYearGenerator, MemberRoleUtil memberRoleUtil, SignedPeopleRepository signedPeopleRepository, MessageService messageService, GenericLetterServiceImp genericLetterServiceImp) {
         this.implementationLetterInCampusRepository = implementationLetterInCampusRepository;
         this.implementationLetterInCampusMapper = implementationLetterInCampusMapper;
         this.userRepository = userRepository;
@@ -39,6 +41,7 @@ public class ImplementationLetterInCampusService {
         this.memberRoleUtil = memberRoleUtil;
         this.signedPeopleRepository = signedPeopleRepository;
         this.messageService = messageService;
+        this.genericLetterServiceImp = genericLetterServiceImp;
     }
 
     @Transactional
@@ -81,6 +84,9 @@ public class ImplementationLetterInCampusService {
         String fullName = UserUtil.getUserFullName(user);
         String message = GenericLetterUtil.generateMessageWhenLetterIsSubmittedOrMovesToTheNextOffice(fullName, savedImplementation);
         this.messageService.sendMessage(user.getContactNumber(), message);
+
+        // send message to Moderator
+        this.genericLetterServiceImp.sendMessageToModerator(user, savedImplementation);
     }
 
     private SignedPeople getSignedPeople(ImplementationLetterInCampus implementationLetterInCampus, Role role){
