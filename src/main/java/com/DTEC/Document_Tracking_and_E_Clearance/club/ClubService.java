@@ -8,6 +8,5 @@ public interface ClubService {
 
     List<ClubResponseDto> getAllClubs(int s, int e);
 
-    String assignClubOfficer(int clubId, int studentId);
-
+    void updateLogo(String image, int clubId);
 }

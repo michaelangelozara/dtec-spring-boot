@@ -59,7 +59,7 @@ public class Clearance {
     private LocalDate dateOfStudentSignature;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
 

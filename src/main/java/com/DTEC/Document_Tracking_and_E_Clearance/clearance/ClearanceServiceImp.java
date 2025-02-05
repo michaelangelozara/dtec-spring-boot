@@ -1,5 +1,6 @@
 package com.DTEC.Document_Tracking_and_E_Clearance.clearance;
 
+import com.DTEC.Document_Tracking_and_E_Clearance.async.AsyncMessageApi;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignOffStatus;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoff;
 import com.DTEC.Document_Tracking_and_E_Clearance.clearance.clearance_signoff.ClearanceSignoffRepository;
@@ -9,18 +10,18 @@ import com.DTEC.Document_Tracking_and_E_Clearance.exception.ForbiddenException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.InternalServerErrorException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.UnauthorizedException;
+import com.DTEC.Document_Tracking_and_E_Clearance.letter.GenericLetterUtil;
+import com.DTEC.Document_Tracking_and_E_Clearance.message.MessageService;
 import com.DTEC.Document_Tracking_and_E_Clearance.misc.SchoolYearGenerator;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.PersonnelType;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.UserUtil;
+import com.DTEC.Document_Tracking_and_E_Clearance.user.*;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.naming.NotContextException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,8 +40,10 @@ public class ClearanceServiceImp implements ClearanceService {
     private final UserUtil userUtil;
     private final ClubRepository clubRepository;
     private final CourseRepository courseRepository;
+    private final AsyncMessageApi asyncMessageApi;
+    private final MessageService messageService;
 
-    public ClearanceServiceImp(UserRepository userRepository, ClearanceSignoffRepository clearanceSignoffRepository, ClearanceRepository clearanceRepository, ClearanceMapper clearanceMapper, SchoolYearGenerator schoolYearGenerator, UserUtil userUtil, ClubRepository clubRepository, CourseRepository courseRepository) {
+    public ClearanceServiceImp(UserRepository userRepository, ClearanceSignoffRepository clearanceSignoffRepository, ClearanceRepository clearanceRepository, ClearanceMapper clearanceMapper, SchoolYearGenerator schoolYearGenerator, UserUtil userUtil, ClubRepository clubRepository, CourseRepository courseRepository, AsyncMessageApi asyncMessageApi, MessageService messageService) {
         this.userRepository = userRepository;
         this.clearanceSignoffRepository = clearanceSignoffRepository;
         this.clearanceRepository = clearanceRepository;
@@ -49,6 +52,8 @@ public class ClearanceServiceImp implements ClearanceService {
         this.userUtil = userUtil;
         this.clubRepository = clubRepository;
         this.courseRepository = courseRepository;
+        this.asyncMessageApi = asyncMessageApi;
+        this.messageService = messageService;
     }
 
     @Transactional
@@ -58,9 +63,6 @@ public class ClearanceServiceImp implements ClearanceService {
             var students = this.userRepository.findAllStudents();
             if (students.isEmpty())
                 throw new ResourceNotFoundException("No Registered Student yet");
-
-            // fetch all course
-            var courses = this.courseRepository.findAll();
 
             // fetch all Office in-charges
             var allOfficeInCharge = this.userRepository.findAllOfficeInChargeForStudentClearance();
@@ -88,6 +90,8 @@ public class ClearanceServiceImp implements ClearanceService {
                             .build()).toList();
             var savedClearances = this.clearanceRepository.saveAll(clearances);
 
+            List<String> contactNumbers = new ArrayList<>();
+
             List<ClearanceSignoff> clearanceSignoffs = new ArrayList<>();
             for (var savedClearance : savedClearances) {
                 var cs1 = ClearanceUtil.getClearanceSignoff(dsa, savedClearance);
@@ -96,17 +100,34 @@ public class ClearanceServiceImp implements ClearanceService {
                 var cs4 = ClearanceUtil.getClearanceSignoff(librarian, savedClearance);
                 var cs5 = ClearanceUtil.getClearanceSignoff(schoolNurse, savedClearance);
                 var cs6 = ClearanceUtil.getClearanceSignoff(registrar, savedClearance);
-                // TODO - In this part the assignment of the lab depends on the course of the user
 
                 // get the user of this clearance
                 var student = savedClearance.getUser();
 
-                var studentCourse = courses.stream().filter(course -> course.getId().equals(student.getCourse().getId())).findFirst()
-                        .orElseThrow(() -> new ResourceNotFoundException("Course not Found"));
+                // add the contact number of the current user
+                contactNumbers.add(student.getContactNumber());
 
-                var labInCharge = ClearanceUtil.getLabInChargeBasedOnStudentCourse(allOfficeInCharge, studentCourse.getShortName());
+                var studentCourse = student.getCourse();
 
-                var cs9 = ClearanceUtil.getClearanceSignoff(labInCharge, savedClearance);
+                List<User> laboratoriesForYearOneAndTwoStudents = getLaboratoriesBasedOnTheStudentYearLevel(student, allOfficeInCharge);
+                // check if null meaning the student should need to have
+                // multiple lab in-charges that will be signing of its clearance
+                if(laboratoriesForYearOneAndTwoStudents == null){
+                    // means that the student is either 3rd or 4th year
+                    var labInCharge = ClearanceUtil.getLabInChargeBasedOnStudentCourse(allOfficeInCharge, studentCourse.getShortName());
+
+                    var cs9 = ClearanceUtil.getClearanceSignoff(labInCharge, savedClearance);
+                    if(cs9 != null)
+                        clearanceSignoffs.add(cs9);
+
+                }else{
+                    // means that the student is either 1st or 2nd year
+                    // add all the necessary lab in-charges
+                    for (User laboratoriesForYearOneAndTwoStudent : laboratoriesForYearOneAndTwoStudents) {
+                        var tempCS = ClearanceUtil.getClearanceSignoff(laboratoriesForYearOneAndTwoStudent, savedClearance);
+                        clearanceSignoffs.add(tempCS);
+                    }
+                }
 
                 // get the program head of this user
                 var programHead = student.getCourse().getUsers()
@@ -125,9 +146,6 @@ public class ClearanceServiceImp implements ClearanceService {
                 ;
                 var cs8 = ClearanceUtil.getClearanceSignoff(dean, savedClearance);
 
-                if (cs9 != null)
-                    clearanceSignoffs.add(cs9);
-
                 clearanceSignoffs.addAll(List.of(
                         cs1,
                         cs2,
@@ -140,12 +158,105 @@ public class ClearanceServiceImp implements ClearanceService {
                 ));
             }
             this.clearanceSignoffRepository.saveAll(clearanceSignoffs);
+
+            // Ensure transaction is active before registering synchronization
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // notify all OICs
+                        notifyAllOICWhenAllClearancesAreReleased(allOfficeInCharge);
+
+                        String message = GenericLetterUtil.generateMessageAfterClearanceReleased();
+                        asyncMessageApi.notifyAllUsers(contactNumbers, message);
+                    }
+                });
+            }
+
             return "Clearances Successfully Released";
         } catch (RuntimeException e) {
             throw new ResourceNotFoundException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerErrorException("Something went wrong");
         }
+    }
+
+    private List<User> getLaboratoriesBasedOnTheStudentYearLevel(User user, List<User> OICs) {
+        if (!user.getRole().equals(Role.STUDENT) && !user.getRole().equals(Role.STUDENT_OFFICER))
+            throw new ForbiddenException("The System can't Generate desire Lab In-Charge.");
+
+        List<User> extractedLabInCharges = OICs
+                .stream()
+                .filter(oic -> UserUtil.getLabInChargeRoles().contains(oic.getRole()))
+                .toList();
+
+        List<User> newLabInCharges = new ArrayList<>();
+
+        var course = user.getCourse();
+
+        switch (user.getYearLevel()) {
+            case 1 -> {
+                // this lab in-charge will automatically be added if the student is first year
+                var scienceLab = extractedLabInCharges
+                        .stream()
+                        .filter(el -> el.getRole().equals(Role.SCIENCE_LAB))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Science Laboratory In-Charge not Found"));
+
+                // this should trigger if the course is
+                if (course.getShortName().equals("BSCpE") || course.getShortName().equals("BSCS")) {
+                    var computerLab = extractedLabInCharges
+                            .stream()
+                            .filter(el -> el.getRole().equals(Role.COMPUTER_SCIENCE_LAB))
+                            .findFirst()
+                            .orElseThrow(() -> new ResourceNotFoundException("Computer Science Laboratory In-Charge not Found"));
+
+                    var ecLab = extractedLabInCharges
+                            .stream()
+                            .filter(el -> el.getRole().equals(Role.ELECTRONICS_LAB))
+                            .findFirst()
+                            .orElseThrow(() -> new ResourceNotFoundException("Electronics Laboratory In-Charge not Found"));
+
+                    newLabInCharges.addAll(List.of(computerLab, ecLab));
+                }
+
+                newLabInCharges.add(scienceLab);
+            }
+            case 2 -> {
+                var computerLab = extractedLabInCharges
+                        .stream()
+                        .filter(el -> el.getRole().equals(Role.COMPUTER_SCIENCE_LAB))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Computer Science Laboratory In-Charge not Found"));
+
+                var ecLab = extractedLabInCharges
+                        .stream()
+                        .filter(el -> el.getRole().equals(Role.ELECTRONICS_LAB))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Electronics Laboratory In-Charge not Found"));
+
+                newLabInCharges.addAll(List.of(computerLab, ecLab));
+            }
+            default -> {
+                return null;
+            }
+        }
+
+        return newLabInCharges;
+    }
+
+    private void sendMessageToTheOwnerOfClearanceWhenCompleted(User user, GenericLetterUtil.MessageType messageType) {
+        String fullName = UserUtil.getUserFullName(user);
+        String message = GenericLetterUtil.generateMessageWhenTheClearanceIsCompleted(fullName, messageType);
+        this.messageService.sendMessage(user.getContactNumber(), message);
+    }
+
+    private void notifyAllOICWhenAllClearancesAreReleased(List<User> OICs) {
+        OICs.forEach(oic -> {
+            String fullName = UserUtil.getUserFullName(oic);
+            String message = GenericLetterUtil.generateMessageForOfficeInChargeWhenClearancesRelease(fullName);
+            this.messageService.sendMessage(oic.getContactNumber(), message);
+        });
     }
 
     public List<ClearanceResponseDto> getAllStudentCompletedClearances() {
@@ -157,6 +268,10 @@ public class ClearanceServiceImp implements ClearanceService {
     public void confirmClearance(int clearanceId) {
         var clearance = this.clearanceRepository.findById(clearanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Clearance not Found"));
+
+        var user = clearance.getUser();
+        String message = GenericLetterUtil.generateMessageForUserWhoSubmittedClearance(UserUtil.getUserFullName(user));
+        this.messageService.sendMessage(user.getContactNumber(), message);
 
         clearance.setClearancePermitReleased(true);
         this.clearanceRepository.save(clearance);
@@ -194,9 +309,15 @@ public class ClearanceServiceImp implements ClearanceService {
                             .build()).toList();
             var savedClearances = this.clearanceRepository.saveAll(clearances);
 
+            List<String> contactNumbers = new ArrayList<>();
+
             List<ClearanceSignoff> clearanceSignoffs = new ArrayList<>();
             for (var savedClearance : savedClearances) {
                 var personnel = savedClearance.getUser();
+
+                // add the contact number of the current user
+                contactNumbers.add(personnel.getContactNumber());
+
                 var cs1 = ClearanceUtil.getClearanceSignoff(multimedia, savedClearance);
                 var cs2 = ClearanceUtil.getClearanceSignoff(librarian, savedClearance);
                 var cs3 = ClearanceUtil.getClearanceSignoff(cashier, savedClearance);
@@ -313,6 +434,21 @@ public class ClearanceServiceImp implements ClearanceService {
             }
 
             this.clearanceSignoffRepository.saveAll(clearanceSignoffs);
+
+            // Ensure transaction is active before registering synchronization
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // notify all OICs
+                        notifyAllOICWhenAllClearancesAreReleased(allOfficeInCharge);
+
+                        String message = GenericLetterUtil.generateMessageAfterClearanceReleased();
+                        asyncMessageApi.notifyAllUsers(contactNumbers, message);
+                    }
+                });
+            }
+
             return "Clearances Successfully Released";
         } catch (RuntimeException e) {
             throw new ResourceNotFoundException(e.getMessage());
@@ -507,10 +643,9 @@ public class ClearanceServiceImp implements ClearanceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Clearance not Found"));
 
         if (clearance.getStatus().equals(ClearanceStatus.COMPLETED))
-            throw new ForbiddenException("This Clearance is not Modifiable any more");
+            throw new ForbiddenException("This Clearance is not Modifiable anymore");
 
         var user = this.userUtil.getCurrentUser();
-        if (user == null) throw new UnauthorizedException("Session Expired");
 
         if (ClearanceUtil.isSectionSignedAlready(clearance.getClearanceSignoffs(), user.getRole()))
             throw new ForbiddenException("This Section has already been Signed");
@@ -646,6 +781,8 @@ public class ClearanceServiceImp implements ClearanceService {
             )) && ClearanceUtil.isOneOfLabInChargeSigned(clearance.getClearanceSignoffs())) {
                 clearance.setStatus(ClearanceStatus.COMPLETED);
                 this.clearanceRepository.save(clearance);
+                var clearanceOwner = clearance.getUser();
+                sendMessageToTheOwnerOfClearanceWhenCompleted(clearanceOwner, GenericLetterUtil.MessageType.STUDENT);
             }
         } else {
             if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
@@ -664,6 +801,8 @@ public class ClearanceServiceImp implements ClearanceService {
                 )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                     clearance.setStatus(ClearanceStatus.COMPLETED);
                     this.clearanceRepository.save(clearance);
+                    var clearanceOwner = clearance.getUser();
+                    sendMessageToTheOwnerOfClearanceWhenCompleted(clearanceOwner, GenericLetterUtil.MessageType.PERSONNEL);
                 }
             } else if (personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.NON_ACADEMIC)) {
                 if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
@@ -678,6 +817,8 @@ public class ClearanceServiceImp implements ClearanceService {
                 )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                     clearance.setStatus(ClearanceStatus.COMPLETED);
                     this.clearanceRepository.save(clearance);
+                    var clearanceOwner = clearance.getUser();
+                    sendMessageToTheOwnerOfClearanceWhenCompleted(clearanceOwner, GenericLetterUtil.MessageType.PERSONNEL);
                 }
             } else {
                 if (!personnel.getRole().equals(Role.PROGRAM_HEAD) && !personnel.getRole().equals(Role.DEAN)) {
@@ -693,6 +834,8 @@ public class ClearanceServiceImp implements ClearanceService {
                     )) && ClearanceUtil.isLibrarianOrMultimediaSigned(clearance.getClearanceSignoffs())) {
                         clearance.setStatus(ClearanceStatus.COMPLETED);
                         this.clearanceRepository.save(clearance);
+                        var clearanceOwner = clearance.getUser();
+                        sendMessageToTheOwnerOfClearanceWhenCompleted(clearanceOwner, GenericLetterUtil.MessageType.PERSONNEL);
                     }
                 } else {
                     // program head and dean
@@ -708,6 +851,8 @@ public class ClearanceServiceImp implements ClearanceService {
                     ))) {
                         clearance.setStatus(ClearanceStatus.COMPLETED);
                         this.clearanceRepository.save(clearance);
+                        var clearanceOwner = clearance.getUser();
+                        sendMessageToTheOwnerOfClearanceWhenCompleted(clearanceOwner, GenericLetterUtil.MessageType.PERSONNEL);
                     }
                 }
             }

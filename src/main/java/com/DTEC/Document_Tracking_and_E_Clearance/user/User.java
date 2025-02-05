@@ -127,7 +127,7 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<SFEF> sfefs;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id")
     @JsonBackReference
     private Course course;

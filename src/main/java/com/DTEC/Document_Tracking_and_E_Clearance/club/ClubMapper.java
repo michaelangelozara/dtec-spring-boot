@@ -13,7 +13,9 @@ public class ClubMapper {
                 club.getName(),
                 club.getType(),
                 club.getCreatedAt(),
-                club.getLastModified()
+                club.getLastModified(),
+                club.getLogo(),
+                club.getShortName()
         );
     }
 

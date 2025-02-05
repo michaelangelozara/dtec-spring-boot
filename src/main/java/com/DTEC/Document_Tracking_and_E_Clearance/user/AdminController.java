@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -75,7 +76,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> updateUser(
             @PathVariable("user-id") int id,
             @RequestBody UserRegisterRequestDto dto
-    ){
+    ) {
         this.userService.update(dto, id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
@@ -92,7 +93,7 @@ public class AdminController {
     @GetMapping("/users/search")
     public ResponseEntity<ApiResponse<List<UserInfoResponseDto>>> searchUser(
             @RequestParam("q") String searchTerm
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
                         new ApiResponse<>(
@@ -108,7 +109,7 @@ public class AdminController {
     @GetMapping("/users/{user-id}")
     public ResponseEntity<ApiResponse<DetailedUserResponseDto>> getUserById(
             @PathVariable("user-id") int userId
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
                         new ApiResponse<>(
@@ -216,5 +217,25 @@ public class AdminController {
                         this.dateTimeFormatterUtil.formatIntoDateTime()
                 )
         );
+    }
+
+    @PutMapping("/clubs/{club-id}/update-logo")
+    public ResponseEntity<ApiResponse<Void>> updateClubLogo(
+            @PathVariable("club-id") int clubId,
+            @RequestBody Map<String, String> logoMap
+    ) {
+        String logo = logoMap.get("image");
+        if(logo == null || logo.isEmpty())
+            throw new ForbiddenException("Invalid Image");
+
+        this.clubService.updateLogo(logo, clubId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(
+                        true,
+                        "Logo is Successfully Updated",
+                        null,
+                        "",
+                        ""
+                ));
     }
 }

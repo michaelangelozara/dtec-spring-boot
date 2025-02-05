@@ -111,7 +111,7 @@ public class ClearanceUtil {
         return roles.contains(role);
     }
 
-    public static User getLabInChargeBasedOnStudentCourse(List<User> users, String courseShortName) {
+    public static User getLabInChargeBasedOnStudentCourse(List<User> OICs, String courseShortName) {
         Map<String, Role> map = new HashMap<>();
         map.put("BSCrim", Role.CRIM_LAB);
         map.put("BSN", Role.NURSING_LAB);
@@ -119,7 +119,7 @@ public class ClearanceUtil {
         map.put("BSCpE", Role.ELECTRONICS_LAB);
         map.put("BSHM", Role.HRM_LAB);
 
-        return users.stream().filter(u -> u.getRole().equals(map.get(courseShortName))).findFirst()
+        return OICs.stream().filter(oic -> map.get(courseShortName) != null && oic.getRole().equals(map.get(courseShortName))).findFirst()
                 .orElse(null);
     }
 }

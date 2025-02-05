@@ -86,11 +86,14 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public Executor executor(){
+    public Executor executor() {
+        int coreCount = Runtime.getRuntime().availableProcessors();
+
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(6);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100);
+        executor.setCorePoolSize(coreCount * 2);  // 🔥 Dynamically set core pool size
+        executor.setMaxPoolSize(coreCount * 3);   // 🔥 Slightly higher max pool size
+        executor.setQueueCapacity(500);           // Adjust queue size for task buffering
+        executor.setThreadNamePrefix("MyAsyncThread-");
         executor.initialize();
         return executor;
     }

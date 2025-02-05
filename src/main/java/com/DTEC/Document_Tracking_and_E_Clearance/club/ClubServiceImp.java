@@ -3,8 +3,6 @@ package com.DTEC.Document_Tracking_and_E_Clearance.club;
 import com.DTEC.Document_Tracking_and_E_Clearance.club.sub_entity.MemberRoleRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.course.CourseRepository;
 import com.DTEC.Document_Tracking_and_E_Clearance.exception.ResourceNotFoundException;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.Role;
-import com.DTEC.Document_Tracking_and_E_Clearance.user.User;
 import com.DTEC.Document_Tracking_and_E_Clearance.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,29 +47,11 @@ public class ClubServiceImp implements ClubService {
     }
 
     @Override
-    public String assignClubOfficer(int clubId, int studentId) {
+    public void updateLogo(String image, int clubId) {
         var club = this.clubRepository.findById(clubId)
                 .orElseThrow(() -> new ResourceNotFoundException("Club not Found"));
-        var student = this.userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-        // TODO this will be implemented
-//        // check if there's no user officer yet
-//        for(var memberRole : departmentClub.getMemberRoles()){
-//            if(memberRole.getRole().equals(Role.STUDENT_OFFICER)){
-//                memberRole.setRole(Role.STUDENT);
-//                this.memberRoleRepository.save(memberRole);
-//            }
-//        }
-//
-//        for(var memberRole : departmentClub.getMemberRoles()){
-//            if(memberRole.getUser().getId().equals(user.getId())){
-//                memberRole.setRole(Role.STUDENT_OFFICER);
-//                this.memberRoleRepository.save(memberRole);
-//                break;
-//            }
-//        }
-
-        return "";
+        club.setLogo(image);
+        this.clubRepository.save(club);
     }
 }

@@ -9,6 +9,8 @@ public record ClubResponseDto(
         String name,
         Type type,
         @JsonProperty("created_at") LocalDate createdAt,
-        @JsonProperty("last_modified") LocalDate lastModified
+        @JsonProperty("last_modified") LocalDate lastModified,
+        String logo,
+        @JsonProperty("short_name") String shortName
 ) {
 }
