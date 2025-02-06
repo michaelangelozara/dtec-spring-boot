@@ -23,6 +23,10 @@ public class MessageService {
         this.restTemplate = restTemplate;
     }
 
+    protected void setApiKeyForUnitTesting(String apiKey){
+        this.apiKey = apiKey;
+    }
+
     public String sendMessage(String to, String message) {
         try {
             HttpHeaders headers = new HttpHeaders();
