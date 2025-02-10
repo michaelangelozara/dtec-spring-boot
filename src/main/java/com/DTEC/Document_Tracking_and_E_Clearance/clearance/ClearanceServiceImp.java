@@ -24,10 +24,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ClearanceServiceImp implements ClearanceService {
@@ -90,7 +87,7 @@ public class ClearanceServiceImp implements ClearanceService {
                             .build()).toList();
             var savedClearances = this.clearanceRepository.saveAll(clearances);
 
-            List<String> contactNumbers = new ArrayList<>();
+            Set<String> contactNumbers = new HashSet<>();
 
             List<ClearanceSignoff> clearanceSignoffs = new ArrayList<>();
             for (var savedClearance : savedClearances) {
@@ -112,15 +109,15 @@ public class ClearanceServiceImp implements ClearanceService {
                 List<User> laboratoriesForYearOneAndTwoStudents = getLaboratoriesBasedOnTheStudentYearLevel(student, allOfficeInCharge);
                 // check if null meaning the student should need to have
                 // multiple lab in-charges that will be signing of its clearance
-                if(laboratoriesForYearOneAndTwoStudents == null){
+                if (laboratoriesForYearOneAndTwoStudents == null) {
                     // means that the student is either 3rd or 4th year
                     var labInCharge = ClearanceUtil.getLabInChargeBasedOnStudentCourse(allOfficeInCharge, studentCourse.getShortName());
 
                     var cs9 = ClearanceUtil.getClearanceSignoff(labInCharge, savedClearance);
-                    if(cs9 != null)
+                    if (cs9 != null)
                         clearanceSignoffs.add(cs9);
 
-                }else{
+                } else {
                     // means that the student is either 1st or 2nd year
                     // add all the necessary lab in-charges
                     for (User laboratoriesForYearOneAndTwoStudent : laboratoriesForYearOneAndTwoStudents) {
@@ -159,7 +156,6 @@ public class ClearanceServiceImp implements ClearanceService {
             }
             this.clearanceSignoffRepository.saveAll(clearanceSignoffs);
 
-            // Ensure transaction is active before registering synchronization
             if (TransactionSynchronizationManager.isActualTransactionActive()) {
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
@@ -168,7 +164,7 @@ public class ClearanceServiceImp implements ClearanceService {
                         notifyAllOICWhenAllClearancesAreReleased(allOfficeInCharge);
 
                         String message = GenericLetterUtil.generateMessageAfterClearanceReleased();
-                        asyncMessageApi.notifyAllUsers(contactNumbers, message);
+                        asyncMessageApi.notifyAllUsers(new ArrayList<>(contactNumbers), message);
                     }
                 });
             }
