@@ -169,7 +169,7 @@ public class SecurityConfig {
         return request -> {
             CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOrigins(
-                    Arrays.asList(FRONT_END_DOMAIN)
+                    Arrays.asList("https://dtec.websleekitsolutions.com")
             );
             configuration.setAllowedMethods(
                     Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
