@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class FingerprintServiceImp implements FingerprintService {
@@ -99,7 +98,7 @@ public class FingerprintServiceImp implements FingerprintService {
             var user = this.userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-            if(user.getRole().equals(Role.STUDENT_OFFICER) || user.getRole().equals(Role.MODERATOR)){
+            if (user.getRole().equals(Role.STUDENT_OFFICER) || user.getRole().equals(Role.MODERATOR)) {
                 user.setESignature(image);
                 this.userRepository.save(user);
                 return;
@@ -141,11 +140,24 @@ public class FingerprintServiceImp implements FingerprintService {
         }
         List<String> encodedFingerprints = new ArrayList<>();
         var fingerprints = this.fingerprintRepository.findAll();
-        for(var fingerprint : fingerprints){
+        for (var fingerprint : fingerprints) {
             encodedFingerprints.add(fingerprint.getFingerprint());
         }
         Map<String, List<String>> map = new HashMap<>();
         map.put("fingerprints", encodedFingerprints);
+        return map;
+    }
+
+    public Map<String, List<String>> findAllFingerprints() {
+        var user = this.userUtil.getCurrentUser();
+        var fingerprints = this.fingerprintRepository.findAllByUserId(user.getId());
+        Map<String, List<String>> map = new HashMap<>();
+        List<String> fingerprintsStr = new ArrayList<>();
+        for(var fingerprint : fingerprints){
+            fingerprintsStr.add(fingerprint.getFingerprint());
+        }
+
+        map.put(user.getUsername(), fingerprintsStr);
         return map;
     }
 }

@@ -487,7 +487,7 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public String authenticate(LoginRequestDto dto, HttpServletResponse response) {
+    public String authenticate(LoginRequestDto dto, HttpServletResponse response, boolean isWebsite) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -524,7 +524,7 @@ public class UserServiceImp implements UserService {
 
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
-            return "Bearer " + accessToken;
+            return isWebsite ?  "Bearer " + accessToken :  "Bearer " + refreshToken;
         } catch (BadCredentialsException e) {
             if (dto.username().isEmpty() || dto.password().isEmpty())
                 throw new UnauthorizedException("User ID  or Password cannot be Empty");

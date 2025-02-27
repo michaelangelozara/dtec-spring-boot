@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface UserService {
 
-    String authenticate(LoginRequestDto dto, HttpServletResponse response);
+    String authenticate(LoginRequestDto dto, HttpServletResponse response, boolean isWebsite);
 
     void createUser(UserRegisterRequestDto dto);
 

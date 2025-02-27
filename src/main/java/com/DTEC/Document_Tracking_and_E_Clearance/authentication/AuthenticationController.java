@@ -68,7 +68,22 @@ public class AuthenticationController {
                 .body(new ApiResponse<>(
                         true,
                         "User Successfully Logged in",
-                        this.userService.authenticate(dto, response),
+                        this.userService.authenticate(dto, response, true),
+                        "",
+                        this.dateTimeFormatterUtil.formatIntoDateTime()));
+    }
+
+    @PostMapping("/fingerprint/authenticate")
+    public ResponseEntity<ApiResponse<String>> authenticateFingerPrint(
+            @Validated @RequestBody LoginRequestDto dto,
+            HttpServletResponse response
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse<>(
+                        true,
+                        "User Successfully Logged in",
+                        this.userService.authenticate(dto, response, false),
                         "",
                         this.dateTimeFormatterUtil.formatIntoDateTime()));
     }

@@ -29,6 +29,17 @@ public class WebSocketController {
         this.fingerprintService = fingerprintService;
     }
 
+    @MessageMapping("/validated-fingerprint")
+    @SendTo("/topic/receive-username")
+    public ResponseEntity<ApiResponse<String>> broadcastUsername(
+            @Payload Map<String, String> usernameMap
+    ){
+        String username = usernameMap.get("username");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse<>(true, "", username, "", ""));
+    }
+
     @MessageMapping("/validate.fingerprint")
     @SendTo("/topic/receive-fingerprints")
     public ResponseEntity<ApiResponse<CopyOnWriteArrayList<FingerprintValidationRequestDto>>> broadcast(
