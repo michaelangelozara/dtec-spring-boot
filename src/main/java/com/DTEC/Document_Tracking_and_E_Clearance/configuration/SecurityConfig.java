@@ -134,7 +134,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/wss/**").permitAll()
                         .requestMatchers("/api/v1/users/**").hasAnyRole(ALL_ROLES)
                         .requestMatchers("/api/v1/implementation-letter-in-campuses/**").hasAnyRole(STAFF_ROLES)
                         .requestMatchers("/api/v1/implementation-letter-off-campuses/**").hasAnyRole(STAFF_ROLES)
