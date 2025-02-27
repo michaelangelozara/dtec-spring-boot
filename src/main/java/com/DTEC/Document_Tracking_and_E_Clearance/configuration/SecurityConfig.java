@@ -76,6 +76,7 @@ public class SecurityConfig {
             "STUDENT_OFFICER",
             "DSA",
             "PRESIDENT",
+            "MULTIMEDIA",
             "FINANCE",
             "OFFICE_HEAD",
             "AUXILIARY_SERVICE_HEAD",

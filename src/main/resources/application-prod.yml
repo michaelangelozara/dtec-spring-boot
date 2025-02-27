@@ -1,12 +1,14 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:mysql://mysql-35b7c166-michaelangelozara10-666a.g.aivencloud.com:27886/defaultdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: avnadmin
-    password: AVNS_A7uttSRypbLOi9ozwka
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -17,7 +19,7 @@ spring:
       platform: mysql
 
 frontend:
-  origin: "http://localhost:5173"
+  origin: "https://dtec.websleekitsolutions.com"
 header: "Authorization"
 
 application:
