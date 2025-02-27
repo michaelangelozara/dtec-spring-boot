@@ -156,4 +156,13 @@ public class AuthenticationController {
                         )
                 );
     }
+
+    @GetMapping("/client-ip")
+    public Map<String, String > getClientIP(HttpServletRequest request){
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            ipAddress = request.getRemoteAddr();
+        }
+        return Map.of("ip", ipAddress);
+    }
 }
