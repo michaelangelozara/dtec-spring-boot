@@ -13,6 +13,10 @@ import java.util.Set;
 @Component
 public class UserUtil {
 
+    public static Set<Role> getRoleThaCantLoginWithFingerprint(){
+        return Set.of(Role.STUDENT, Role.STUDENT_OFFICER, Role.MODERATOR, Role.PERSONNEL);
+    }
+
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() ||

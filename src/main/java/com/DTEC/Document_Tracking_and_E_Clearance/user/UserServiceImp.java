@@ -523,8 +523,13 @@ public class UserServiceImp implements UserService {
                     .build();
 
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-
-            return isWebsite ?  "Bearer " + accessToken :  "Bearer " + refreshToken;
+            if (!isWebsite) {
+                if (UserUtil.getRoleThaCantLoginWithFingerprint().contains(user.getRole()))
+                    throw new UnauthorizedException("You are now allowed to access fingerprint");
+                return "Bearer " + refreshToken;
+            } else {
+                return "Bearer " + accessToken;
+            }
         } catch (BadCredentialsException e) {
             if (dto.username().isEmpty() || dto.password().isEmpty())
                 throw new UnauthorizedException("User ID  or Password cannot be Empty");

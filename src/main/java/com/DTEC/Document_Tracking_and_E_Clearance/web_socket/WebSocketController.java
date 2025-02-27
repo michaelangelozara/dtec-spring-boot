@@ -34,6 +34,7 @@ public class WebSocketController {
     public ResponseEntity<ApiResponse<String>> broadcastUsername(
             @Payload Map<String, String> usernameMap
     ){
+        log.info("Broadcasting username");
         String username = usernameMap.get("username");
         return ResponseEntity
                 .status(HttpStatus.OK)
