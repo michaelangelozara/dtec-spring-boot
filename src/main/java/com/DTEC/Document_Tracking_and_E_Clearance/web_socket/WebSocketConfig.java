@@ -10,6 +10,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
     @Value("${frontend.origin}")
     private String FRONTEND_ORIGIN;
 
@@ -17,7 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/wss")
-                .setAllowedOrigins("https://dtec.websleekitsolutions.com")
+                .setAllowedOrigins(FRONTEND_ORIGIN)
                 .withSockJS();
     }
 

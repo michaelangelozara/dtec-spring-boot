@@ -18,7 +18,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler,
             Map<String, Object> attributes
     ) throws Exception {
-        return false;
+        return true;
     }
 
     @Override
