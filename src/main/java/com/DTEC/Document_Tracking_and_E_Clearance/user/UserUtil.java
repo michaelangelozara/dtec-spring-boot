@@ -13,7 +13,7 @@ import java.util.Set;
 @Component
 public class UserUtil {
 
-    public static Set<Role> getRoleThaCantLoginWithFingerprint(){
+    public static Set<Role> getRoleThatCantLoginToFingerprint(){
         return Set.of(Role.STUDENT, Role.STUDENT_OFFICER, Role.MODERATOR, Role.PERSONNEL);
     }
 

@@ -524,8 +524,8 @@ public class UserServiceImp implements UserService {
 
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
             if (!isWebsite) {
-                if (UserUtil.getRoleThaCantLoginWithFingerprint().contains(user.getRole()))
-                    throw new UnauthorizedException("You are now allowed to access fingerprint");
+                if (UserUtil.getRoleThatCantLoginToFingerprint().contains(user.getRole()))
+                    throw new UnauthorizedException("You are not allowed to access fingerprint");
                 return "Bearer " + refreshToken;
             } else {
                 return "Bearer " + accessToken;
