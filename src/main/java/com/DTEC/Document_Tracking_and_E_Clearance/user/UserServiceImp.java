@@ -110,17 +110,9 @@ public class UserServiceImp implements UserService {
         if (dto.role().equals(Role.SUPER_ADMIN))
             throw new ForbiddenException("Invalid Role");
 
-        // check if the email is existing already
-        if (this.userRepository.existsByContactNumber(dto.contactNumber()))
-            throw new ConflictException("Contact Number is existing already");
-
         // validate contact number
         if (!UserUtil.validateContactNumber(dto.contactNumber()))
             throw new ForbiddenException("Invalid Contact Number");
-
-        // validate gmail
-        if (!UserUtil.validateGmail(dto.email()))
-            throw new ForbiddenException("Invalid Gmail");
 
         var user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
@@ -128,6 +120,10 @@ public class UserServiceImp implements UserService {
         // check if the email is existing already
         if (!user.getEmail().equals(dto.email()) && this.userRepository.existsByEmail(dto.email()))
             throw new ConflictException("Email is existing already");
+
+        // check if the email is existing already
+        if (!user.getContactNumber().equals(dto.contactNumber()) && this.userRepository.existsByContactNumber(dto.contactNumber()))
+            throw new ConflictException("Contact Number is existing already");
 
         user.setFirstName(dto.firstName());
         user.setMiddleName(dto.middleName());
@@ -169,6 +165,12 @@ public class UserServiceImp implements UserService {
         if (!this.jwtService.isTokenValid(token, fetchedUser))
             throw new UnauthorizedException("Account Access Expired! Please Visit the ICTSO to Reset Access");
 
+        var fetchedToken = this.tokenRepository.findByRefreshToken(token)
+                .orElse(null);
+
+        if(fetchedToken != null)
+            throw new UnauthorizedException("Invalid Token");
+
         // check if the passwords match
         if (password1.equals(password2)) {
             if (password1.isEmpty())
@@ -180,6 +182,8 @@ public class UserServiceImp implements UserService {
             fetchedUser.setFirstTimeLogin(false);
             fetchedUser.setPassword(this.passwordEncoder.encode(password1));
             this.userRepository.save(fetchedUser);
+
+            saveUserTokens(fetchedUser, token);
         } else {
             throw new ForbiddenException("Passwords do not match!");
         }
@@ -362,10 +366,6 @@ public class UserServiceImp implements UserService {
         // validate contact number
         if (!UserUtil.validateContactNumber(dto.contactNumber()))
             throw new ForbiddenException("Invalid Contact Number");
-
-        // validate gmail
-        if (!UserUtil.validateGmail(dto.email()))
-            throw new ForbiddenException("Invalid Gmail");
 
         var user = this.userMapper.toUser(dto);
 
