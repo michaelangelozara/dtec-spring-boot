@@ -87,6 +87,7 @@ public class UserServiceImp implements UserService {
         this.userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public String resetPassword(int userId) {
         var user = this.userRepository
@@ -99,7 +100,10 @@ public class UserServiceImp implements UserService {
 
         // send email
         String token = this.jwtService.generateRefreshToken(updatedUser);
+        saveUserTokens(user, token);
+
         this.emailService.sendEmail(UserUtil.removeWhiteSpace(updatedUser.getEmail()), token);
+
 
         return user.getLastname() + ", " + user.getFirstName() + "\'s Password Successfully Reset";
     }
