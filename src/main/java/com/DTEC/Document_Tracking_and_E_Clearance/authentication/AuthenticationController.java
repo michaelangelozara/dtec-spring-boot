@@ -171,4 +171,19 @@ public class AuthenticationController {
                         )
                 );
     }
+
+    @PostMapping("/verify-token")
+    public ResponseEntity<ApiResponse<Void>> verifyToken(
+            @RequestBody Map<String, String> map
+    ) {
+        String token = map.get("token");
+        this.userService.verifyToken(token);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(
+                        true,
+                        "Token is valid",
+                        null, "",
+                        ""
+                ));
+    }
 }

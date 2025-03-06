@@ -172,7 +172,7 @@ public class UserServiceImp implements UserService {
         var fetchedToken = this.tokenRepository.findByRefreshToken(token)
                 .orElse(null);
 
-        if(fetchedToken != null)
+        if (fetchedToken != null)
             throw new UnauthorizedException("Invalid Token");
 
         // check if the passwords match
@@ -588,5 +588,18 @@ public class UserServiceImp implements UserService {
 
         String token = this.jwtService.generateToken(updatedUser); // 10 mins Access Token
         this.emailService.sendEmail(UserUtil.removeWhiteSpace(updatedUser.getEmail()), token);
+    }
+
+    @Override
+    public void verifyToken(String token) {
+        if (token == null || token.isEmpty()) throw new BadRequestException("Invalid Token");
+
+        var username = this.jwtService.extractUsername(token);
+        var fetchedUser = this.userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // check if the token is still valid
+        if (!this.jwtService.isTokenValid(token, fetchedUser))
+            throw new BadRequestException("Invalid Token");
     }
 }

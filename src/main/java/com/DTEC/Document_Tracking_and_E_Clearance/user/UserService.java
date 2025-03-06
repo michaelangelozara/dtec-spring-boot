@@ -31,4 +31,6 @@ public interface UserService {
     String getModeratorStudentOfficerESignature();
 
     void forgotPassword(String email);
+
+    void verifyToken(String token);
 }
