@@ -29,7 +29,8 @@ public class ClearanceMapper {
                 clearance.getDateOfStudentSignature(),
                 clearance.getStudentSignature(),
                 clearance.getType(),
-                clearance.isSubmitted()
+                clearance.isSubmitted(),
+                clearance.isClearancePermitReleased()
         );
     }
 

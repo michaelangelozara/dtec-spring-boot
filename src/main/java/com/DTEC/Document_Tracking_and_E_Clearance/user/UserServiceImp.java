@@ -243,7 +243,7 @@ public class UserServiceImp implements UserService {
 
                 // remove the old moderator from the club
                 var memberRoles = this.memberRoleRepository.findMemberRoleByClubId(dto.moderatorClubId(), Role.MODERATOR);
-                unregisterPersonnelForBeingModerator(memberRoles);
+//                unregisterPersonnelForBeingModerator(memberRoles);
 
                 var memberRole = MemberRole.builder()
                         .role(ClubRole.MODERATOR)

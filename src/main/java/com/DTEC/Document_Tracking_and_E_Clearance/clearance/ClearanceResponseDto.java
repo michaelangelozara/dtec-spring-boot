@@ -18,6 +18,7 @@ public record ClearanceResponseDto(
         @JsonProperty("date_of_student_signature") LocalDate dateOfStudentSignature,
         @JsonProperty("student_signature") String studentSignature,
         ClearanceType type,
-        @JsonProperty("is_submitted") boolean isSubmitted
+        @JsonProperty("is_submitted") boolean isSubmitted,
+        @JsonProperty("is_clearance_permit_released") boolean isClearancePermitReleased
 ) {
 }
