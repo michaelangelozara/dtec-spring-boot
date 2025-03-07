@@ -594,12 +594,17 @@ public class UserServiceImp implements UserService {
     public void verifyToken(String token) {
         if (token == null || token.isEmpty()) throw new BadRequestException("Invalid Token");
 
-        var username = this.jwtService.extractUsername(token);
-        var fetchedUser = this.userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        var username = this.jwtService.extractUsername(token);
+//        var fetchedUser = this.userRepository.findByUsername(username)
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//
+//        // check if the token is still valid
+//        if (!this.jwtService.isTokenValid(token, fetchedUser))
+//
+        var fetchedToken = this.tokenRepository.findTokenByRefreshToken(token)
+                .orElse(null);
 
-        // check if the token is still valid
-        if (!this.jwtService.isTokenValid(token, fetchedUser))
-            throw new BadRequestException("Invalid Token");
+        if(fetchedToken != null)
+            throw new BadRequestException("Invalid Token.");
     }
 }
