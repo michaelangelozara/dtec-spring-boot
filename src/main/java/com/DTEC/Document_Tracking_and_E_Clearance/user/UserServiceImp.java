@@ -100,7 +100,6 @@ public class UserServiceImp implements UserService {
 
         // send email
         String token = this.jwtService.generateRefreshToken(updatedUser);
-        saveUserTokens(user, token);
 
         this.emailService.sendEmail(UserUtil.removeWhiteSpace(updatedUser.getEmail()), token);
 
