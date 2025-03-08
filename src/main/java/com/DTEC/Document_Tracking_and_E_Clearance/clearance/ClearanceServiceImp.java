@@ -265,9 +265,9 @@ public class ClearanceServiceImp implements ClearanceService {
         var clearance = this.clearanceRepository.findById(clearanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Clearance not Found"));
 
-        var user = clearance.getUser();
-        String message = GenericLetterUtil.generateMessageForUserWhoSubmittedClearance(UserUtil.getUserFullName(user));
-        this.messageService.sendMessage(user.getContactNumber(), message);
+//        var user = clearance.getUser();
+//        String message = GenericLetterUtil.generateMessageForUserWhoSubmittedClearance(UserUtil.getUserFullName(user));
+//        this.messageService.sendMessage(user.getContactNumber(), message);
 
         clearance.setClearancePermitReleased(true);
         this.clearanceRepository.save(clearance);
