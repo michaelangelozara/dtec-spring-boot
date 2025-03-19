@@ -36,6 +36,7 @@ public class ClearanceSignoff {
     @Column(name = "last_modified", insertable = false)
     private LocalDate lastModified;
 
+    @LastModifiedDate
     @Column(name = "date_and_time_of_signature")
     private LocalDateTime dateAndTimeOfSignature;
 

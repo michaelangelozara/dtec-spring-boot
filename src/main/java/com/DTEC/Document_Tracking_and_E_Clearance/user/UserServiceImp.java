@@ -105,7 +105,6 @@ public class UserServiceImp implements UserService {
 
         this.emailService.sendEmail(UserUtil.removeWhiteSpace(updatedUser.getEmail()), token);
 
-
         return user.getLastname() + ", " + user.getFirstName() + "\'s Password Successfully Reset";
     }
 
