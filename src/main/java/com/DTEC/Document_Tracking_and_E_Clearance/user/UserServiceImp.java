@@ -17,6 +17,7 @@ import com.DTEC.Document_Tracking_and_E_Clearance.token.Token;
 import com.DTEC.Document_Tracking_and_E_Clearance.token.TokenRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
@@ -171,11 +173,14 @@ public class UserServiceImp implements UserService {
         var fetchedToken = this.tokenRepository.findByRefreshToken(token)
                 .orElse(null);
 
-        if (fetchedToken != null)
+        if (fetchedToken != null){
+            log.warn("Invalid Token");
             throw new UnauthorizedException("Invalid Token");
+        }
 
         // check if the passwords match
         if (password1.equals(password2)) {
+            log.info("Token is valid");
             if (password1.isEmpty())
                 throw new ForbiddenException("Password is Empty");
 
@@ -187,6 +192,7 @@ public class UserServiceImp implements UserService {
             this.userRepository.save(fetchedUser);
 
             saveUserTokens(fetchedUser, token);
+            log.info("Token is revoked");
         } else {
             throw new ForbiddenException("Passwords do not match!");
         }
