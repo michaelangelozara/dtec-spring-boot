@@ -502,8 +502,6 @@ public class ClearanceServiceImp implements ClearanceService {
 
             // check each clearance if their signatures completed before proceed to the program head
             for (var clearance : clearances) {
-                var personnel = clearance.getUser();
-
                 if (clearance.getType().equals(ClearanceType.STUDENT_CLEARANCE)) {
                     if (ClearanceUtil.areAllSignaturesSettled(clearance.getClearanceSignoffs(), List.of(
                             Role.GUIDANCE,
@@ -515,6 +513,8 @@ public class ClearanceServiceImp implements ClearanceService {
                         clearanceList.add(clearance);
                     }
                 } else {
+                    var personnel = clearance.getUser();
+
                     if ((personnel.getRole().equals(Role.PERSONNEL) && personnel.getType().equals(PersonnelType.ACADEMIC)) ||
                             personnel.getRole().equals(Role.MODERATOR) || UserUtil.getLabInChargeRoles().contains(personnel.getRole())) {
                         clearanceList.add(clearance);
